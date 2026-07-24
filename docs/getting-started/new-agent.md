@@ -1,3 +1,8 @@
+---
+description: How to deploy your code onto Rossoctl
+sidebar_label: Import a New Agent
+---
+
 # Importing a New Agent into the Platform from a Code Base
 
 ## Pre-requisites
@@ -13,7 +18,7 @@ Here is a trick:
 * then press import file
 
 If you can see the successfully imported value, you are all set!
-> **💡 New to Rossoctl?** This guide is designed for **Agent Developers**. If you're unsure about your role or want to understand the broader ecosystem, check out our **[Personas and Roles Documentation](../PERSONAS_AND_ROLES.md#11-agent-developer)** first.
+> **💡 New to Rossoctl?** This guide is designed for **Agent Developers**. If you're unsure about your role or want to understand the broader ecosystem, check out our **[Personas and Roles Documentation](../users-guides/PERSONAS_AND_ROLES.md#11-agent-developer)** first.
 
 ### Deploying from Source
 

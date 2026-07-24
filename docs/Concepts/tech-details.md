@@ -1,3 +1,8 @@
+---
+description: Technical details of the platform.
+sidebar_label: Cloud Native platform components
+---
+
 # Cloud Native Agent Platform
 
 The Rossoctl Cloud Native Agent Platform architecture is organized into multiple components that  support the integration of services and systems within a Kubernetes-based cloud native environment.
