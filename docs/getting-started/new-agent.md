@@ -18,6 +18,7 @@ Here is a trick:
 * then press import file
 
 If you can see the successfully imported value, you are all set!
+
 > **💡 New to Rossoctl?** This guide is designed for **Agent Developers**. If you're unsure about your role or want to understand the broader ecosystem, check out our **[Personas and Roles Documentation](../users-guides/PERSONAS_AND_ROLES.md#11-agent-developer)** first.
 
 ### Deploying from Source
@@ -101,7 +102,7 @@ Migration notes
 
 Below is a minimal example showing how to create a Kubernetes Secret with an API key and then reference it from your `.env` file.
 
-Create the Secret (replace <NAMESPACE> and <YOUR_API_KEY>):
+Create the Secret (replace `<NAMESPACE>` and `<YOUR_API_KEY>`):
 
 ```bash
 kubectl create secret generic openai-secret \

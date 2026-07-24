@@ -46,7 +46,7 @@ To deploy the Image Agent:
    - Choose: `a2a/image_service`
 8. Click **Build & Deploy New Agent** to deploy.
 
-**Note:** The `ollama` environmental variable set specifies `llama3.2:3b-instruct-fp16` as the default model. To download the model, run `ollama pull llama3.2:3b-instruct-fp16`. Please ensure an Ollama server is running in a separate terminal via `ollama serve`. 
+**Note:** The `ollama` environmental variable set specifies `llama3.2:3b-instruct-fp16` as the default model. To download the model, run `ollama pull llama3.2:3b-instruct-fp16`. Please ensure an Ollama server is running in a separate terminal via `ollama serve`.
 
 ---
 
@@ -78,8 +78,11 @@ To verify that both the agent and tool are running:
 1. Open a terminal and connect to your Kubernetes cluster.
 2. Use the namespace you selected during deployment to check the status of the pods:
 
+   ```bash
+   kubectl get po -n <your-ns>
+   ```
+
    ```console
-   installer$ kubectl get po -n <your-ns>
    NAME                                  READY   STATUS    RESTARTS   AGE
    image-service-8bb4644fc-4d65d       1/1     Running   0          1m
    image-tool-5bb675dd7c-ccmlp         1/1     Running   0          1m
@@ -88,8 +91,11 @@ To verify that both the agent and tool are running:
 3. Tail the logs to ensure both services have started successfully.
    For the agent:
 
+   ```bash
+   kubectl logs -f deployment/image-service -n <your-ns>
+   ```
+
    ```console
-   installer$ kubectl logs -f deployment/image-service -n <your-ns>
    Defaulted container "image-service" out of: image-service, rossoctl-client-registration (init)
    INFO:     Started server process [18]
    INFO:     Waiting for application startup.
@@ -98,8 +104,12 @@ To verify that both the agent and tool are running:
    ```
 
    For the tool:
+
+   ```bash
+   kubectl logs -f deployment/image-tool -n <your-ns>
+   ```
+
    ```console
-   installer$ kubectl logs -f deployment/image-tool -n <your-ns>
    Defaulted container "image-tool" out of: image-tool, rossoctl-client-registration (init)
    INFO:     Started server process [19]
    INFO:     Waiting for application startup.
@@ -117,14 +127,14 @@ Once the deployment is complete, you can run the demo:
 
 1. Navigate to the **Agent Catalog** in the Rossoctl UI.
 2. Select the same `<namespace>` used during the agent deployment.
-3. Under [**Available Agents in <namespace>**](http://rossoctl-ui.localtest.me:8080/Agent_Catalog#available-agents-in-rossoctl-system), select `image-service` and click **View Details**.
+3. Under [**Available Agents in `<namespace>`**](http://rossoctl-ui.localtest.me:8080/Agent_Catalog#available-agents-in-rossoctl-system), select `image-service` and click **View Details**.
 4. Scroll to the bottom of the page. In the input field labeled *Say something to the agent...*, enter:
 
    ```console
    Give me a 200x200 image
    ```
 
-5. You will see the *Agent Thinking...* message. Depending on the speed of your hosting environment, the agent will return a image response. 
+5. You will see the *Agent Thinking...* message. Depending on the speed of your hosting environment, the agent will return a image response.
 
 6. You can tail the log files (as shown in the [Validate the Deployment section](#validate-the-deployment)) to observe the interaction between the agent and the tool in real time.
 
@@ -137,7 +147,7 @@ respectively and click the `Delete` button next to each.
 
 You can also manually remove them from the cluster:
 
-```console
-installer$ kubectl delete deployment image-service image-tool -n <your-ns>
-installer$ kubectl delete service image-service image-tool -n <your-ns>
+```bash
+kubectl delete deployment image-service image-tool -n <your-ns>
+kubectl delete service image-service image-tool -n <your-ns>
 ```

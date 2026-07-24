@@ -21,7 +21,7 @@ Here's a breakdown of the sections:
 
 - In [**Import New Agent**](#import-new-agent), you'll build and deploy the [`a2a_slack_researcher`](https://github.com/rossoctl/examples/tree/main/a2a/slack_researcher) agent.
 - In [**Import New Tool**](#import-new-tool), you'll build and deploy the [`slack_tool`](https://github.com/rossoctl/examples/tree/main/mcp/slack_tool) tool.
-- In [**Configure Keycloak**](#configure-keycloak), you'll configure Keycloak to provide access tokens with proper permissions to each component and enable token exchange. 
+- In [**Configure Keycloak**](#configure-keycloak), you'll configure Keycloak to provide access tokens with proper permissions to each component and enable token exchange.
 - In [**Validate the Deployment**](#validate-the-deployment), you'll verify that all components are running and operational.
 - In [**Chat with the Agent**](#chat-with-the-agent), you'll interact with the agent and confirm it responds correctly using real-time Slack data.
 
@@ -97,11 +97,11 @@ To log in and import agents you can use the [default credentials](../getting-sta
 
    - If using `ollama`, note that it uses `granite3.3:8b`, so you may need to run locally:
 
-     ```console
+     ```bash
      ollama serve
      ```
 
-     ```console
+     ```bash
      ollama pull granite3.3:8b
      ```
 
@@ -151,20 +151,20 @@ Now that the agent and tool have been deployed, the Keycloak Administrator must 
 
 ### Set up Python environment
 
-```console
+```bash
 cd rossoctl/demo-setup/keycloak-config/slack/
 python -m venv venv
 ```
 
 To run the Keycloak configuration script, you must have Python Keycloak library installed.
 
-```console
+```bash
 pip install -r requirements.txt
 ```
 
 Define environment variables for accessing Keycloak:
 
-```console
+```bash
 export KEYCLOAK_URL="http://keycloak.localtest.me:8080"
 export KEYCLOAK_REALM=master
 export KEYCLOAK_ADMIN_USERNAME=admin
@@ -174,7 +174,7 @@ export NAMESPACE=<namespace>
 
 Now run the configuration script:
 
-```console
+```bash
 python set_up_slack_demo.py
 ```
 
@@ -182,11 +182,11 @@ For more information about the configuration script check the [detailed README.m
 
 ### Enable Token exchange for the agent
 
-Finally, to enable the agent to perform token exchange, we must [go to Keycloak](http://keycloak.localtest.me:8080/) in the browser. Log in with the admin credentials `admin` and `admin`. 
+Finally, to enable the agent to perform token exchange, we must [go to Keycloak](http://keycloak.localtest.me:8080/) in the browser. Log in with the admin credentials `admin` and `admin`.
 
-Click on `Clients` in the left sidebar, and select `spiffe://localtest.me/sa/slack-researcher`. 
+Click on `Clients` in the left sidebar, and select `spiffe://localtest.me/sa/slack-researcher`.
 
-Under the `Settings` tab, scroll down to Capability config. Double check that `Client authentication` is enabled. Then enable `Standard Token Exchange` under `Authentication flow`. Then click `Save`. 
+Under the `Settings` tab, scroll down to Capability config. Double check that `Client authentication` is enabled. Then enable `Standard Token Exchange` under `Authentication flow`. Then click `Save`.
 
 Now Keycloak has been fully configured for our example!
 
@@ -201,8 +201,11 @@ To verify that both the agent and tool are running:
 1. Open a terminal and connect to your Kubernetes cluster.
 2. Use the namespace you selected during deployment to check the status of the pods:
 
+   ```bash
+   kubectl get pods -n <namespace>
+   ```
+
    ```console
-   installer$ kubectl get pods -n <namespace>
    NAME                                READY   STATUS    RESTARTS   AGE
    slack-researcher-8bb4644fc-4d65d    1/1     Running   0          1m
    slack-tool-5bb675dd7c-ccmlp         1/1     Running   0          1m
@@ -211,25 +214,31 @@ To verify that both the agent and tool are running:
 3. Tail the logs to ensure both services have started successfully.
    For the agent:
 
+   ```bash
+   kubectl logs -f deployment/slack-researcher -n <namespace>
+   ```
+
    ```console
-    installer$ kubectl logs -f deployment/slack-researcher -n <namespace>
-    Defaulted container "slack-researcher" out of: slack-researcher, rossoctl-client-registration (init)
-    INFO:     Started server process [18]
-    INFO:     Waiting for application startup.
-    INFO:     Application startup complete.
-    INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-    ```
+   Defaulted container "slack-researcher" out of: slack-researcher, rossoctl-client-registration (init)
+   INFO:     Started server process [18]
+   INFO:     Waiting for application startup.
+   INFO:     Application startup complete.
+   INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+   ```
 
-    For the tool:
+   For the tool:
 
-    ```console
-    installer$ kubectl logs -f deployment/slack-tool -n <namespace>
-    Defaulted container "slack-tool" out of: slack-tool, rossoctl-client-registration (init)
-    INFO:     Started server process [19]
-    INFO:     Waiting for application startup.
-    INFO:     Application startup complete.
-    INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-    ```
+   ```bash
+   kubectl logs -f deployment/slack-tool -n <namespace>
+   ```
+
+   ```console
+   Defaulted container "slack-tool" out of: slack-tool, rossoctl-client-registration (init)
+   INFO:     Started server process [19]
+   INFO:     Waiting for application startup.
+   INFO:     Application startup complete.
+   INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+   ```
 
 4. Once you see the logs indicating that both services are up and running, you're ready to proceed to [Chat with the Agent](#chat-with-the-agent).
 
@@ -279,7 +288,7 @@ If you encounter any errors, check the [Troubleshooting Guide](../users-guides/t
 
 You may navigate to the **Agent Catalog** and **Tool Catalog** in the UI and delete the agent and tool respectively. Else, you may do this in the console:
 
-```console
-installer$ kubectl delete deployment slack-researcher slack-tool -n <namespace>
-installer$ kubectl delete service slack-researcher slack-tool -n <namespace>
+```bash
+kubectl delete deployment slack-researcher slack-tool -n <namespace>
+kubectl delete service slack-researcher slack-tool -n <namespace>
 ```

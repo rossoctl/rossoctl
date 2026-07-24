@@ -32,24 +32,37 @@ This guide covers installation on both local Kind clusters and OpenShift environ
 
 If you're setting up a brand-new Mac, install all prerequisites at once with [Homebrew](https://brew.sh):
 
+Install Homebrew:
+
 ```bash
-# Install Homebrew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
 
-# Install required tools
+Install required tools:
+
+```bash
 brew install git kind kubectl helm@3
+```
 
-# Verify Helm version meets the ≥3.18.0 requirement above
+Verify Helm version meets the ≥3.18.0 requirement above:
+
+```bash
 helm version
+```
 
-# Container runtime — pick one:
+Container runtime — pick one:
+
+```bash
 brew install podman    # recommended for macOS
 # or: brew install --cask docker   # Docker Desktop
+```
 
-# If using Podman, create and start a machine with sufficient resources.
-# Use --rootful: Kind's rootless provider requires the systemd property
-# Delegate=yes, which a fresh podman machine does not configure, so cluster
-# creation fails without it.
+If using Podman, create and start a machine with sufficient resources.
+Use `--rootful`: Kind's rootless provider requires the systemd property
+`Delegate=yes`, which a fresh podman machine does not configure, so cluster
+creation fails without it.
+
+```bash
 podman machine init --rootful --memory 18432 --cpus 6
 podman machine start
 ```

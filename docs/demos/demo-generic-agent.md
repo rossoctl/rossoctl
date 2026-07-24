@@ -49,7 +49,7 @@ To deploy the Generic Agent:
    - Choose: `a2a/generic_agent`
 9. Click **Build & Deploy New Agent** to deploy.
 
-**Note:** The `ollama` environmental variable set specifies `llama3.2:3b-instruct-fp16` as the default model. To download the model, run `ollama pull llama3.2:3b-instruct-fp16`. Please ensure an Ollama server is running in a separate terminal via `ollama serve`. 
+**Note:** The `ollama` environmental variable set specifies `llama3.2:3b-instruct-fp16` as the default model. To download the model, run `ollama pull llama3.2:3b-instruct-fp16`. Please ensure an Ollama server is running in a separate terminal via `ollama serve`.
 
 ---
 
@@ -100,8 +100,11 @@ To verify that both the agent and tool are running:
 1. Open a terminal and connect to your Kubernetes cluster.
 2. Use the namespace you selected during deployment to check the status of the pods:
 
+   ```bash
+   kubectl get po -n <your-ns>
+   ```
+
    ```console
-   installer$ kubectl get po -n <your-ns>
    NAME                             READY   STATUS        RESTARTS   AGE
    flight-tool-cb7566fdf-z7j8n      3/3     Running       0          29d
    generic-agent-7cc769d86c-fkwmv   3/3     Running       0          25s
@@ -111,20 +114,26 @@ To verify that both the agent and tool are running:
 3. Tail the logs to ensure both services have started successfully.
    For the agent:
 
+   ```bash
+   kubectl logs -f deployment/generic-agent -n <your-ns>
+   ```
+
    ```console
-   installer$ kubectl logs -f deployment/generic-agent -n <your-ns>
    Defaulted container "generic-agent" out of: generic-agent, spiffe-helper, rossoctl-client-registration, fix-permissions (init)
    INFO:     Started server process [14]
    INFO:     Waiting for application startup.
    INFO:     Application startup complete.
    INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-
    ```
 
    For the movie tool:
+
+   ```bash
+   kubectl logs -f deployment/movie-tool -n <your-ns>
+   ```
+
    ```console
-   installer$ kubectl logs -f deployment/movie-tool -n <your-ns>
-   Defaulted container "movie-tool" out of: movie-tool, spiffe-helper, rossoctl-client-registration, fix-permissions (init)                        
+   Defaulted container "movie-tool" out of: movie-tool, spiffe-helper, rossoctl-client-registration, fix-permissions (init)
    INFO:     Started server process [14]
    INFO:     Waiting for application startup.
    INFO: StreamableHTTP session manager started
@@ -133,9 +142,13 @@ To verify that both the agent and tool are running:
    ```
 
    For the flight tool:
+
+   ```bash
+   kubectl logs -f deployment/flight-tool -n <your-ns>
+   ```
+
    ```console
-   installer$ kubectl logs -f deployment/flight-tool -n <your-ns>
-   Defaulted container "flight-tool" out of: flight-tool, spiffe-helper, rossoctl-client-registration, fix-permissions (init)   
+   Defaulted container "flight-tool" out of: flight-tool, spiffe-helper, rossoctl-client-registration, fix-permissions (init)
    INFO:     Started server process [14]
    INFO:     Waiting for application startup.
    INFO: StreamableHTTP session manager started
@@ -153,7 +166,7 @@ Once the deployment is complete, you can run the demo:
 
 1. Navigate to the **Agent Catalog** in the Rossoctl UI.
 2. Select the same `<namespace>` used during the agent deployment.
-3. Under [**Available Agents in <namespace>**](http://rossoctl-ui.localtest.me:8080/Agent_Catalog#available-agents-in-rossoctl-system), select `generic_agent` and click **View Details**.
+3. Under [**Available Agents in `<namespace>`**](http://rossoctl-ui.localtest.me:8080/Agent_Catalog#available-agents-in-rossoctl-system), select `generic_agent` and click **View Details**.
 4. Scroll to the bottom of the page. In the input field labeled *Say something to the agent...*, enter:
 
    ```console
@@ -190,7 +203,7 @@ respectively and click the `Delete` button next to each.
 
 You can also manually remove them from the cluster:
 
-```console
-installer$ kubectl delete deployment generic-agent flight-tool movie-tool -n <your-ns>
-installer$ kubectl delete service generic-agent flight-tool movie-tool -n <your-ns>
+```bash
+kubectl delete deployment generic-agent flight-tool movie-tool -n <your-ns>
+kubectl delete service generic-agent flight-tool movie-tool -n <your-ns>
 ```
