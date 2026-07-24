@@ -35,7 +35,7 @@ scripts/kind/setup-rossoctl.sh --with-ui --with-spire --with-agent-sandbox --wit
 > git tag --list 'v*' --sort=-v:refname | grep -v -E '(alpha|rc)' | head -1
 > ```
 
-For all available installer options and detailed instructions (including OpenShift), refer to the [Installation Guide](../Getting%20Started/install.md).
+For all available installer options and detailed instructions (including OpenShift), refer to the [Installation Guide](../getting-started/install.md).
 
 ### Access the Rossoctl Dashboard
 

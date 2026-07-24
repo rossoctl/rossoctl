@@ -38,7 +38,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Getting Started**:
 
-1. Review instructions in [new-agent](../Getting Started/new-agent.md) documentation
+1. Review instructions in [new-agent](../getting-started/new-agent.md) documentation
 2. Clone [rossoctl/examples](https://github.com/rossoctl/examples) repository
 3. Explore framework-specific examples (`a2a/slack_researcher`, `a2a/weather_service`)
 4. Use sample Dockerfiles and configurations as templates
@@ -295,7 +295,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 ### 2.3 Security and Identity Specialist
 
 **Description**: Administrators responsible for implementing and maintaining the zero-trust security model and identity management.
-Review Identity Patterns in [identity documentation](docs/Concepts/identity-guide.md) for more information.
+Review Identity Patterns in [identity documentation](docs/concepts/identity-guide.md) for more information.
 
 **Key Responsibilities**:
 

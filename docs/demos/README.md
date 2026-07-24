@@ -4,7 +4,7 @@ description: Demo overview.
 
 # Demos and Tutorials
 
-The following proof-of-concepts apply Cloud Native technologies to manage agentic workloads. A diagram and description of the demo architecture is provided on the [technical details](../Concepts/tech-details.md) page.
+The following proof-of-concepts apply Cloud Native technologies to manage agentic workloads. A diagram and description of the demo architecture is provided on the [technical details](../concepts/tech-details.md) page.
 
 Detailed overview of the identity concepts are covered in the [Rossoctl Identity PDF document](../2025-10.Rossoctl-Identity.pdf).
 
@@ -31,5 +31,5 @@ Different demos showcase capabilities relevant to different personas:
 - **Security Specialists** → Focus on the [GitHub Issue Agent with AuthBridge](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/github-issue/demo.md) for token exchange and scope-based access control
 - **Platform Operators** → All demos showcase operational aspects
 
-**👥 [Find Your Persona](../Users Guides/PERSONAS_AND_ROLES.md#overview)** to understand which demo best matches your role.
+**👥 [Find Your Persona](../users-guides/PERSONAS_AND_ROLES.md#overview)** to understand which demo best matches your role.
 

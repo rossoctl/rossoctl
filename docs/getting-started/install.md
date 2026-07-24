@@ -426,7 +426,7 @@ Rossoctl supports two modes for how the operator and agent workloads authenticat
 - **Client secrets (default)** — the operator uses admin credentials to register agent OAuth clients; agents authenticate with provisioned client secrets. No extra infrastructure required.
 - **SPIFFE authentication (recommended)** — the operator and agents authenticate using their SPIFFE identities (JWT-SVIDs). Requires SPIRE. Eliminates all provisioned credentials.
 
-Both modes are configured automatically during install. See the **[Authentication Guide](../Concepts/identity-guide.md)** for full setup, configuration, and how each mode works.
+Both modes are configured automatically during install. See the **[Authentication Guide](../concepts/identity-guide.md)** for full setup, configuration, and how each mode works.
 
 ---
 
@@ -502,5 +502,5 @@ oc get clusterversion
 
 </details>
 
-For more troubleshooting tips, see [Troubleshooting Guide](./Users Guides/troubleshooting.md).
+For more troubleshooting tips, see [Troubleshooting Guide](../users-guides/troubleshooting.md).
 

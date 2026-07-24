@@ -19,9 +19,9 @@ Here's a breakdown of the sections:
 - In [**Chat with the File Organizer Agent**](#chat-with-the-file-organizer-agent), you'll interact with the agent and confirm it correctly organizes files in the specified cloud storage bucket.
 
 > **Prerequisites:**
-> Ensure you've completed the Rossoctl platform setup as described in the [Installation Guide](../Getting Started/install.md).
+> Ensure you've completed the Rossoctl platform setup as described in the [Installation Guide](../getting-started/install.md).
 
-You should also open the Agent Platform Demo Dashboard as instructed in the [Accessing the UI](../Getting Started/install.md#accessing-the-ui) section.
+You should also open the Agent Platform Demo Dashboard as instructed in the [Accessing the UI](../getting-started/install.md#accessing-the-ui) section.
 
 ---
 
@@ -33,7 +33,7 @@ To deploy the File Organizer Agent:
 2. In the **Select Namespace to Deploy Agent** drop-down, choose the `<namespace>` where you'd like to deploy the agent. (These namespaces are defined in your `.env` file.)
 3. Under **Environment Variables**, configure LLM settings using one of these methods:
    - Click **Import .env File** and import `.env.openai` or `.env.ollama` from the agent examples repo, **or**
-   - Manually add env vars: `LLM_API_BASE`, `LLM_API_KEY`, and `LLM_MODEL` (see [Using Local Models](../Getting Started/local-models.md) for values)
+   - Manually add env vars: `LLM_API_BASE`, `LLM_API_KEY`, and `LLM_MODEL` (see [Using Local Models](../getting-started/local-models.md) for values)
 4. Under **Environment Variables**, also add:
    - Click `Add Environment Variable`
    - Under `Name` put `BUCKET_URI` and under `Value` put the URI of your cloud storage bucket (e.g., `s3://my-bucket-name/` for AWS S3)
@@ -146,7 +146,7 @@ Once the deployment is complete, you can run the demo:
 
 8. You can tail the log files (as shown in the [Validate the Deployment section](#validate-the-deployment)) to observe the interaction between the agent and the tool in real time.
 
-If you encounter any errors, check the [Troubleshooting Guide](../Users Guides/troubleshooting.md).
+If you encounter any errors, check the [Troubleshooting Guide](../users-guides/troubleshooting.md).
 
 ## Cleanup
 
