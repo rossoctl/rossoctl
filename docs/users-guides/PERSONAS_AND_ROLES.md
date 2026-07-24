@@ -1,5 +1,6 @@
 ---
 description: Are you an Agent Developer, MCP Gateway Operator, or deployer?
+sidebar_label: Personas and Roles
 ---
 
 

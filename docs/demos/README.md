@@ -1,5 +1,6 @@
 ---
 description: Demo overview.
+sidebar_label: Rossoctl Examples
 ---
 
 # Demos and Tutorials

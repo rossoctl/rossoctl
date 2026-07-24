@@ -1,5 +1,6 @@
 ---
 description: Communicating with an MCP image tool.
+sidebar_label: Image Agent
 ---
 
 # Image Agent Demo

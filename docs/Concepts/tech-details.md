@@ -1,5 +1,6 @@
 ---
 description: Technical details of the platform.
+sidebar_label: Cloud Native platform components
 ---
 
 # Cloud Native Agent Platform

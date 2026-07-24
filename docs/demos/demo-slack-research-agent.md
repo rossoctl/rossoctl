@@ -1,5 +1,6 @@
 ---
 description: Communicate with an MCP Slack tool.
+sidebar_label: Slack Research Agent
 ---
 
 # Authorized Slack Research Agent Demo

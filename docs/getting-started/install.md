@@ -1,5 +1,6 @@
 ---
 description: Full Rossoctl installation guide.
+sidebar_label: Installation Guide
 ---
 
 # Rossoctl Installation Guide
