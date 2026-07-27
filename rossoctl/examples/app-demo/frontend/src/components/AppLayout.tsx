@@ -27,7 +27,7 @@ export const AppLayout: React.FC = () => {
           <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontSize: '18px', fontWeight: 700, letterSpacing: '0.5px' }}>
             <span
               style={{
-                background: '#0066cc',
+                background: '#cc0000',
                 borderRadius: '6px',
                 width: '32px',
                 height: '32px',
@@ -38,7 +38,7 @@ export const AppLayout: React.FC = () => {
                 fontSize: '18px',
               }}
             >
-              K
+              R
             </span>
             App Demo
           </span>
