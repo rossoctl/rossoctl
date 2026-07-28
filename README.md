@@ -101,7 +101,7 @@ Rossoctl provides a set of components and assets that make it easier to manage A
 | **[Rossoctl UI](./rossoctl/ui-v2/)** | Dashboard for deploying agents/tools as Kubernetes Deployments, interactive testing, and monitoring |
 | **[Identity & Auth Bridge](./docs/identity-guide.md)** | Identity pattern assets that capture common authorization scenarios and provide reusable building blocks for implementing consistent authorization across services |
 | **[Agent Lifecycle Operator](https://github.com/rossoctl/operator)** | Kubernetes admission webhook for building agents from source, managing lifecycle, and coordinating platform services |
-| **[MCP Gateway](https://github.com/Kuadrant/mcp-gateway/blob/main/README.md)** | Unified gateway for Model Context Protocol (MCP) servers and tools. It acts as the entry point for policy enforcement, handling requests and routing them through the appropriate authorization patterns |
+| **[MCP Gateway](https://github.com/Kuadrant/mcp-gateway/)** | Unified gateway for Model Context Protocol (MCP) servers and tools. It acts as the entry point for policy enforcement, handling requests and routing them through the appropriate authorization patterns |
 | **[Plugins adapter](https://github.com/rossoctl/plugins-adapter)** | Adapter for security and safety plugins for Envoy-based gateways |
 
 ## Quick Start

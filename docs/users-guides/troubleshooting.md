@@ -195,3 +195,44 @@ kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=cert-manage
 
 Once the pods are back in a Running state with valid certificates, your `helm upgrade --install` 
 command should complete successfully.
+
+### SPIRE Daemonset Issues
+
+If daemonsets show `Current=0` or `Ready=0`:
+
+```bash
+kubectl describe daemonsets -n zero-trust-workload-identity-manager spire-agent
+kubectl describe daemonsets -n zero-trust-workload-identity-manager spire-spiffe-csi-driver
+```
+
+If you see SCC (Security Context Constraint) errors:
+
+```bash
+oc adm policy add-scc-to-user privileged -z spire-agent -n zero-trust-workload-identity-manager
+kubectl rollout restart daemonsets -n zero-trust-workload-identity-manager spire-agent
+
+oc adm policy add-scc-to-user privileged -z spire-spiffe-csi-driver -n zero-trust-workload-identity-manager
+kubectl rollout restart daemonsets -n zero-trust-workload-identity-manager spire-spiffe-csi-driver
+```
+
+### OpenShift Upgrade (4.18 → 4.19)
+
+<details>
+<summary>Red Hat OpenShift Container Platform (AWS)</summary>
+
+```bash
+# Update channel
+oc patch clusterversion version --type merge -p '{"spec":{"channel":"fast-4.19"}}'
+
+# Acknowledge changes
+oc -n openshift-config patch cm admin-acks --patch '{"data":{"ack-4.18-kube-1.32-api-removals-in-4.19":"true"}}' --type=merge
+oc -n openshift-config patch cm admin-acks --patch '{"data":{"ack-4.18-boot-image-opt-out-in-4.19":"true"}}' --type=merge
+
+# Upgrade
+oc adm upgrade --to-latest=true --allow-not-recommended=true
+
+# Monitor
+oc get clusterversion
+```
+
+</details>

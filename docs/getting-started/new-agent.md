@@ -113,7 +113,7 @@ Rossoctl uses [Shipwright](https://shipwright.io) to build container images. The
 | Internal (Kind cluster) | `buildah-insecure-push` | For registries without TLS |
 | External (quay.io, ghcr.io, docker.io) | `buildah` | For registries with TLS |
 
-You can override the strategy in the "Build Configuration" section if needed.
+You can override the strategy in the "Build Configuration" section.
 
 ### Advanced Build Options
 

@@ -199,6 +199,7 @@ The following models have been tested with Rossoctl agents:
 | `llama3.2:3b-instruct-fp16` | 3B | Kind, Apple Silicon | Default in `ollama` environment set |
 | `granite3.3:8b` | 8B | Kind, Apple M3 (64 GB) | Tested with Slack Research Agent |
 | `ibm/granite4:latest` | varies | Kind | Tested with GitHub Issue Agent |
+| `gpt-oss:latest` | 20B | Tested on GitHub Issue Agent and Simple Generalist |
 
 ### OpenAI Models
 
