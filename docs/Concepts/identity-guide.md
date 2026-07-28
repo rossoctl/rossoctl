@@ -235,7 +235,7 @@ Rossoctl implements OAuth2 Token Exchange to enable secure token delegation acro
 
 ![User Authentication Flow](../diagrams/images/png/01-user-authentication-flow.png)
 
-*Figure 1: User Authentication Flow - Shows how users authenticate with Rossoctl UI through Keycloak OIDC flow*
+_Figure 1: User Authentication Flow - Shows how users authenticate with Rossoctl UI through Keycloak OIDC flow_
 
 [View Mermaid Source Code](../diagrams/01-user-authentication-flow.mmd)
 
@@ -277,7 +277,7 @@ This approach provides better security isolation by restricting Keycloak admin c
 
 ![Agent Token Exchange Flow](../diagrams/images/png/04-agent-token-exchange-flow.png)
 
-*Figure 4: Agent Token Exchange Flow - Demonstrates OAuth2 token exchange between agents and Keycloak using SPIFFE identity*
+_Figure 4: Agent Token Exchange Flow - Demonstrates OAuth2 token exchange between agents and Keycloak using SPIFFE identity_
 
 [View Mermaid Source Code](../diagrams/04-agent-token-exchange-flow.mmd)
 
@@ -309,7 +309,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 
 ![Internal Tool Access with Delegated Token Flow](../diagrams/images/png/05-tool-access-delegated-token-flow.png)
 
-*Figure 4: Internal Tool Access Flow - Shows how agents call internal tools using delegated tokens with proper permission validation*
+_Figure 4: Internal Tool Access Flow - Shows how agents call internal tools using delegated tokens with proper permission validation_
 
 [View Mermaid Source Code](../diagrams/05-tool-access-delegated-token-flow.mmd)
 
@@ -353,7 +353,7 @@ The **MCP Gateway** acts as an authentication proxy for all Model Context Protoc
 
 ![MCP Gateway Authentication Flow](../diagrams/images/png/06-mcp-gateway-authentication-flow.png)
 
-*Figure 5: MCP Gateway Authentication Flow - Illustrates authentication flow through the MCP Gateway proxy for Model Context Protocol communications*
+_Figure 5: MCP Gateway Authentication Flow - Illustrates authentication flow through the MCP Gateway proxy for Model Context Protocol communications_
 
 [View Mermaid Source Code](../diagrams/06-mcp-gateway-authentication-flow.mmd)
 
@@ -437,7 +437,7 @@ def validate_request(request):
 
 ![External API Access with Delegated Token and Vault Flow](../diagrams/images/png/07-tool-with-external-api-flow.png)
 
-*Figure 6: External API Access with Vault Flow - Shows how agents call internal tools using delegated tokens with proper permission validation and the Vault exchanges this token for external API key for accessing external APIs*
+_Figure 6: External API Access with Vault Flow - Shows how agents call internal tools using delegated tokens with proper permission validation and the Vault exchanges this token for external API key for accessing external APIs_
 
 [View Mermaid Source Code](../diagrams/07-tool-with-external-api-flow.mmd)
 
