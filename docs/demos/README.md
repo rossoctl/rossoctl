@@ -1,4 +1,5 @@
 ---
+draft: true       # excluded from https://www.rossoctl.dev/
 description: Demo overview.
 sidebar_label: Rossoctl Examples
 ---

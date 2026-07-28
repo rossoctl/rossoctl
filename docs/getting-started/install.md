@@ -1,6 +1,7 @@
 ---
 description: Full Rossoctl installation guide.
 sidebar_label: Installation Guide
+sidebar_position: 1
 ---
 
 # Rossoctl Installation Guide
@@ -282,7 +283,7 @@ For non-Kind clusters, see the [OpenShift installation](#openshift-installation)
 
 ## OpenShift Installation
 
-Both Ollama (local models) and OpenAI are supported as LLM backends. See the [Local Models Guide](local-models.md) for setup details.
+Both Ollama (local models) and OpenAI are supported as LLM backends. See the [Local Models Guide](llms/local-models.md) for setup details.
 
 ### Option A: Bash Installer (Recommended)
 

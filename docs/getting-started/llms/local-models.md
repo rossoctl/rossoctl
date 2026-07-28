@@ -1,6 +1,6 @@
 ---
 description: Install Ollama for testing with local LLMs.
-sidebar_label: Ollama and Local Models
+sidebar_label: Run with Ollama
 ---
 
 # Using Local Models

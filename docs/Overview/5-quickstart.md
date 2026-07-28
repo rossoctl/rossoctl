@@ -1,7 +1,6 @@
 ---
 title: Quickstart
 description: Install Rossoctl on a Kubernetes cluster
-weight: 5
 ---
 
 ## Prerequisites
@@ -47,10 +46,30 @@ open http://rossoctl-ui.localtest.me:8080
 # Login with credentials from show-services.sh output
 ```
 
+### Install a self-hosted LLM
+
+(You may skip this step and see [Cloud Models](../getting-started/llms/cloud-models.md) if you are using a cloud-hosted LLM).
+
+
+1. Install Ollama: <https://ollama.com/download>
+2. Pull a model:
+
+   ```bash
+   ollama pull gpt-4o-mini-2024-07-18
+   ```
+
+3. Start Ollama (listening on all interfaces):
+
+   ```bash
+   OLLAMA_HOST=0.0.0.0 ollama serve
+   ```
+
+### Next steps
+
 From the UI you can:
 - Import and deploy A2A agents from any framework
 - Deploy MCP tools directly from source
 - Test agents interactively
 - Monitor traces and network traffic
 
-To learn how to deploy agents and MCP tools, follow the **[Weather Agent Demo](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/weather-agent/demo-ui.md)** — the recommended getting-started tutorial that walks you through deploying an agent and tool via the UI and chatting with it end-to-end. For more demos, see the [full demo list](/docs/demos/).
+To learn how to deploy agents and MCP tools, follow the **[Weather Agent Demo](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/weather-agent/demo-ui.md)** — the recommended getting-started tutorial that walks you through deploying an agent and tool via the UI and chatting with it end-to-end. For more demos, see the [full demo list](/docs/category/tutorials-and-demos).

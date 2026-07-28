@@ -1,6 +1,7 @@
 ---
+draft: true       # excluded from https://www.rossoctl.dev/
 description: Communicating with an MCP image tool.
-sidebar_label: Image Agent
+sidebar_label: Run the Image Agent
 ---
 
 # Image Agent Demo
