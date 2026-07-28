@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 300" font-family="Helvetica, Arial, sans-serif" role="img" aria-label="Authorization pattern: User to Keycloak to Agent to Tool, each backed by the SPIRE Server which issues short-lived identities.">
+  <title>Agent and Tool Authorization Pattern</title>
+  <desc>A left-to-right chain — User to Keycloak to Agent to Tool — where Keycloak, Agent, and Tool each draw short-lived identities from the SPIRE Server below.</desc>
+
+  <!-- Palette (shades of red)
+       node fill   #fee2e2   node border #ef4444   node text #7f1d1d
+       spire fill  #fca5a5   spire border #b91c1c
+       arrows      #b91c1c -->
+
+  <defs>
+    <marker id="redArrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b91c1c"/>
+    </marker>
+  </defs>
+
+  <!-- Chain nodes -->
+  <g fill="#fee2e2" stroke="#ef4444" stroke-width="1.5">
+    <rect x="24"  y="30" width="120" height="56" rx="8"/>
+    <rect x="180" y="30" width="120" height="56" rx="8"/>
+    <rect x="336" y="30" width="120" height="56" rx="8"/>
+    <rect x="492" y="30" width="104" height="56" rx="8"/>
+  </g>
+  <g fill="#7f1d1d" font-size="15" font-weight="bold" text-anchor="middle">
+    <text x="84"  y="64">User</text>
+    <text x="240" y="64">Keycloak</text>
+    <text x="396" y="64">Agent</text>
+    <text x="544" y="64">Tool</text>
+  </g>
+
+  <!-- Horizontal arrows between nodes -->
+  <g stroke="#b91c1c" stroke-width="2" marker-end="url(#redArrow)">
+    <line x1="144" y1="58" x2="176" y2="58"/>
+    <line x1="300" y1="58" x2="332" y2="58"/>
+    <line x1="456" y1="58" x2="488" y2="58"/>
+  </g>
+
+  <!-- Down arrows from Keycloak, Agent, Tool to SPIRE -->
+  <g stroke="#b91c1c" stroke-width="2" marker-end="url(#redArrow)">
+    <line x1="240" y1="86" x2="240" y2="176"/>
+    <line x1="396" y1="86" x2="396" y2="176"/>
+    <line x1="544" y1="86" x2="544" y2="176"/>
+  </g>
+
+  <!-- SPIRE Server -->
+  <rect x="24" y="184" width="572" height="80" rx="10" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/>
+  <text x="310" y="216" text-anchor="middle" fill="#7f1d1d" font-size="16" font-weight="bold">SPIRE Server</text>
+  <text x="310" y="240" text-anchor="middle" fill="#7f1d1d" font-size="13">(Issues short-lived identities)</text>
+</svg>

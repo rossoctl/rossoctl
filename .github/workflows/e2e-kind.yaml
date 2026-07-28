@@ -1,0 +1,237 @@
+name: E2E K8s 1.35.0 (Kind)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'rossoctl/**'
+      - 'deployments/**'
+      - '.github/**'
+      - 'charts/**'
+      - 'scripts/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'rossoctl/ui-v2/package.json'
+      - 'rossoctl/ui-v2/package-lock.json'
+  # NOTE: For PR E2E testing, see e2e-kind-pr.yaml
+  # This workflow only handles push to main and manual dispatch.
+  workflow_dispatch:
+
+# Only allow one run per branch to avoid resource conflicts
+concurrency:
+  group: e2e-kind-${{ github.ref }}
+  cancel-in-progress: true
+
+# Explicit permissions - principle of least privilege
+permissions:
+  contents: read
+
+# Version tracking - keep in sync with kind-config in scripts/kind/setup-rossoctl.sh
+env:
+  K8S_VERSION: '1.35.0'  # Must match kindest/node version in kind-config
+  # cortex ref for AuthBridge weather E2E (pin to a release tag once the demo is in a tagged release).
+  ROSSOCTL_EXTENSIONS_GIT_REF: 'main'
+
+jobs:
+  e2e-dev-rossoctl-operator:
+    name: Deploy & Test
+    runs-on: ubuntu-latest
+    # Includes cortex AuthBridge E2E (clone, Keycloak, advanced deploys).
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
+        with:
+          python-version: '3.11'
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@829323503d1be3d00ca8346e5391ca0b07a9ab0d  # v5.1.0
+
+      - name: Install Helm
+        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310  # v5.0.1
+        with:
+          version: 'v3.17.0'  # Pin to v3 - Helm v4 has breaking changes
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c  # v4.2.0
+
+      - name: Free up disk space
+        run: bash .github/scripts/common/05-free-disk-space.sh
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990  # v8.3.2
+
+      - name: Install dependencies (jq)
+        run: sudo apt-get update -qq && sudo apt-get install -y jq
+
+      - name: Create secrets for bash installer
+        run: bash .github/scripts/common/20-create-secrets-bash.sh
+
+      - name: Install Rossoctl platform (bash installer)
+        run: bash scripts/kind/setup-rossoctl.sh --with-all --build-images
+
+      - name: Wait for platform and reduce Kuadrant resources
+        run: bash .github/scripts/common/40-wait-platform-ready.sh
+
+      - name: Install Ollama
+        run: bash .github/scripts/common/50-install-ollama.sh
+
+      - name: Start Ollama and pull model
+        run: bash .github/scripts/common/60-pull-ollama-model.sh
+
+      - name: Configure dockerhost service for Kind
+        run: bash .github/scripts/common/70-configure-dockerhost.sh
+
+      - name: Wait for rossoctl-operator CRDs to be established
+        run: bash .github/scripts/operator/41-wait-crds.sh
+
+      # TOOL DEPLOYMENT (FIRST - agent depends on tool being available)
+      # Tools are deployed as standard Kubernetes Deployments + Services
+      - name: Build weather-tool image
+        run: bash .github/scripts/operator/71-build-weather-tool.sh
+
+      - name: Deploy weather-tool via Deployment + Service
+        run: bash .github/scripts/operator/72-deploy-weather-tool.sh
+
+      # AGENT DEPLOYMENT (AFTER tool is ready - agent depends on tool)
+      # Uses standard Kubernetes Deployment + Service (no Agent CRD dependency)
+      - name: Deploy weather-service Agent
+        run: bash .github/scripts/operator/74-deploy-weather-agent.sh
+
+      - name: Verify deployment health
+        run: |
+          chmod +x .github/scripts/verify_deployment.sh
+          # Non-blocking: deployments already verified by wait steps
+          .github/scripts/verify_deployment.sh || true
+
+      - name: Install test dependencies
+        run: bash .github/scripts/common/80-install-test-deps.sh
+
+      - name: Start port-forward for agent service
+        run: bash .github/scripts/common/85-start-port-forward.sh
+
+      - name: Print version matrix
+        if: success()
+        run: bash .github/scripts/common/86-print-version-matrix.sh
+
+      - name: Setup test credentials
+        run: bash .github/scripts/common/87-setup-test-credentials.sh
+
+      - name: Pre-flight checks
+        if: success()
+        run: bash .github/scripts/common/90-preflight-checks.sh
+
+      - name: Run backend E2E tests
+        if: success()
+        run: bash .github/scripts/operator/90-run-e2e-tests.sh
+
+      # See e2e-kind-pr.yaml: single-node Kind cannot run wave-90 and wave-91
+      # full weather stacks concurrently without Insufficient cpu on the agent.
+      - name: Free capacity for AuthBridge weather (scale baseline weather)
+        if: success()
+        run: bash .github/scripts/kind/90b-free-capacity-for-advanced-weather.sh
+        env:
+          NAMESPACE: team1
+
+      # cortex: authbridge/demos/weather-agent (token exchange + tool inbound JWT). Not a lightweight check.
+      - name: AuthBridge Weather (advanced) E2E
+        if: success()
+        run: bash .github/scripts/kind/91-run-authbridge-weather-e2e.sh
+        env:
+          NAMESPACE: team1
+
+      - name: Restore baseline weather for UI E2E
+        if: success()
+        run: bash .github/scripts/kind/90c-restore-baseline-weather-for-ui.sh
+        env:
+          NAMESPACE: team1
+
+      # ── Token Exchange E2E (community Keycloak, non-fatal) ───────────────
+      - name: Setup Keycloak realm for token exchange
+        if: success()
+        run: bash .github/scripts/token-exchange/40-setup-keycloak-realm.sh
+
+      - name: Enable rossoctl in token exchange namespace
+        if: success()
+        run: bash .github/scripts/token-exchange/50-enable-rossoctl-ns.sh
+        env:
+          PLATFORM: kind
+
+      - name: Setup SPIFFE Identity Provider
+        if: success()
+        run: bash .github/scripts/token-exchange/55-setup-spiffe-idp.sh
+        env:
+          PLATFORM: kind
+
+      - name: Deploy token exchange test workloads
+        if: success()
+        run: bash .github/scripts/token-exchange/70-deploy-test-workloads.sh
+
+      - name: Enable SPIFFE identity for token exchange
+        if: success()
+        run: bash .github/scripts/token-exchange/56-enable-spiffe.sh
+        env:
+          PLATFORM: kind
+
+      - name: Configure FGAP token exchange
+        if: success()
+        run: bash .github/scripts/token-exchange/60-configure-fgap.sh
+
+      - name: Wait for token exchange workloads to stabilize
+        if: success()
+        run: |
+          sleep 30
+          # Wait for the client-credentials Secret the injected pod mounts (operator registers it async).
+          for i in $(seq 1 30); do
+            CREDS=$(kubectl get secrets -n tx-e2e -o name | grep -c rossoctl-keycloak-client-credentials || echo "0")
+            [ "$CREDS" -ge 2 ] && echo "Credentials ready ($CREDS)" && break
+            echo "Waiting for credentials ($CREDS/2)..."
+            sleep 10
+          done
+          # Give the injected pods (proxy-init -> spiffe-helper -> envoy) a chance to reach Ready.
+          # Non-fatal: the tx-e2e run below is continue-on-error (client registration on Kind is
+          # still flaky), so don't gate the workflow on readiness. See #2129.
+          kubectl wait --for=condition=Ready pod -l app=tx-e2e-agent -n tx-e2e --timeout=240s || true
+          kubectl wait --for=condition=Ready pod -l app=tx-e2e-tool -n tx-e2e --timeout=240s || true
+
+      - name: Run token exchange E2E tests (community KC — non-fatal)
+        # Non-fatal: the token-exchange suite is not yet reliably green on Kind
+        # (operator client registration in realm tx-e2e is flaky / incomplete,
+        # so TestClientCredentials 401s with invalid_client). Run it for signal
+        # and artifacts, but do not gate the workflow on it until it stabilizes.
+        if: success()
+        continue-on-error: true
+        run: bash .github/scripts/token-exchange/80-run-tests.sh
+        env:
+          KEYCLOAK_PROVIDER: community
+          PLATFORM: kind
+      # ── End Token Exchange E2E ───────────────────────────────────────────
+
+      - name: Run UI E2E tests
+        if: success()
+        run: bash .github/scripts/common/92-run-ui-tests.sh
+        env:
+          PLAYWRIGHT_GREP_INVERT: "@extended"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: e2e-test-results
+          path: test-results/
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: playwright-report
+          path: rossoctl/ui-v2/playwright-report/
+          retention-days: 30
+
+      - name: Collect logs on failure
+        if: failure()
+        run: bash .github/scripts/common/99-collect-logs.sh

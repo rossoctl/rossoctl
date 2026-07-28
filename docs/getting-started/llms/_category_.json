@@ -1,0 +1,9 @@
+{
+  "label": "Configuring LLMs",
+  "position": 20,
+  "description": "LLM configuration.",
+  "link": {
+    "type": "generated-index",
+    "description": "LLM configuration."
+  }
+}

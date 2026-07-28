@@ -1,0 +1,24 @@
+# Stale Issue and PR Management
+#
+# Thin caller for the org-wide reusable stale workflow.
+# Configuration and defaults are managed centrally in rossoctl/.github.
+#
+# Reference: https://github.com/rossoctl/.github/blob/main/.github/workflows/stale.yaml
+#
+name: Close Stale Issues and PRs
+
+on:
+  # Run daily at 6 AM UTC
+  schedule:
+    - cron: '0 6 * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+
+# Minimum permissions required by the reusable stale workflow
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    uses: rossoctl/.github/.github/workflows/stale.yaml@99700ebe858a1bc566492b1de9aea6e764ee226f # 2026-05-05

@@ -1,0 +1,18 @@
+# ============================================================================
+# dev_values_federated-jwt.yaml
+# ============================================================================
+# JWT-SVID authentication overlay for dev_values.yaml
+#
+# This file is a PRODUCTION-READY overlay - it only specifies JWT-SVID
+# authentication configuration. All SPIRE infrastructure configuration
+# (set_key_use, jwtTTL, etc.) is already in dev_values.yaml.
+# ============================================================================
+
+charts:
+  rossoctl:
+    values:
+      # Enable JWT-SVID authentication instead of client-secret
+      # This is the ONLY change needed to switch from client-secret to federated-jwt
+      authBridge:
+        clientAuthType: "federated-jwt"
+        spiffeIdpAlias: "spire-spiffe"

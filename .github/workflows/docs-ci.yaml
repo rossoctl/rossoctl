@@ -1,0 +1,46 @@
+# Documentation CI — markdown lint and link check
+#
+# Runs on PRs that touch markdown or documentation files.
+# All jobs are read-only and safe for fork PRs (no secrets required).
+name: Docs CI
+
+on:
+  pull_request:
+    branches: [main, "release-*"]
+    paths:
+      - "**.md"
+      - "docs/**"
+      - ".github/workflows/docs-ci.yaml"
+      - ".markdownlint-cli2.yaml"
+      - ".lychee.toml"
+
+permissions:
+  contents: read
+
+jobs:
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+
+      - name: Run markdownlint-cli2
+        uses: DavidAnson/markdownlint-cli2-action@8de2aa07cae85fd17c0b35642db70cf5495f1d25  # v24.0.0
+        with:
+          globs: "**/*.md"
+
+  link-check:
+    name: Link Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+
+      - name: Run lychee link checker
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8  # v2.9.0
+        with:
+          args: >-
+            --config .lychee.toml
+            "**/*.md"
+          fail: false
