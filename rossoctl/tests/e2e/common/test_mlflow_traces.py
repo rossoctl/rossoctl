@@ -46,6 +46,10 @@ import pytest
 logger = logging.getLogger(__name__)
 
 
+class MLflowAuthError(Exception):
+    """Raised when MLflow returns an authentication/authorization failure."""
+
+
 # =============================================================================
 # kubectl Resilience Helpers
 # =============================================================================
@@ -174,6 +178,8 @@ def wait_for_traces(
                 f"Attempt {attempt}: Found {len(traces)} {description}, "
                 f"waiting for {min_count}... (next check in {current_interval:.1f}s)"
             )
+        except MLflowAuthError:
+            raise
         except Exception as e:
             logger.warning(f"Attempt {attempt}: Error checking {description}: {e}")
 
@@ -403,28 +409,33 @@ def get_mlflow_client():
 
 
 def get_all_traces() -> list[dict[str, Any]]:
-    """Get all traces from MLflow using Python client."""
+    """Get all traces from MLflow using Python client.
+
+    Raises:
+        MLflowAuthError: If the server rejects credentials (401/403).
+    """
     try:
         client = get_mlflow_client()
         if not client:
             return []
 
-        # Get all experiments
         experiments = client.search_experiments()
         all_traces = []
 
         for exp in experiments:
             try:
-                # Search traces in this experiment
-                # Use 'locations' parameter (experiment_ids is deprecated)
                 traces = client.search_traces(locations=[exp.experiment_id])
                 all_traces.extend(traces)
             except Exception as e:
+                err_msg = str(e)
+                if any(s in err_msg for s in ("401", "403", "Unauthorized")):
+                    raise MLflowAuthError(
+                        "MLFLOW_TRACKING_TOKEN may be missing or expired"
+                    ) from e
                 logger.warning(f"Failed to search traces in experiment {exp.name}: {e}")
 
         return all_traces
-    except ValueError:
-        # Re-raise configuration errors
+    except (ValueError, MLflowAuthError):
         raise
     except Exception as e:
         logger.error(f"Failed to get traces: {e}")
@@ -791,6 +802,11 @@ def traces_available(mlflow_configured):
         )
         logger.info(f"Found {len(traces)} traces, proceeding with tests")
         return traces
+    except MLflowAuthError as e:
+        pytest.skip(
+            f"MLflow auth failed: {e}. "
+            "Ensure mlflow-oauth-secret-job completed before tests."
+        )
     except TimeoutError as e:
         pytest.skip(
             f"No traces appeared in MLflow after waiting: {e}. "

@@ -84,6 +84,17 @@ if kubectl get deployment mlflow -n rossoctl-system &>/dev/null; then
         # Don't exit -- let tests run and fail with specific errors
         log_info "Proceeding with tests despite pipeline issues..."
     fi
+
+    # Wait for mlflow-oauth-secret (created by a Helm post-install Job).
+    # Tests need this secret to authenticate against MLflow's OIDC plugin.
+    if kubectl get job mlflow-oauth-secret-job -n rossoctl-system &>/dev/null; then
+        log_info "Waiting for mlflow-oauth-secret-job to complete..."
+        if kubectl wait --for=condition=complete --timeout=90s job/mlflow-oauth-secret-job -n rossoctl-system 2>/dev/null; then
+            log_success "mlflow-oauth-secret-job completed"
+        else
+            log_warn "mlflow-oauth-secret-job not complete after 90s - trace tests may fail auth"
+        fi
+    fi
 else
     log_info "MLflow not deployed, skipping pipeline readiness check"
 fi
