@@ -12,6 +12,12 @@ log_step "40" "Waiting for platform to be ready"
 # Wait for core platform components to be ready
 kubectl wait --for=condition=available --timeout=300s deployment -n rossoctl-system --all || {
     log_error "Platform components not ready"
+    log_error "=== Backend logs (current) ==="
+    kubectl logs -n rossoctl-system -l app.kubernetes.io/name=rossoctl-backend --tail=80 2>/dev/null || true
+    log_error "=== Backend logs (previous crashed container) ==="
+    kubectl logs -n rossoctl-system -l app.kubernetes.io/name=rossoctl-backend --previous --tail=80 2>/dev/null || true
+    log_error "=== Controller-manager logs ==="
+    kubectl logs -n rossoctl-system -l app.kubernetes.io/name=operator-chart --tail=50 2>/dev/null || true
     kubectl get pods -A
     kubectl get events -A --sort-by='.lastTimestamp' | tail -30
     exit 1
