@@ -363,7 +363,7 @@ helm upgrade --install rossoctl ./charts/rossoctl/ \
 kubectl get daemonsets -n zero-trust-workload-identity-manager
 ```
 
-If `Current` or `Ready` is `0`, see [Troubleshooting](#spire-daemonset-issues).
+If `Current` or `Ready` is `0`, see the [Troubleshooting Guide](../users-guides/troubleshooting.md).
 
 ---
 

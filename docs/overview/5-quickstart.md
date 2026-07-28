@@ -67,7 +67,7 @@ You may skip this step and see [Cloud Models](../getting-started/llms/cloud-mode
 2. Pull a model:
 
    ```bash
-   ollama pull gpt-4o-mini-2024-07-18
+   ollama pull llama3.2:3b-instruct-fp16
    ```
 
 3. Start Ollama (listening on all interfaces):

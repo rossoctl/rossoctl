@@ -16,7 +16,7 @@ MCP (Model Context Protocol) tools extend the capabilities of AI agents by provi
 Before importing a new tool from source, ensure that:
 
 1. The tool code is hosted on GitHub and is public or at least accessible using the GitHub credentials provided [during the Rossoctl installation](./install.md).
-2. The agent code is organized within a sub-directory of the Git repository (not in the root directory) that contains a `Dockerfile`.
+2. The tool code is organized within a sub-directory of the Git repository (not in the root directory) that contains a `Dockerfile`.
 
 ## Tool Examples
 
@@ -43,7 +43,7 @@ See the [Rossoctl agent examples repo](https://github.com/rossoctl/examples/tree
 #### Deploy from source code
 
 1. Select "Build from source" as the deployment method
-2. In "Agent Source Repository URL", enter the root of your GitHub repository where your project lives.
+2. In "Git Repository URL", enter the root of your GitHub repository where your project lives.
 3. In "Git Branch or Tag" - If your project exists in a different branch than Main, such as a PR branch, specify the branch or tag
 4. Under "Specify Source Subfolder" type the name of the subfolder of your Git repo where the code can be found.
 
@@ -81,8 +81,8 @@ Press the "Build & Deploy Tool" button.
 
 Once the build succeeds, Rossoctl automatically:
 1. Creates a Deployment and Service for the tool with the built image
-  - Rossoctl creates an HTTPRoute for gateway access if "Enable external access to the tool endpoint" is checked
-2. Redirects you to the Tool detail page
+2. Rossoctl creates an HTTPRoute for gateway access if "Enable external access to the tool endpoint" is checked
+3. Redirects you to the Tool detail page
 
 For image deployments, the Deployment and Service are created immediately.
 
