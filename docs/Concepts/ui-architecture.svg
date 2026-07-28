@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 360" font-family="Helvetica, Arial, sans-serif" role="img" aria-label="Rossoctl UI architecture: the Import Agent, Build (Source), and Deploy Agent actions all call the Kubernetes API Server.">
+  <title>Rossoctl UI Architecture</title>
+  <desc>The Rossoctl UI's Import Agent, Build (Source), and Deploy Agent actions all act through the Kubernetes API Server (Deployment, Service, Build, HTTPRoute).</desc>
+
+  <!-- Palette (shades of red)
+       outer border  #7f1d1d   header fill  #991b1b
+       action fill   #fee2e2   action border #ef4444
+       api fill      #fca5a5   api border   #b91c1c
+       arrows        #b91c1c   accent text  #7f1d1d -->
+
+  <defs>
+    <marker id="redArrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b91c1c"/>
+    </marker>
+  </defs>
+
+  <!-- Outer UI container -->
+  <rect x="10" y="10" width="540" height="340" rx="14" fill="#fff5f5" stroke="#7f1d1d" stroke-width="2.5"/>
+
+  <!-- Header -->
+  <rect x="10" y="10" width="540" height="46" rx="14" fill="#991b1b"/>
+  <rect x="10" y="34" width="540" height="22" fill="#991b1b"/>
+  <text x="280" y="40" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="bold">Rossoctl UI</text>
+
+  <!-- Action boxes -->
+  <g fill="#fee2e2" stroke="#ef4444" stroke-width="1.5">
+    <rect x="46" y="82" width="140" height="62" rx="8"/>
+    <rect x="210" y="82" width="140" height="62" rx="8"/>
+    <rect x="374" y="82" width="140" height="62" rx="8"/>
+  </g>
+  <g fill="#7f1d1d" font-size="15" text-anchor="middle">
+    <text x="116" y="108" font-weight="bold">Import</text>
+    <text x="116" y="128" font-weight="bold">Agent</text>
+    <text x="280" y="108" font-weight="bold">Build</text>
+    <text x="280" y="128" font-size="13">(Source)</text>
+    <text x="444" y="108" font-weight="bold">Deploy</text>
+    <text x="444" y="128" font-weight="bold">Agent</text>
+  </g>
+
+  <!-- Arrows down to the API server -->
+  <g stroke="#b91c1c" stroke-width="2" marker-end="url(#redArrow)">
+    <line x1="116" y1="146" x2="116" y2="212"/>
+    <line x1="280" y1="146" x2="280" y2="212"/>
+    <line x1="444" y1="146" x2="444" y2="212"/>
+  </g>
+
+  <!-- Kubernetes API Server -->
+  <rect x="46" y="220" width="468" height="86" rx="10" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/>
+  <text x="280" y="256" text-anchor="middle" fill="#7f1d1d" font-size="16" font-weight="bold">Kubernetes API Server</text>
+  <text x="280" y="282" text-anchor="middle" fill="#7f1d1d" font-size="13">(Deployment, Service, Build, HTTPRoute)</text>
+</svg>

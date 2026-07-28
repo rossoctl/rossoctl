@@ -1,5 +1,5 @@
 ---
-draft: true       # excluded from https://www.rossoctl.dev/
+description: Components of the Rossoctl platform.
 ---
 
 # Rossoctl Components
@@ -10,7 +10,6 @@ This document provides detailed information about each component of the Rossoctl
 
 - [Overview](#overview)
 - [Architecture Diagram](#architecture-diagram)
-- [Agent Lifecycle Operator](#agent-lifecycle-operator)
 - [MCP Gateway](#mcp-gateway)
 - [Plugins adapter](#plugins-adapter)
 - [Rossoctl UI](#rossoctl-ui)
@@ -38,26 +37,26 @@ Despite the extensive variety of frameworks available for developing agent-based
 
 Rossoctl addresses this gap by enhancing existing agent frameworks with production-ready infrastructure.
 
-For a detailed architecture diagram showing component interactions and data flow, see [Technical Details](./concepts/tech-details.md).
-
 ---
 
 ## Architecture Diagram
 
 All the Rossoctl components and their deployment namespaces
 
-```shell
+<!--
+The SVG is based on this ASCII art.  To edit the SVG, edit this art and ask a tool to regenerate SVG.
+```
 ┌───────────────────────────────────────────────────────────────────────┐
 │                           Kubernetes Cluster                          │
 ├───────────────────────────────────────────────────────────────────────┤
 │                                                                       │
 │  ┌─────────────────────────────────────────────────────────────────┐  │
-│  │                      rossoctl-system Namespace                   │  │
-│  │  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐ │  │
-│  │  │ Rossoctl UI │  │ Shipwright │  │  Ingress   │  │   Kiali    │ │  │
-│  │  │            │  │  (Builds)  │  │  Gateway   │  │            │ │  │
-│  │  │            │  │            │  │            │  │            │ │  │
-│  │  └────────────┘  └────────────┘  └────────────┘  └────────────┘ │  │
+│  │                      rossoctl-system Namespace                  │  │
+│  │  ┌─────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐│  │
+│  │  │ Rossoctl UI │  │ Shipwright │  │  Ingress   │  │   Kiali    ││  │
+│  │  │             │  │  (Builds)  │  │  Gateway   │  │            ││  │
+│  │  │             │  │            │  │            │  │            ││  │
+│  │  └─────────────┘  └────────────┘  └────────────┘  └────────────┘│  │
 │  └─────────────────────────────────────────────────────────────────┘  │
 │                                                                       │
 │  ┌──────────────────────────────────────────────────────────────────┐ │
@@ -85,6 +84,10 @@ All the Rossoctl components and their deployment namespaces
 │                                                                       │
 └───────────────────────────────────────────────────────────────────────┘
 ```
+
+-->
+
+![Rossoctl architecture: components and their deployment namespaces within a Kubernetes cluster](./architecture.svg)
 
 ---
 
@@ -221,11 +224,13 @@ spec:
     image: registry.cr-system.svc.cluster.local:5000/weather-service:v0.0.1
 ```
 
-### Architecture
+### UI Architecture
 
+<!--
+The SVG is based on this ASCII art.  To edit the SVG, edit this art and ask a tool to regenerate SVG.
 ```
 ┌─────────────────────────────────────────────────────┐
-│                    Rossoctl UI                       │
+│                    Rossoctl UI                      │
 ├─────────────────────────────────────────────────────┤
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │
 │  │   Import    │  │   Build     │  │   Deploy    │  │
@@ -239,6 +244,10 @@ spec:
 │  └─────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────┘
 ```
+
+-->
+
+![Rossoctl UI architecture: Import Agent, Build (Source), and Deploy Agent actions acting through the Kubernetes API Server](./ui-architecture.svg)
 
 ### Label Standards
 
@@ -315,7 +324,7 @@ spec:
     name: weather-tool-route
 ```
 
-For detailed gateway configuration, see [MCP Gateway Instructions](./gateway.md).
+For detailed gateway configuration, see [MCP Gateway Instructions](https://github.com/Kuadrant/mcp-gateway).
 
 ### MCP Tool Builds with Shipwright
 
@@ -397,7 +406,7 @@ spec:
     name: weather-tool
 ```
 
-For detailed tool deployment instructions, see [Importing a New Tool](./new-tool.md).
+For detailed tool deployment instructions, see [Importing a New Tool](../getting-started/new-tool.md).
 
 ---
 
@@ -478,7 +487,7 @@ Rossoctl provides a unified framework for identity and authorization in agentic 
 
 | Component | Purpose | Repository |
 |-----------|---------|------------|
-| **[AuthProxy](https://github.com/rossoctl/cortex/tree/main/authbridge)** | Inbound JWT validation (JWKS) and outbound token exchange | `AuthBridge/AuthProxy` |
+| **[AuthProxy (Cortex)](https://github.com/rossoctl/cortex/tree/main/authbridge)** | Inbound JWT validation (JWKS) and outbound token exchange | `AuthBridge/AuthProxy` |
 | **[SPIRE](https://spiffe.io/docs/latest/spire-about/)** | Workload identity and attestation | External |
 | **[Keycloak](https://www.keycloak.org/)** | Identity provider and access management | External |
 
@@ -492,16 +501,18 @@ Keycloak client registration is handled by the rossoctl-operator's ClientRegistr
 - Creates a secret in the agent namespace containing client credentials
 - Eliminates the need for admin credentials in agent namespaces
 
-### AuthProxy
+### Cortex
 
 An Envoy-based sidecar that handles both **inbound JWT validation** and **outbound token exchange**, using an external processor (ext-proc) for token operations:
 
+<!--
+The SVG is based on this ASCII art.  To edit the SVG, edit this art and ask a tool to regenerate SVG.
 ```
                  Incoming request
                        │
                        ▼
 ┌────────────────────────────────────────────────────────────────────┐
-│                          WORKLOAD POD                               │
+│                          WORKLOAD POD                              │
 │  ┌─────────────────────────────────────────────────────────────┐   │
 │  │                   AuthProxy Sidecar (Envoy + Ext Proc)      │   │
 │  │                                                             │   │
@@ -510,9 +521,9 @@ An Envoy-based sidecar that handles both **inbound JWT validation** and **outbou
 │  │  OUTBOUND: Exchange token for target audience via Keycloak  │   │
 │  │            (RFC 8693). HTTPS traffic passes through as-is.  │   │
 │  └─────────────────────────────────────────────────────────────┘   │
-│                          │              │                           │
-│                    ┌─────┘              └─────┐                     │
-│                    ▼                          ▼                     │
+│                          │              │                          │
+│                    ┌─────┘              └─────┐                    │
+│                    ▼                          ▼                    │
 │           ┌──────────────┐           ┌──────────────┐              │
 │           │  Application │           │   Keycloak   │              │
 │           └──────────────┘           └──────────────┘              │
@@ -524,6 +535,10 @@ An Envoy-based sidecar that handles both **inbound JWT validation** and **outbou
                          │  (aud: auth-target) │
                          └─────────────────────┘
 ```
+
+-->
+
+![Cortex AuthProxy sidecar: inbound JWT validation and outbound token exchange within the workload pod, forwarding to the target service](./cortex-authproxy.svg)
 
 **Key Features:**
 
@@ -559,6 +574,8 @@ An Envoy-based sidecar that handles both **inbound JWT validation** and **outbou
 
 The Agent and Tool Authorization Pattern replaces static credentials with dynamic SPIRE-managed identities, enforcing least privilege and continuous authentication:
 
+<!--
+The SVG is based on this ASCII art.  To edit the SVG, edit this art and ask a tool to regenerate SVG.
 ```
 ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
 │   User   │────▶│ Keycloak │────▶│  Agent   │────▶│   Tool   │
@@ -570,6 +587,10 @@ The Agent and Tool Authorization Pattern replaces static credentials with dynami
                  │    (Issues short-lived identities)      │
                  └─────────────────────────────────────────┘
 ```
+
+-->
+
+![Authorization pattern: User to Keycloak to Agent to Tool, each backed by short-lived identities from the SPIRE Server](./authorization-pattern.svg)
 
 1. **User authenticates** with Keycloak, receives access token
 2. **Agent receives** user context via delegated token
@@ -626,6 +647,7 @@ The Ingress Gateway routes external HTTP requests to internal services using the
 
 LLM observability and tracing for agent interactions. Phoenix is **disabled by default** and can be enabled via `components.phoenix.enabled: true` in both the `rossoctl-deps` and `rossoctl` charts. Requires `components.otel.enabled: true`.
 
+<!--
 ### Skillberry Store (Skill Registry) -- Optional
 
 In-cluster [skillberry-store](https://github.com/skillberry-ai/skillberry-store) skill registry. **Disabled by default**; enabled via `components.skillberryStore.enabled: true` in the `rossoctl` chart (the Kind setup script's `--with-skills` flag sets it automatically). When enabled, the store runs as a single-replica Deployment (REST API on `8000`, web UI on `8002`, filesystem storage on a PVC at `/data`) and the chart seeds the `rossoctl-skill-autosync-config` ConfigMap so the backend autosync loop polls it — no external registry or `--skill-registry-allowed-hosts` allow-listing required. Behavior is additionally gated by `featureFlags.externalSkills`. The store UI is exposed via an HTTPRoute at `http://skillberry-store.<domain>:8080`, and the Rossoctl UI's "Manage in Skillberry Store" links point there (the ConfigMap also carries a `store-ui-url` the backend surfaces, since the in-cluster `registry-url` is server-side only and not browser-reachable).
@@ -633,6 +655,7 @@ In-cluster [skillberry-store](https://github.com/skillberry-ai/skillberry-store)
 Because the store serves its UI with the Vite dev server (which rejects unknown `Host` headers), the chart sets `VITE_ALLOWED_HOSTS` on the store pod to the gateway host (derived from `skillberryStore.allowedHosts`, defaulting to `skillberry-store.<domain>`) so the gateway URL works. This requires a store image with `VITE_ALLOWED_HOSTS` support (≥ 0.2.0).
 
 The image defaults to `ghcr.io/skillberry-ai/skillberry-store:0.2.0` and is overridable via `skillberryStore.image.tag` / `skillberryStore.image.repository` (Helm) or the `SKILLBERRY_STORE_TAG` / `SKILLBERRY_STORE_IMAGE` env vars (Kind setup script). Additional store environment variables can be injected via `skillberryStore.extraEnv` (a list of standard `core/v1` `EnvVar` entries, so both literal `value` and `valueFrom` secret/configMap references are supported); these are appended after the chart-managed `SBS_*` / `ENABLE_UI` variables. See [docs/skills.md](skills.md) for usage.
+-->
 
 ---
 
@@ -697,10 +720,8 @@ POST /mcp    # MCP JSON-RPC messages
 
 ## Related Documentation
 
-- [Installation Guide](./install.md)
-- [Demo Documentation](./demos/README.md)
-- [Technical Details](./concepts/tech-details.md)
+- [Installation Guide](../getting-started/install.md)
 - [Identity, Security, and Auth Bridge](./identity-guide.md)
-- [MCP Gateway Instructions](./gateway.md)
-- [New Agent Guide](./new-agent.md)
-- [New Tool Guide](./new-tool.md)
+- [MCP Gateway Instructions](https://github.com/Kuadrant/mcp-gateway)
+- [New Agent Guide](../getting-started/new-agent.md)
+- [New Tool Guide](../getting-started/new-tool.md)

@@ -1,5 +1,7 @@
 ---
+draft: true       # excluded from https://www.rossoctl.dev/
 description: File Organizer (with Cloud Storage Tool)
+sidebar_label: Run the File Organizer agent
 ---
 
 # File Organizer Agent

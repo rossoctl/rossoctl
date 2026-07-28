@@ -1,8 +1,8 @@
 /* Rossoctl App Demo — design tokens derived from rossoctl/ui-v2 */
 
 :root {
-  --rossoctl-primary: #0066cc;
-  --rossoctl-primary-dark: #004080;
+  --rossoctl-primary: #cc0000;
+  --rossoctl-primary-dark: #990000;
   --rossoctl-masthead-bg: #151515;
   --rossoctl-sidebar-bg: #212427;
   --rossoctl-status-ready: #3e8635;

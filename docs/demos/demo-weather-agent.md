@@ -1,35 +1,74 @@
 ---
-draft: true       # excluded from https://www.rossoctl.dev/
+description: Use an LLM and tool to discuss the weather.
+sidebar_label: Run the Weather Agent
 ---
 
 # Weather Agent Demo
 
-> **This demo has moved.** The Weather Agent demo is now maintained in
-> [cortex](https://github.com/rossoctl/cortex) with
-> AuthBridge integration for zero-trust security.
+This document provides detailed steps for running the **Weather Agent** proof-of-concept (PoC) demo.
 
-## New Location
+In this demo, we will use the Rossoctl UI to import and deploy both the **Weather Service Agent** and the **Weather Tool**.
+During deployment, we'll configure the **A2A protocol** for managing agent calls and **MCP** for enabling communication between the agent and the image tool.
 
-**[Weather Agent Demo with AuthBridge](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/weather-agent/demo-ui.md)**
-— Deploy the Weather Agent via the Rossoctl UI with automatic SPIFFE identity
-registration and inbound JWT validation.
+Once deployed, we will query the agent using a natural language prompt. The agent will then invoke the tool and return the image data as a response.
 
-This is the recommended **getting-started** demo for new users.
+This demo illustrates how Rossoctl manages the lifecycle of all required components: agents, tools, protocols, and runtime infrastructure.
 
-## Why It Moved
+Here's a breakdown of the sections:
+- In [**Import New Agent**](#import-new-agent), you'll build and deploy the [`weather_service`](https://github.com/rossoctl/examples/tree/main/a2a/weather_service) agent.
+- In [**Import New Tool**](#import-new-tool), you'll build and deploy the [`weather_tool`](https://github.com/rossoctl/examples/tree/main/mcp/weather_tool) tool.
+- In [**Chat with the Weather Agent**](#chat-with-the-weather-agent), you'll interact with the agent and confirm it responds correctly with current weather information.
 
-The original demo in this file used an older version of the Rossoctl UI and did
-not include AuthBridge security features. The new demo in `cortex`:
+> **Prerequisites:**
+> Ensure you've completed the Rossoctl platform setup as described in the [Installation](../getting-started/install.md) section.
 
-- Uses the **current Rossoctl UI** (Import Agent / Import Tool workflow)
-- Adds **AuthBridge inbound JWT validation** — requests are validated before
-  reaching the agent
-- Adds **automatic identity registration** — the agent registers with Keycloak
-  using its SPIFFE ID, with no hardcoded secrets
-- Includes **CLI testing steps** for verifying the security flow
-- Includes **troubleshooting** and **cleanup** sections
+---
 
-## All Available Demos
+## Import New Agent
 
-See the [AuthBridge Demos Index](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/README.md)
-for a complete list of demos with a recommended learning path.
+To deploy the Image Agent:
+
+1. Navigate to [Import New Agent](http://rossoctl-ui.localtest.me:8080/Import_New_Agent#import-new-agent) in the Rossoctl UI.
+2. Under **Select Agent**, choose `Weather Service Agent`
+3. Expand **Environment Variables**
+  - Choose `Import from File/URL
+  - Edit the URL to read `https://raw.githubusercontent.com/rossoctl/examples/refs/heads/main/a2a/weather_service/.env.ollama`
+    - If using OpenAI LLMs, skip this step
+  - Click `Fetch and Parse`
+  - Click `Import`
+4. Click **Build & Deploy Agent** to deploy.
+
+**Note:** The `ollama` environmental variable set specifies `gpt-4o-mini-2024-07-18` as the default model. To download the model, run `ollama pull gpt-4o-mini-2024-07-18`. Please ensure an Ollama server is running in a separate terminal via `ollama serve`.
+
+---
+
+## Import New Tool
+
+To deploy the Image Tool using Shipwright:
+
+1. Navigate to [Import New Tool](http://rossoctl-ui.localtest.me:8080/Import_New_Tool#import-new-tool) in the UI.
+2. Under **Select Tool*, choose `Weather Tool`
+3. Click **Build & Deploy Tool** to deploy.
+
+You will be redirected to a **Build Progress** page where you can monitor the Shipwright build. Once the build succeeds, the Deployment and Service for the tool will be created automatically.
+
+---
+
+## Chat with the Weather Agent
+
+Once the deployment is complete, you can run the demo:
+
+1. Select the **Chat** tab.
+2. Scroll to the bottom of the page. In the input field labeled *Type your message...*, enter:
+
+   ```console
+   What is the weather in New York?
+   ```
+
+
+If you encounter any errors, check the [Troubleshooting section](../users-guides/troubleshooting.md).
+
+## Cleanup
+
+- Select `Delete Agent`, and delete the weather agent.
+- Select `Delete Tool`, and delete the weather tool.

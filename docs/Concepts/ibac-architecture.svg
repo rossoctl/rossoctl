@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 720" font-family="Helvetica, Arial, sans-serif" role="img" aria-label="IBAC plugin architecture: a user intent enters the agent pod's inbound reverse proxy, flows through the agent application, then the outbound forward proxy runs the IBAC plugin which consults a Judge LLM to allow, deny, or return 503.">
+  <title>IBAC Plugin Architecture</title>
+  <desc>A user (via UI / A2A endpoint) with intent "summarize my emails" sends an A2A message/send into the agent pod. The inbound reverse proxy runs jwt-validation then a2a-parser (which populates Session.Intents). The request reaches the agent application (tool-calling LLM), which makes outbound HTTP through the forward proxy: token-exchange, mcp-parser, then ibac. IBAC.OnRequest reads Session.LastIntent, bypasses checks, describes the action, and calls judge.Evaluate(intent, action) against a Judge LLM (OpenAI-compatible; ollama / OpenAI / vLLM), then allows, denies, or returns 503.</desc>
+
+  <!-- Palette (shades of red)
+       pod border  #7f1d1d   proxy title #991b1b
+       box fill    #fee2e2   box border #ef4444
+       plugin fill #991b1b (dark)   judge fill #fca5a5  judge border #b91c1c
+       arrows      #b91c1c   accent text #7f1d1d -->
+
+  <defs>
+    <marker id="redArrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b91c1c"/>
+    </marker>
+  </defs>
+
+  <!-- User -->
+  <rect x="40" y="24" width="220" height="86" rx="10" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="150" y="48" text-anchor="middle" fill="#7f1d1d" font-size="14" font-weight="bold">User (via UI / A2A endpoint)</text>
+  <text x="150" y="72" text-anchor="middle" fill="#7f1d1d" font-size="12" font-style="italic">intent: "summarize</text>
+  <text x="150" y="90" text-anchor="middle" fill="#7f1d1d" font-size="12" font-style="italic">my emails"</text>
+
+  <!-- A2A arrow -->
+  <line x1="150" y1="110" x2="150" y2="150" stroke="#b91c1c" stroke-width="2" marker-end="url(#redArrow)"/>
+  <text x="160" y="135" fill="#7f1d1d" font-size="11">A2A message/send</text>
+
+  <!-- Agent pod -->
+  <rect x="24" y="158" width="812" height="500" rx="14" fill="#fff5f5" stroke="#7f1d1d" stroke-width="2.5"/>
+  <text x="430" y="184" text-anchor="middle" fill="#7f1d1d" font-size="15" font-weight="bold">Agent pod</text>
+
+  <!-- Inbound reverse proxy -->
+  <rect x="60" y="200" width="740" height="64" rx="8" fill="#ffffff" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="80" y="222" fill="#991b1b" font-size="13" font-weight="bold">reverse proxy (inbound)</text>
+  <text x="430" y="244" text-anchor="middle" fill="#7f1d1d" font-size="13">jwt-validation  →  a2a-parser  →  …</text>
+  <text x="430" y="260" text-anchor="middle" fill="#7f1d1d" font-size="11" font-style="italic">(a2a-parser populates Session.Intents)</text>
+
+  <!-- arrow to agent app -->
+  <line x1="430" y1="264" x2="430" y2="288" stroke="#b91c1c" stroke-width="2" marker-end="url(#redArrow)"/>
+
+  <!-- Agent application -->
+  <rect x="290" y="296" width="280" height="56" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="430" y="320" text-anchor="middle" fill="#7f1d1d" font-size="14" font-weight="bold">Agent application</text>
+  <text x="430" y="340" text-anchor="middle" fill="#7f1d1d" font-size="11">(tool-calling LLM)</text>
+
+  <!-- outbound arrow -->
+  <line x1="430" y1="352" x2="430" y2="380" stroke="#b91c1c" stroke-width="2" marker-end="url(#redArrow)"/>
+  <text x="440" y="371" fill="#7f1d1d" font-size="11">outbound HTTP</text>
+
+  <!-- Forward proxy (outbound) -->
+  <rect x="60" y="388" width="740" height="252" rx="8" fill="#ffffff" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="80" y="410" fill="#991b1b" font-size="13" font-weight="bold">forward proxy (outbound)</text>
+  <text x="430" y="432" text-anchor="middle" fill="#7f1d1d" font-size="13">token-exchange  →  mcp-parser  →  ibac  →  …</text>
+
+  <!-- IBAC plugin (dark) -->
+  <rect x="120" y="448" width="360" height="176" rx="8" fill="#991b1b"/>
+  <text x="300" y="472" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="bold">IBAC.OnRequest</text>
+  <g fill="#ffe4e6" font-size="12">
+    <text x="140" y="498">1. read Session.LastIntent()</text>
+    <text x="140" y="520">2. bypass checks</text>
+    <text x="140" y="542">3. describe action</text>
+    <text x="140" y="564">4. judge.Evaluate(intent, action)</text>
+    <text x="140" y="586">5. allow / deny / 503</text>
+  </g>
+
+  <!-- arrow to Judge LLM -->
+  <line x1="480" y1="558" x2="600" y2="558" stroke="#b91c1c" stroke-width="2" marker-end="url(#redArrow)"/>
+
+  <!-- Judge LLM -->
+  <rect x="608" y="516" width="180" height="92" rx="10" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/>
+  <text x="698" y="544" text-anchor="middle" fill="#7f1d1d" font-size="14" font-weight="bold">Judge LLM</text>
+  <text x="698" y="564" text-anchor="middle" fill="#7f1d1d" font-size="10">(OpenAI-compat;</text>
+  <text x="698" y="578" text-anchor="middle" fill="#7f1d1d" font-size="10">ollama / OpenAI</text>
+  <text x="698" y="592" text-anchor="middle" fill="#7f1d1d" font-size="10">/ vLLM / etc)</text>
+</svg>

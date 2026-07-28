@@ -1,5 +1,6 @@
 ---
-draft: true       # excluded from https://www.rossoctl.dev/
+description: How to deploy your code onto Rossoctl.
+sidebar_label: Import a New Tool
 ---
 
 # Importing a New MCP Tool into the Platform
@@ -7,8 +8,6 @@ draft: true       # excluded from https://www.rossoctl.dev/
 ## Overview
 
 MCP (Model Context Protocol) tools extend the capabilities of AI agents by providing access to external services, APIs, and resources. Rossoctl allows you to deploy MCP tools either from source code or from pre-existing container images.
-
-> **💡 New to Rossoctl?** This guide is designed for **Tool Developers**. If you're unsure about your role or want to understand the broader ecosystem, check out our **[Personas and Roles Documentation](../PERSONAS_AND_ROLES.md)**.
 
 ## Pre-requisites
 
@@ -265,11 +264,10 @@ Register your tool(s) with the MCP Gateway and configure the agent to use the ga
 MCP_URL=http://mcp-gateway-istio.gateway-system.svc.cluster.local:8080/mcp
 ```
 
-This approach allows agents to access multiple tools through a single endpoint, eliminating the need for namespace qualification or the `MCP_URLS` variable. For details on registering tools with the gateway, see the [MCP Gateway documentation](./gateway.md).
+This approach allows agents to access multiple tools through a single endpoint, eliminating the need for namespace qualification or the `MCP_URLS` variable. For details on registering tools with the gateway, see the [MCP Gateway documentation](https://github.com/Kuadrant/mcp-gateway).
 
 ## Related Documentation
 
 - [Importing a New Agent](./new-agent.md)
-- [MCP Gateway Instructions](./gateway.md)
-- [Components Overview](./components.md)
+- [Components Overview](../concepts/components.md)
 - [Demo: Weather Agent and Tool](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/weather-agent/demo-ui.md)

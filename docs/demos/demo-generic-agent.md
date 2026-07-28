@@ -1,5 +1,7 @@
 ---
+draft: true       # excluded from https://www.rossoctl.dev/
 description: Agent with Movie Tool and Flight Tool.
+sidebar_label: Run a generic agent
 ---
 
 # Generic Agent

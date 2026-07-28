@@ -315,7 +315,7 @@ async with httpx.AsyncClient() as client:
 
 Before configuring skills, ensure you have:
 
-1. A running Rossoctl installation (see [Installation Guide](./install.md))
+1. A running Rossoctl installation (see [Installation Guide](../getting-started/install.md))
 2. Access to the Rossoctl UI
 3. Appropriate permissions to manage skills (ROLE_OPERATOR for create/delete, ROLE_VIEWER for read)
 
@@ -337,6 +337,6 @@ Before configuring skills, ensure you have:
 
 For additional support:
 
-- Check the [Troubleshooting Guide](./troubleshooting.md)
+- Check the [Troubleshooting Guide](../users-guides/troubleshooting.md)
 - Review [Component Details](./components.md)
 - See the backend implementation: `rossoctl/backend/app/routers/skills.py`

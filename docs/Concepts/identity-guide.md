@@ -1,8 +1,11 @@
 ---
+sidebar_label: Cortex
 description: Introduction to Zero-Trust.
 ---
 
-# Identity, Authentication, & Authorization
+# Cortex
+
+**_Identity, Authentication, & Authorization_**
 
 This comprehensive guide covers all aspects of identity, authentication, and authorization in the Rossoctl platform. Rossoctl implements a **Zero-Trust Architecture** that combines SPIFFE/SPIRE workload identity, OAuth2 token exchange, and Keycloak identity management to provide secure, scalable, and dynamic authentication for cloud-native AI agents.
 
@@ -18,7 +21,6 @@ In practice, the Authorization Pattern within the Agentic Platform enables:
 - **[AuthBridge Component](https://github.com/rossoctl/cortex/tree/main/authbridge)** - Complete end-to-end installation and demo with SPIFFE, Client Registration, and AuthProxy
 - **[Token Exchange Deep Dive](https://github.com/rossoctl/rossoctl/blob/main/rossoctl/examples/identity/token_exchange.md)** - Detailed OAuth2 token exchange flows
 - **[Client Registration Examples](https://github.com/rossoctl/rossoctl/blob/main/rossoctl/examples/identity/keycloak_token_exchange/README.md)** - Practical integration examples
-- **[Personas and Roles](../users-guides/PERSONAS_AND_ROLES.md#23-security-and-identity-specialist)** - Security and identity specialist persona
 
 ---
 

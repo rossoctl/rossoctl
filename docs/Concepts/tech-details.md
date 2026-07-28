@@ -1,4 +1,5 @@
 ---
+draft: true       # excluded from https://www.rossoctl.dev/
 description: Technical details of the platform.
 sidebar_label: Cloud Native platform components
 ---

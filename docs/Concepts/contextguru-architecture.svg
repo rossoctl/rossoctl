@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 560" font-family="Helvetica, Arial, sans-serif" role="img" aria-label="context-guru architecture: within one Kubernetes pod, the finance-agent routes outbound LLM calls through AuthBridge's forward proxy, whose outbound pipeline runs inference-parser then the context-guru plugin to compact tool context before the request leaves the pod to Ollama.">
+  <title>context-guru Architecture</title>
+  <desc>One Kubernetes pod (cg-finance-agent, namespace team1) holds two containers. The agent container runs finance-agent (A2A server, Ollama tool-calling) which makes MCP tool calls to finance-mcp (large audit logs) and sends outbound LLM calls via HTTP_PROXY=127.0.0.1:8081 to the authbridge-proxy container. There the forward proxy runs the OUTBOUND pipeline: inference-parser reads the body, then the context-guru plugin (dedup, extract:code, collapse) compacts the tool context and SetBody(compacted). The compacted request leaves the pod to Ollama (llama3.2, 12K-token window). Pipeline: inference-parser then context-guru, the single outbound WritesBody plugin, mutually exclusive with sparc.</desc>
+
+  <!-- Palette (shades of red)
+       pod border  #7f1d1d   container border #b91c1c  container title #991b1b
+       box fill    #fee2e2   box border #ef4444   plugin fill #991b1b (dark)
+       ollama fill #fca5a5   ollama border #b91c1c
+       arrows      #b91c1c   accent text #7f1d1d -->
+
+  <defs>
+    <marker id="redArrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b91c1c"/>
+    </marker>
+  </defs>
+
+  <!-- Pod -->
+  <rect x="16" y="30" width="828" height="404" rx="14" fill="#fff5f5" stroke="#7f1d1d" stroke-width="2.5"/>
+  <text x="430" y="22" text-anchor="middle" fill="#7f1d1d" font-size="14" font-weight="bold">one Kubernetes pod (cg-finance-agent, namespace team1)</text>
+
+  <!-- Agent container -->
+  <rect x="40" y="56" width="340" height="356" rx="10" fill="#ffffff" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="210" y="80" text-anchor="middle" fill="#991b1b" font-size="14" font-weight="bold">agent container</text>
+
+  <!-- finance-agent box -->
+  <rect x="66" y="98" width="196" height="86" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="164" y="122" text-anchor="middle" fill="#7f1d1d" font-size="14" font-weight="bold">finance-agent</text>
+  <text x="164" y="142" text-anchor="middle" fill="#7f1d1d" font-size="11">(A2A server,</text>
+  <text x="164" y="157" text-anchor="middle" fill="#7f1d1d" font-size="11">Ollama tool-calling)</text>
+
+  <!-- MCP down arrow -->
+  <line x1="120" y1="184" x2="120" y2="256" stroke="#b91c1c" stroke-width="2" marker-end="url(#redArrow)"/>
+  <text x="130" y="212" fill="#7f1d1d" font-size="10">MCP tool calls</text>
+  <text x="130" y="226" fill="#7f1d1d" font-size="10">(finance-mcp)</text>
+
+  <!-- finance-mcp box -->
+  <rect x="66" y="264" width="196" height="70" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="164" y="294" text-anchor="middle" fill="#7f1d1d" font-size="13" font-weight="bold">finance-mcp svc</text>
+  <text x="164" y="313" text-anchor="middle" fill="#7f1d1d" font-size="11">(large audit logs)</text>
+
+  <!-- HTTP_PROXY arrow to proxy container -->
+  <line x1="262" y1="140" x2="452" y2="140" stroke="#b91c1c" stroke-width="2" marker-end="url(#redArrow)"/>
+  <text x="357" y="126" text-anchor="middle" fill="#7f1d1d" font-size="10" font-weight="bold">HTTP_PROXY=127.0.0.1:8081</text>
+  <text x="357" y="156" text-anchor="middle" fill="#7f1d1d" font-size="10">POST /v1/chat/completions</text>
+
+  <!-- authbridge-proxy container -->
+  <rect x="456" y="56" width="364" height="356" rx="10" fill="#ffffff" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="638" y="80" text-anchor="middle" fill="#991b1b" font-size="14" font-weight="bold">authbridge-proxy container</text>
+
+  <!-- forward proxy label -->
+  <text x="480" y="112" fill="#7f1d1d" font-size="13" font-weight="bold">forward proxy :8081</text>
+  <text x="480" y="130" fill="#7f1d1d" font-size="11" font-style="italic">OUTBOUND pipeline</text>
+
+  <!-- inference-parser -->
+  <rect x="482" y="142" width="312" height="42" rx="7" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="638" y="168" text-anchor="middle" fill="#7f1d1d" font-size="13" font-weight="bold">inference-parser  <tspan font-weight="normal" font-size="11">(reads body)</tspan></text>
+
+  <!-- arrow down -->
+  <line x1="638" y1="184" x2="638" y2="200" stroke="#b91c1c" stroke-width="2" marker-end="url(#redArrow)"/>
+
+  <!-- context-guru plugin (dark) -->
+  <rect x="482" y="208" width="312" height="128" rx="7" fill="#991b1b"/>
+  <text x="638" y="232" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="bold">context-guru  (PLUGIN)</text>
+  <g fill="#ffe4e6" font-size="12">
+    <text x="504" y="258">├ dedup</text>
+    <text x="504" y="278">├ extract:code</text>
+    <text x="504" y="298">└ collapse</text>
+  </g>
+  <text x="690" y="278" text-anchor="middle" fill="#ffe4e6" font-size="11">compacts the</text>
+  <text x="690" y="293" text-anchor="middle" fill="#ffe4e6" font-size="11">tool context</text>
+  <text x="638" y="324" text-anchor="middle" fill="#ffffff" font-size="12" font-style="italic">SetBody(compacted)</text>
+
+  <!-- compacted request out to Ollama -->
+  <line x1="638" y1="412" x2="638" y2="470" stroke="#b91c1c" stroke-width="2.5" marker-end="url(#redArrow)"/>
+  <text x="650" y="452" fill="#7f1d1d" font-size="11" font-weight="bold">compacted request</text>
+
+  <!-- Ollama -->
+  <rect x="470" y="478" width="336" height="60" rx="10" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/>
+  <text x="638" y="514" text-anchor="middle" fill="#7f1d1d" font-size="14" font-weight="bold">Ollama  (llama3.2, 12K-token window)</text>
+</svg>

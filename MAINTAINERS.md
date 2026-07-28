@@ -20,6 +20,8 @@ The current Maintainers Group for the Rossoctl Project consists of:
 | [Ryan Jenkins](https://github.com/RyanJenkins99) | Red Hat | Automation, HyperShift CI |
 | [Varsha Prasad Narsing](https://github.com/varshaprasad96) | Red Hat | Agent Runtime |
 | [Kevin Cogan](https://github.com/kevincogan) | Red Hat | Agent Runtime |
+| [Ella Rabinovich](https://github.com/ellarabi) | IBM | Guardrails, Evaluation & Benchmarking |
+| [Abigail Goldsteen](https://github.com/abigailgold) | IBM | Data Security & Privacy, Guardrails |
 
 ## Contact
 

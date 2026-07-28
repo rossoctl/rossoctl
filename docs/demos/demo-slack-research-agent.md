@@ -1,6 +1,7 @@
 ---
+draft: true       # excluded from https://www.rossoctl.dev/
 description: Communicate with an MCP Slack tool.
-sidebar_label: Slack Research Agent
+sidebar_label: Run the Slack Research Agent
 ---
 
 # Authorized Slack Research Agent Demo
