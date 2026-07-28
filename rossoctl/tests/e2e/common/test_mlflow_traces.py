@@ -795,9 +795,9 @@ def traces_available(mlflow_configured):
         traces = wait_for_traces(
             check_fn=get_all_traces,
             min_count=1,
-            timeout_seconds=30,
-            poll_interval=2.0,
-            backoff_factor=1.5,
+            timeout_seconds=45,
+            poll_interval=3.0,
+            backoff_factor=1.3,
             description="traces in MLflow",
         )
         logger.info(f"Found {len(traces)} traces, proceeding with tests")
@@ -941,7 +941,9 @@ class TestWeatherAgentTracesInMLflow:
             "  4. MLflow is enabled in values.yaml (components.mlflow.enabled: true)"
         )
 
-    def test_weather_agent_traces_exist(self, mlflow_url: str, mlflow_configured: bool):
+    def test_weather_agent_traces_exist(
+        self, mlflow_url: str, mlflow_configured: bool, traces_available: list
+    ):
         """Verify weather agent traces are captured in MLflow.
 
         This test specifically looks for traces from the weather agent,
@@ -988,7 +990,9 @@ class TestWeatherAgentTracesInMLflow:
 
         print(f"\nSUCCESS: Found {len(weather_traces)} weather agent traces")
 
-    def test_weather_trace_has_spans(self, mlflow_url: str, mlflow_configured: bool):
+    def test_weather_trace_has_spans(
+        self, mlflow_url: str, mlflow_configured: bool, traces_available: list
+    ):
         """Verify weather agent traces have proper span structure.
 
         This test validates that weather agent traces contain meaningful span
@@ -1182,13 +1186,15 @@ class TestGenAITracesInMLflow:
             )
         return cls._cached_traces, cls._cached_genai_traces
 
-    def test_genai_traces_exist(self, mlflow_url: str, mlflow_configured: bool):
+    def test_genai_traces_exist(
+        self, mlflow_url: str, mlflow_configured: bool, traces_available: list
+    ):
         """Verify GenAI/LLM traces are captured in MLflow.
 
         This test looks for spans from LangChain/LangGraph instrumentation,
         which include LLM calls, chain executions, and tool invocations.
         """
-        all_traces, genai_traces = self._get_cached_traces()
+        all_traces, genai_traces = self._get_cached_traces(traces_available)
 
         print(f"\n{'=' * 60}")
         print("GenAI Traces in MLflow")
@@ -1219,7 +1225,9 @@ class TestGenAITracesInMLflow:
 
         print(f"\nSUCCESS: Found {len(genai_traces)} GenAI traces")
 
-    def test_trace_has_tree_structure(self, mlflow_url: str, mlflow_configured: bool):
+    def test_trace_has_tree_structure(
+        self, mlflow_url: str, mlflow_configured: bool, traces_available: list
+    ):
         """Verify traces have proper parent-child hierarchy.
 
         GenAI traces should have a tree structure where:
@@ -1227,7 +1235,7 @@ class TestGenAITracesInMLflow:
         - Child spans represent LLM calls, tool executions, etc.
         - The tree should have depth > 1 for non-trivial requests
         """
-        all_traces, genai_traces = self._get_cached_traces()
+        all_traces, genai_traces = self._get_cached_traces(traces_available)
         if not all_traces:
             pytest.fail(
                 "No traces available to check structure. "
@@ -1295,7 +1303,7 @@ class TestGenAITracesInMLflow:
         print(f"\nSUCCESS: Trace has tree structure with depth {tree['depth']}")
 
     def test_genai_spans_nested_under_a2a(
-        self, mlflow_url: str, mlflow_configured: bool
+        self, mlflow_url: str, mlflow_configured: bool, traces_available: list
     ):
         """Verify GenAI spans are nested under A2A request spans.
 
@@ -1304,7 +1312,7 @@ class TestGenAITracesInMLflow:
         - LangGraph/LangChain execution as child spans
         - LLM calls nested under the chain/agent spans
         """
-        all_traces, genai_traces = self._get_cached_traces()
+        all_traces, genai_traces = self._get_cached_traces(traces_available)
 
         if not genai_traces:
             pytest.skip("No GenAI traces available")
