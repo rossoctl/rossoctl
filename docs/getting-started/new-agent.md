@@ -96,7 +96,7 @@ When Rossoctl imports this `.env` entry it will add an env var to the generated 
 #### Deploy from source code
 
 1. Select "Build from source" as the deployment method
-2. In "Agent Source Repository URL", enter the root of your GitHub repository where your agent project lives.
+2. In "Git Repository URL", enter the root of your GitHub repository where your agent project lives.
 3. In "Git Branch or Tag" - If your agent project exists in a different branch than Main, such as a PR branch, specify the branch or tag
 4. Under "Specify Source Subfolder" type the name of the subfolder of your Git repo where the agent code can be found.
 
@@ -113,7 +113,7 @@ Rossoctl uses [Shipwright](https://shipwright.io) to build container images. The
 | Internal (Kind cluster) | `buildah-insecure-push` | For registries without TLS |
 | External (quay.io, ghcr.io, docker.io) | `buildah` | For registries with TLS |
 
-You can override the strategy in the "Build Configuration" section if needed.
+You can override the strategy in the "Build Configuration" section.
 
 ### Advanced Build Options
 

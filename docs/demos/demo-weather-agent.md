@@ -38,7 +38,7 @@ To deploy the Image Agent:
   - Click `Import`
 4. Click **Build & Deploy Agent** to deploy.
 
-**Note:** The `ollama` environmental variable set specifies `gpt-4o-mini-2024-07-18` as the default model. To download the model, run `ollama pull gpt-4o-mini-2024-07-18`. Please ensure an Ollama server is running in a separate terminal via `ollama serve`.
+**Note:** The `ollama` environmental variable set specifies `gpt-oss:latest` as the default model. To download the model, run `ollama pull gpt-oss:latest`. Please ensure an Ollama server is running in a separate terminal via `ollama serve`.
 
 ---
 
