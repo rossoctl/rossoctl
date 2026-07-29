@@ -13,7 +13,7 @@ This document provides detailed information about each component of the Rossoctl
 - [MCP Gateway](#mcp-gateway)
 - [Plugins adapter](#plugins-adapter)
 - [Rossoctl UI](#rossoctl-ui)
-- [Identity & Auth Bridge](#identity--auth-bridge)
+- [Cortex](#cortex)
 - [Infrastructure Services](#infrastructure-services)
 - [Supported Agent Frameworks](#supported-agent-frameworks)
 - [Communication Protocols](#communication-protocols)
@@ -184,8 +184,8 @@ spec:
 
 ```yaml
 # AgentRuntime - Enrolls the workload with the rossoctl-operator.
-# The operator applies the rossoctl.io/type label and triggers
-# AuthBridge sidecar injection automatically.
+# The operator applies the rossoctl.io/type label and enrolls the
+# workload with Cortex automatically.
 apiVersion: agent.rossoctl.dev/v1alpha1
 kind: AgentRuntime
 metadata:
@@ -475,100 +475,46 @@ kubectl get route rossoctl-ui -n rossoctl-system -o jsonpath='{.status.ingress[0
 
 ---
 
-## Identity & Auth Bridge
+## Cortex
 
-**Repository**: [rossoctl/cortex/AuthBridge](https://github.com/rossoctl/cortex/tree/main/authbridge)
+**Repository**: [rossoctl/cortex](https://github.com/rossoctl/cortex)
 
-Rossoctl provides a unified framework for identity and authorization in agentic systems, replacing static credentials with dynamic, short-lived tokens. We call this collection of assets **Auth Bridge**.
+Cortex is the security layer of Rossoctl for agentic systems. It gives every agent and tool a trusted identity and enforces authentication, secure delegation, access control, and safe behavior at each hop, replacing static credentials with dynamic, short-lived, audience-scoped tokens.
 
-**Auth Bridge** solves a critical challenge in microservices and agentic architectures: **how can workloads authenticate and communicate securely without pre-provisioned static credentials?**
+This solves a critical challenge in microservices and agentic architectures: **how can workloads authenticate and communicate securely without pre-provisioned static credentials, while ensuring each action stays within what the user actually intended?**
 
-### Auth Bridge Components
+### What Cortex provides
 
-| Component | Purpose | Repository |
-|-----------|---------|------------|
-| **[AuthProxy (Cortex)](https://github.com/rossoctl/cortex/tree/main/authbridge)** | Inbound JWT validation (JWKS) and outbound token exchange | `AuthBridge/AuthProxy` |
-| **[SPIRE](https://spiffe.io/docs/latest/spire-about/)** | Workload identity and attestation | External |
-| **[Keycloak](https://www.keycloak.org/)** | Identity provider and access management | External |
+| Capability | Description |
+|------------|-------------|
+| **Trusted Identity** | Cryptographic workload identities issued by SPIFFE/SPIRE, backed by attestation |
+| **Authentication** | Validation of inbound tokens — signature, issuer, and audience |
+| **Secure Delegation** | OAuth 2.0 Token Exchange ([RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693)) with per-target audience scoping |
+| **Client Registration** | Automated Keycloak client provisioning for each workload, keyed by its SPIFFE identity |
+| **Access Control** | Policy-driven allow/deny decisions on agent and tool actions |
+| **Guardrails** | Content and behavior safety enforcement around agent activity |
 
-### Keycloak Client Registration (Operator-Managed)
+### Technologies Cortex supports
 
-Keycloak client registration is handled by the rossoctl-operator's ClientRegistrationReconciler controller:
+Cortex delivers these capabilities through a set of security technologies, and that set grows over time. The concepts above stay constant regardless of which technology enforces them.
 
-- Reconciles AgentRuntime CRs to apply `rossoctl.io/type` labels to target workloads and trigger sidecar injection
-- Uses **SPIFFE ID** as client identifier (e.g., `spiffe://localtest.me/ns/team/sa/my-agent`)
-- Reads Keycloak admin credentials from the operator namespace (`rossoctl-system`)
-- Creates a secret in the agent namespace containing client credentials
-- Eliminates the need for admin credentials in agent namespaces
+| Technology | Role | Status |
+|------------|------|--------|
+| **[CPEX](https://github.com/contextforge-org/cpex)** | Policy orchestration and access control — composes PDP verdicts (Cedar, OPA) for agentic entities using a declarative policy language | Supported |
+| **[IBAC](./ibac-plugin.md)** | Intent-Based Access Control — denies outbound actions that do not match the user's most-recent declared intent | Supported |
+| **[SPARC](./sparc-plugin.md)** | Pre-tool reflection — catches hallucinated or ungrounded tool calls before they execute | Supported |
+| **Praxis** | — | Emerging |
 
-### Cortex
+### Foundation
 
-An Envoy-based sidecar that handles both **inbound JWT validation** and **outbound token exchange**, using an external processor (ext-proc) for token operations:
+Cortex builds on two foundational services:
 
-<!--
-The SVG is based on this ASCII art.  To edit the SVG, edit this art and ask a tool to regenerate SVG.
-```
-                 Incoming request
-                       │
-                       ▼
-┌────────────────────────────────────────────────────────────────────┐
-│                          WORKLOAD POD                              │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │                   AuthProxy Sidecar (Envoy + Ext Proc)      │   │
-│  │                                                             │   │
-│  │  INBOUND:  Validate JWT (signature, issuer, audience via    │   │
-│  │            JWKS). Return 401 if invalid.                    │   │
-│  │  OUTBOUND: Exchange token for target audience via Keycloak  │   │
-│  │            (RFC 8693). HTTPS traffic passes through as-is.  │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                          │              │                          │
-│                    ┌─────┘              └─────┐                    │
-│                    ▼                          ▼                    │
-│           ┌──────────────┐           ┌──────────────┐              │
-│           │  Application │           │   Keycloak   │              │
-│           └──────────────┘           └──────────────┘              │
-└────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-                         ┌─────────────────────┐
-                         │   TARGET SERVICE    │
-                         │  (aud: auth-target) │
-                         └─────────────────────┘
-```
+| Service | Role |
+|---------|------|
+| **[SPIRE](https://spiffe.io/docs/latest/spire-about/)** | Issues cryptographic workload identities (SVIDs) via node-level attestation. Identity format: `spiffe://<trust-domain>/ns/<namespace>/sa/<service-account>` |
+| **[Keycloak](https://www.keycloak.org/)** | Identity provider for user authentication, OAuth/OIDC flows, token exchange, and SSO across Rossoctl components |
 
--->
-
-![Cortex AuthProxy sidecar: inbound JWT validation and outbound token exchange within the workload pod, forwarding to the target service](./cortex-authproxy.svg)
-
-**Key Features:**
-
-- **Inbound JWT Validation** — Validates token signature, expiration, and issuer using JWKS keys fetched from Keycloak. Optionally validates the audience claim. Returns HTTP 401 for missing or invalid tokens.
-- **Outbound Token Exchange** — Performs [OAuth 2.0 Token Exchange (RFC 8693)](https://datatracker.ietf.org/doc/html/rfc8693) to replace the caller's token with one scoped to the target service audience
-- **Transparent to applications** — Traffic interception via iptables; no application code changes required
-- **Configuration** — Inbound validation is configured via `ISSUER` (required) and `EXPECTED_AUDIENCE` (optional) environment variables. Outbound exchange uses `TOKEN_URL`, `CLIENT_ID`, `CLIENT_SECRET` (provided by the operator via secret), and `TARGET_AUDIENCE`.
-
-### SPIRE (Workload Identity)
-
-[SPIRE](https://spiffe.io/docs/latest/spire-about/) provides cryptographic workload identities using the SPIFFE standard.
-
-| Component | Purpose |
-|-----------|---------|
-| **SPIRE Server** | Issues SVIDs (SPIFFE Verifiable Identity Documents) |
-| **SPIRE Agent** | Node-level agent that attests workloads |
-| **CSI Driver** | Mounts SVID certificates into pods |
-
-**Identity Format**: `spiffe://<trust-domain>/ns/<namespace>/sa/<service-account>`
-
-### Keycloak (Access Management)
-
-[Keycloak](https://www.keycloak.org/) manages user authentication and OAuth/OIDC flows.
-
-| Feature | Description |
-|---------|-------------|
-| **User Management** | Create and manage Rossoctl users |
-| **Client Registration** | OAuth clients for agents and UI (automated registration via rossoctl-operator's ClientRegistrationReconciler) |
-| **Token Exchange** | Exchange tokens between audiences ([RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693)) |
-| **SSO** | Single sign-on across Rossoctl components |
+Client registration with Keycloak is automated per workload, keyed by the workload's SPIFFE identity, so agent namespaces never need admin credentials. SPIRE identities can be inspected through the Tornjak UI (`http://spire-tornjak-ui.localtest.me:8080/`).
 
 ### Authorization Pattern
 
@@ -602,16 +548,9 @@ The SVG is based on this ASCII art.  To edit the SVG, edit this art and ask a to
 - **No Static Secrets** - Credentials are dynamically generated at pod startup
 - **Short-Lived Tokens** - JWT tokens expire and must be refreshed
 - **Audience Scoping** - Tokens are scoped to specific audiences, preventing reuse
-- **Transparent to Application** - Token exchange is handled by the sidecar
+- **Transparent to Application** - Token exchange happens outside application code; no changes required
 
-For detailed overview of Identity and Authorization Patterns, see the [Identity Guide](./identity-guide.md).
-
-### Tornjak (SPIRE Management UI)
-
-```bash
-# UI
-open http://spire-tornjak-ui.localtest.me:8080/
-```
+For a detailed overview of Identity and Authorization Patterns, see the [Identity Guide](./identity-guide.md).
 
 ---
 
@@ -721,7 +660,7 @@ POST /mcp    # MCP JSON-RPC messages
 ## Related Documentation
 
 - [Installation Guide](../getting-started/install.md)
-- [Identity, Security, and Auth Bridge](./identity-guide.md)
+- [Cortex Identity Guide](./identity-guide.md)
 - [MCP Gateway Instructions](https://github.com/Kuadrant/mcp-gateway)
 - [New Agent Guide](../getting-started/new-agent.md)
 - [New Tool Guide](../getting-started/new-tool.md)
