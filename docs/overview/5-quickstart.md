@@ -1,9 +1,17 @@
 ---
 title: Quickstart
-description: Install Rossoctl on a Kubernetes cluster
+description: Install Rossoctl on a Kubernetes cluster.
 ---
 
-## Prerequisites
+Rossoctl can be deployed as a managed Kubernetes-based control plane, or locally on a laptop for testing identity and authorization before deploying to the cloud.
+
+:::tip
+
+This document describes rossoctl's Kubernetes deployment.  Check back in August for the quickstart guide for local rossoctl without Kubernetes.
+
+:::
+
+## Prerequisites for local Kubernetes (Kind) install of Rossoctl
 
 For this Quickstart, we'll install on a laptop-hosted Kubernetes using `kind`.
 
@@ -14,7 +22,7 @@ For more install options, see the [Installation Guide](../getting-started/instal
 - (optional) [Ollama](https://ollama.com/download) for local LLM inference.
   - Alternatively, use OpenAI or a [cloud-hosted LLM](../getting-started/llms/cloud-models.md).
 
-## Install
+## Install Rossoctl on Kubernetes
 
 Clone the repository:
 

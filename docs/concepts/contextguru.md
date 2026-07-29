@@ -50,7 +50,6 @@ The SVG is based on this ASCII art.  To edit the SVG, edit this art and ask a to
 
 ![context-guru architecture: the finance-agent routes outbound LLM calls through AuthBridge's forward proxy, whose OUTBOUND pipeline runs inference-parser then the context-guru plugin to compact tool context before the request reaches Ollama](./contextguru-architecture.svg)
 
-The pipeline is `inference-parser → context-guru`. context-guru is the single
-outbound `WritesBody` plugin (mutually exclusive with `sparc`).
+## Try the Demo!
 
-See the [Cortex](https://github.com/rossoctl/cortex) repo for details and architecture.
+- [Context-guru demo](https://github.com/rossoctl/cortex/tree/main/authbridge/demos/context-guru)

@@ -1,16 +1,23 @@
 ---
+title: Install on Kubernetes
 description: Full Rossoctl installation guide.
-sidebar_label: Installation Guide
+sidebar_label: Install (Kubernetes)
 sidebar_position: 1
 ---
 
-# Rossoctl Installation Guide
+:::tip
+
+This document describes rossoctl's Kubernetes deployment.  Check back in August for a guide to local rossoctl without Kubernetes.
+
+:::
+
+## Kubernetes Rossoctl Installation Guide
 
 This guide covers installation on both local [Kind](https://kind.sigs.k8s.io) clusters and OpenShift environments.
 
 ## Table of Contents
 
-- [Prerequisites](#prerequisites)
+- [Kubernetes Prerequisites](#prerequisites)
   - [macOS Quick Start (New Machine)](#macos-quick-start-new-machine)
 - [Kind Installation (Local Development)](#kind-installation-local-development)
 - [OpenShift Installation](#openshift-installation)

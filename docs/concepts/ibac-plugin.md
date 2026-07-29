@@ -103,4 +103,8 @@ The SVG is based on this ASCII art.  To edit the SVG, edit this art and ask a to
 
 ![IBAC plugin architecture: a user intent enters the agent pod's inbound reverse proxy, flows through the agent application, then the outbound forward proxy runs the IBAC plugin which consults a Judge LLM to allow, deny, or return 503](./ibac-architecture.svg)
 
-See the [Cortex](https://github.com/rossoctl/cortex) repo for details and flows.
+---
+
+## Try the Demo!
+
+- [IBAC demo](https://github.com/rossoctl/cortex/tree/main/authbridge/demos/ibac)
