@@ -10,21 +10,6 @@ description: What can go wrong?
 
 Sometimes it can take a long time to pull container images. Try re-running the installer. Use `kubectl get deployments --all-namespaces` to identify failing deployments.
 
-Try re-running the installer. Use `kubectl get deployments --all-namespaces` to identify failing deployments.
-
-### Docker daemon issues when using Colima instead of Docker Desktop
-
-```shell
-export DOCKER_HOST="unix://$HOME/.colima/docker.sock"
-```
-
-### Blank UI page on macOS after installation
-On macOS, if **Privacy and Content Restrictions** are enabled (under  
-System Settings → Screen Time → Content & Privacy Restrictions),  
-then after the Rossoctl installation completes, opening the UI may display a blank loading page.
-
-To fix, disable these restrictions and restart the UI.
-
 ### Using Podman instead of Docker
 
 The install script expects `docker` to be in your runtime path.
@@ -66,6 +51,16 @@ A few problem fixes might include:
   kind delete cluster --name agent-platform
   ```
 
+### Blank UI page on macOS after installation
+
+On macOS, if **Privacy and Content Restrictions** are enabled (under System Settings → Screen Time → Content & Privacy Restrictions), then after the Rossoctl installation completes, opening the UI may display a blank loading page.
+
+To fix, disable these restrictions, then restart the UI deployment:
+
+```shell
+kubectl rollout restart -n rossoctl-system deployment rossoctl-ui
+```
+
 ## Issues deploying components
 
 ### Pull Image errors while deploying components
@@ -82,13 +77,18 @@ Error text:
 Check your [personal access token (classic)](https://github.com/settings/personal-access-tokens/).
 Make sure to grant scopes `all:repo`, `write:packages`, and `read:packages`.
 
-You may also get "ghcr.io: 403 Forbidden" errors installing Helm charts during Rossoctl installation.  You may have cached credentials that are no longer valid.  The fix is `docker logout ghcr.io`.
+You may also get "ghcr.io: 403 Forbidden" errors installing Helm charts during Rossoctl installation. You may have cached credentials that are no longer valid. Clear them and log back in with your token:
+
+```console
+docker logout ghcr.io
+docker login ghcr.io -u <your-github-username>
+```
 
 ## Issues during runtime
 
 ### Service stops responding through gateway
 
-It may happens with Keycloak or even the UI.
+It may happen with Keycloak or even the UI.
 
 Restart the following:
 
@@ -132,7 +132,7 @@ ERROR:    Exception in ASGI application
     | urllib3.exceptions.ProtocolError: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))
 ```
 
-Most likely the A2A protocol is failing because *ollama* service is not installed or running.
+If your agent or tool is configured to use a local [Ollama](https://ollama.com/) model, this is most likely because the *ollama* service is not installed or running. If you're not using Ollama, this points to a different backend connectivity issue — check your agent's model provider configuration and logs instead.
 
 Start *ollama* service in the terminal and keep it running:
 
@@ -142,9 +142,9 @@ ollama serve
 
 Then try the prompt again.
 
-### Keycloak stops working
+### Keycloak shows connection errors
 
-Keycloak stops working and logs show [connection errors](https://github.com/rossoctl/rossoctl/issues/115).
+Keycloak logs show [connection errors](https://github.com/rossoctl/rossoctl/issues/115) to Postgres, typically after the cluster has been running for an extended period (a day or more). The root cause isn't fully understood — see the linked issue for the investigation history.
 
 At this time there is no reliable sequence of bringing down and up again
 postgres and keycloak. The only reliable approach found so far is either to destroy and re-install
