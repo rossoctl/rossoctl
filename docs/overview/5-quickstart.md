@@ -7,7 +7,7 @@ Rossoctl can be deployed as a managed Kubernetes-based control plane, or locally
 
 :::tip
 
-This document describes rossoctl's Kubernetes deployment.  Check back in August for the quickstart guide for local rossoctl without Kubernetes.
+This document describes rossoctl's Kubernetes deployment. Check back in August for the quickstart guide for local rossoctl without Kubernetes.
 
 :::
 
