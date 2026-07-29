@@ -8,9 +8,9 @@ sidebar_label: Run the Weather Agent
 This document provides detailed steps for running the **Weather Agent** proof-of-concept (PoC) demo.
 
 In this demo, we will use the Rossoctl UI to import and deploy both the **Weather Service Agent** and the **Weather Tool**.
-During deployment, we'll configure the **A2A protocol** for managing agent calls and **MCP** for enabling communication between the agent and the image tool.
+During deployment, we'll configure the **A2A protocol** for managing agent calls and **MCP** for enabling communication between the agent and the weather tool.
 
-Once deployed, we will query the agent using a natural language prompt. The agent will then invoke the tool and return the image data as a response.
+Once deployed, we will query the agent using a natural language prompt. The agent will then invoke the tool and return the weather data as a response.
 
 This demo illustrates how Rossoctl manages the lifecycle of all required components: agents, tools, protocols, and runtime infrastructure.
 

@@ -5,7 +5,7 @@ sidebar_label: Use cloud LLMs
 
 # Using Cloud LLMs
 
-Rossoctl supports any OpenAI-compatible model backend.  This guide covers configuring Rossoctl to use OpenAI and other cloud providers
+Rossoctl supports any OpenAI-compatible model backend. This guide covers configuring Rossoctl to use OpenAI and other cloud providers
 
 ---
 
@@ -25,7 +25,7 @@ The preset specifies OpenAI, and retrieves the OpenAI key from a Kubernetes secr
 
 ## Storing your API key in a Secret
 
-Rossoctl currently offers examples with .openai .env files that read an API key from a Kubernetes secret.
+Rossoctl currently offers examples with OpenAI `.env` files that read an API key from a Kubernetes secret.
 
 To create this secret, for each Kubernetes namespace you use for Rossoctl agents,
 
