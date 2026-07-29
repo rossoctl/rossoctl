@@ -7,7 +7,7 @@ sidebar_position: 1
 
 :::tip
 
-This document describes rossoctl's Kubernetes deployment.  Check back in August for a guide to local rossoctl without Kubernetes.
+This document describes rossoctl's Kubernetes deployment. Check back in August for a guide to local rossoctl without Kubernetes.
 
 :::
 

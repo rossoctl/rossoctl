@@ -9,7 +9,7 @@ Agents are adept at reasoning, planning, and interacting with tools, but their f
 
 _Rossoctl_ addresses this gap by enhancing existing agent frameworks with production-ready infrastructure.
 
-Rossoctl is a *framework-neutral*, *scalable*, and *secure* platform for deploying and orchestrating AI agents through standardized agent communication protocols (A2A, MCP).
+Rossoctl is a **framework-neutral**, **scalable**, and **secure** platform for deploying and orchestrating AI agents through standardized agent communication protocols (A2A, MCP).
 
 Rossoctl gives you:
 
