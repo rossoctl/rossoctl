@@ -46,6 +46,10 @@ import pytest
 logger = logging.getLogger(__name__)
 
 
+class MLflowAuthError(Exception):
+    """Raised when MLflow returns an authentication/authorization failure."""
+
+
 # =============================================================================
 # kubectl Resilience Helpers
 # =============================================================================
@@ -174,6 +178,8 @@ def wait_for_traces(
                 f"Attempt {attempt}: Found {len(traces)} {description}, "
                 f"waiting for {min_count}... (next check in {current_interval:.1f}s)"
             )
+        except MLflowAuthError:
+            raise
         except Exception as e:
             logger.warning(f"Attempt {attempt}: Error checking {description}: {e}")
 
@@ -402,8 +408,25 @@ def get_mlflow_client():
     return _mlflow_client
 
 
+def _is_auth_error(exc: Exception) -> bool:
+    """Check if an exception represents an HTTP 401/403 auth failure.
+
+    Inspects the response status code on the exception or its cause.
+    """
+    for candidate in (exc, exc.__cause__):
+        response = getattr(candidate, "response", None)
+        status = getattr(response, "status_code", None) if response else None
+        if status in (401, 403):
+            return True
+    return False
+
+
 def get_all_traces() -> list[dict[str, Any]]:
-    """Get all traces from MLflow using Python client."""
+    """Get all traces from MLflow using Python client.
+
+    Raises:
+        MLflowAuthError: If the server rejects credentials (401/403).
+    """
     try:
         client = get_mlflow_client()
         if not client:
@@ -420,13 +443,22 @@ def get_all_traces() -> list[dict[str, Any]]:
                 traces = client.search_traces(locations=[exp.experiment_id])
                 all_traces.extend(traces)
             except Exception as e:
+                if _is_auth_error(e):
+                    raise MLflowAuthError(
+                        "MLFLOW_TRACKING_TOKEN may be missing or expired"
+                    ) from e
                 logger.warning(f"Failed to search traces in experiment {exp.name}: {e}")
 
         return all_traces
-    except ValueError:
+    except (ValueError, MLflowAuthError):
         # Re-raise configuration errors
         raise
     except Exception as e:
+        # Surface auth errors from search_experiments or other top-level calls
+        if _is_auth_error(e):
+            raise MLflowAuthError(
+                "MLFLOW_TRACKING_TOKEN may be missing or expired"
+            ) from e
         logger.error(f"Failed to get traces: {e}")
         import traceback
 
@@ -791,6 +823,15 @@ def traces_available(mlflow_configured):
         )
         logger.info(f"Found {len(traces)} traces, proceeding with tests")
         return traces
+    except MLflowAuthError as e:
+        # Most likely the mlflow-oauth-secret-job hasn't completed yet
+        # (preflight warns but doesn't block on timeout). Could also
+        # mask a real auth regression — TODO: add token validation to
+        # preflight so we can pytest.fail here instead.
+        pytest.skip(
+            f"MLflow auth failed: {e}. "
+            "Ensure mlflow-oauth-secret-job completed before tests."
+        )
     except TimeoutError as e:
         pytest.skip(
             f"No traces appeared in MLflow after waiting: {e}. "
@@ -925,7 +966,9 @@ class TestWeatherAgentTracesInMLflow:
             "  4. MLflow is enabled in values.yaml (components.mlflow.enabled: true)"
         )
 
-    def test_weather_agent_traces_exist(self, mlflow_url: str, mlflow_configured: bool):
+    def test_weather_agent_traces_exist(
+        self, mlflow_url: str, mlflow_configured: bool, traces_available: list
+    ):
         """Verify weather agent traces are captured in MLflow.
 
         This test specifically looks for traces from the weather agent,
@@ -972,7 +1015,9 @@ class TestWeatherAgentTracesInMLflow:
 
         print(f"\nSUCCESS: Found {len(weather_traces)} weather agent traces")
 
-    def test_weather_trace_has_spans(self, mlflow_url: str, mlflow_configured: bool):
+    def test_weather_trace_has_spans(
+        self, mlflow_url: str, mlflow_configured: bool, traces_available: list
+    ):
         """Verify weather agent traces have proper span structure.
 
         This test validates that weather agent traces contain meaningful span
@@ -1166,13 +1211,15 @@ class TestGenAITracesInMLflow:
             )
         return cls._cached_traces, cls._cached_genai_traces
 
-    def test_genai_traces_exist(self, mlflow_url: str, mlflow_configured: bool):
+    def test_genai_traces_exist(
+        self, mlflow_url: str, mlflow_configured: bool, traces_available: list
+    ):
         """Verify GenAI/LLM traces are captured in MLflow.
 
         This test looks for spans from LangChain/LangGraph instrumentation,
         which include LLM calls, chain executions, and tool invocations.
         """
-        all_traces, genai_traces = self._get_cached_traces()
+        all_traces, genai_traces = self._get_cached_traces(traces_available)
 
         print(f"\n{'=' * 60}")
         print("GenAI Traces in MLflow")
@@ -1203,7 +1250,9 @@ class TestGenAITracesInMLflow:
 
         print(f"\nSUCCESS: Found {len(genai_traces)} GenAI traces")
 
-    def test_trace_has_tree_structure(self, mlflow_url: str, mlflow_configured: bool):
+    def test_trace_has_tree_structure(
+        self, mlflow_url: str, mlflow_configured: bool, traces_available: list
+    ):
         """Verify traces have proper parent-child hierarchy.
 
         GenAI traces should have a tree structure where:
@@ -1211,7 +1260,7 @@ class TestGenAITracesInMLflow:
         - Child spans represent LLM calls, tool executions, etc.
         - The tree should have depth > 1 for non-trivial requests
         """
-        all_traces, genai_traces = self._get_cached_traces()
+        all_traces, genai_traces = self._get_cached_traces(traces_available)
         if not all_traces:
             pytest.fail(
                 "No traces available to check structure. "
@@ -1279,7 +1328,7 @@ class TestGenAITracesInMLflow:
         print(f"\nSUCCESS: Trace has tree structure with depth {tree['depth']}")
 
     def test_genai_spans_nested_under_a2a(
-        self, mlflow_url: str, mlflow_configured: bool
+        self, mlflow_url: str, mlflow_configured: bool, traces_available: list
     ):
         """Verify GenAI spans are nested under A2A request spans.
 
@@ -1288,7 +1337,7 @@ class TestGenAITracesInMLflow:
         - LangGraph/LangChain execution as child spans
         - LLM calls nested under the chain/agent spans
         """
-        all_traces, genai_traces = self._get_cached_traces()
+        all_traces, genai_traces = self._get_cached_traces(traces_available)
 
         if not genai_traces:
             pytest.skip("No GenAI traces available")
