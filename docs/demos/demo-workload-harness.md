@@ -424,7 +424,7 @@ binary. The merge validates the YAML shape, but the sidecar will fail
 at Configure with `unknown plugin "<name>"` after reload if a plugin
 isn't registered:
 
-```
+```text
 reloader: reload failed  error="build: outbound: unknown plugin \"<name>\""
 ```
 
@@ -573,7 +573,7 @@ The `--dry` flag enables dry-run mode, which prints all commands that would be e
 ```
 
 **Example output:**
-```
+```text
 ========================================
 Deploy and Evaluate Exgentic Benchmark
 ========================================
@@ -630,7 +630,7 @@ The `evaluate-benchmark.sh` script automatically:
 
 At the end of each run, a summary is printed:
 
-```
+```text
 ============================================================
 RUN SUMMARY
 ============================================================
@@ -696,7 +696,7 @@ Each session creates a span (`exgentic_a2a.session`) with:
 
 ## Execution Flow
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                  For Each Session                       │
 ├─────────────────────────────────────────────────────────┤
@@ -831,7 +831,7 @@ Lists each trace with:
 
 #### Example Output
 
-```
+```text
 === MLflow Trace Analysis ===
 MLflow URL: http://mlflow.localtest.me:8080
 Experiment ID: 0
@@ -1026,7 +1026,7 @@ Any flag not recognised by `e2e-test.sh` is forwarded verbatim to `deploy-and-ev
 
 After all benchmarks finish, the script prints and writes `e2e-results.md`:
 
-```
+```text
 | Benchmark | Status | Tasks | Parallel Sessions | Eval Success Rate | Avg Latency (s) | Failures |
 |-----------|--------|-------|-------------------|-------------------|-----------------|----------|
 | gsm8k     | PASS   | 1     | --                | 100.0%            | 4.2s            | 0        |

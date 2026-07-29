@@ -99,7 +99,7 @@ Rossoctl provides a set of components and assets that make it easier to manage A
 | Component | Description |
 |-----------|-------------|
 | **[Rossoctl UI](./rossoctl/ui-v2/)** | Dashboard for deploying agents/tools as Kubernetes Deployments, interactive testing, and monitoring |
-| **[Identity & Auth Bridge](./docs/identity-guide.md)** | Identity pattern assets that capture common authorization scenarios and provide reusable building blocks for implementing consistent authorization across services |
+| **[Identity & Auth Bridge](./docs/concepts/identity-guide.md)** | Identity pattern assets that capture common authorization scenarios and provide reusable building blocks for implementing consistent authorization across services |
 | **[Agent Lifecycle Operator](https://github.com/rossoctl/operator)** | Kubernetes admission webhook for building agents from source, managing lifecycle, and coordinating platform services |
 | **[MCP Gateway](https://github.com/Kuadrant/mcp-gateway/)** | Unified gateway for Model Context Protocol (MCP) servers and tools. It acts as the entry point for policy enforcement, handling requests and routing them through the appropriate authorization patterns |
 | **[Plugins adapter](https://github.com/rossoctl/plugins-adapter)** | Adapter for security and safety plugins for Envoy-based gateways |
@@ -163,7 +163,7 @@ To learn how to deploy agents and MCP tools, follow the **[Weather Agent Demo](h
 | **Import Your Own Tool** | [New Tool Guide](./docs/new-tool.md) |
 | **Skills Configuration & Usage** | [Skills Guide](./docs/skills.md) |
 | **Architecture Details** | [Technical Details](./docs/concepts/tech-details.md) |
-| **Identity, Security, and Auth Bridge** | [Identity and Auth Bridge](./docs/identity-guide.md) |
+| **Identity, Security, and Auth Bridge** | [Identity and Auth Bridge](./docs/concepts/identity-guide.md) |
 | **Fine-Grained Zero-Trust Access Control** | [Access Control](./docs/access-control/README.md) |
 | **Developer Guide** | [Contributing](./docs/dev-guide.md) |
 | **Troubleshooting** | [Troubleshooting Guide](./docs/troubleshooting.md) |

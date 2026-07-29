@@ -355,5 +355,5 @@ This will:
 ## Learn More
 
 - **[Developing a Rossoctl Application Guide](../../../docs/developing-rossoctl-app.md)** - Architecture, design patterns, and best practices
-- **[Identity Guide](../../../docs/identity-guide.md)** - Authentication and authorization details
+- **[Identity Guide](../../../docs/concepts/identity-guide.md)** - Authentication and authorization details
 - **[Rossoctl Documentation](../../../README.md)** - Full platform documentation
