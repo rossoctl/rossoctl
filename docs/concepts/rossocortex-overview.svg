@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" font-family="Helvetica, Arial, sans-serif" role="img" aria-label="RossoCortex overview: agents integrate through an SDK, hooks, a gateway, or orchestration into the RossoCortex common interface, whose capabilities run as plugins — the AuthBridge identity and access-control grouping, IBAC, SPARC, and Context-guru — hosted by the emerging CPEX plugin pipeline.">
+  <title>RossoCortex Overview</title>
+  <desc>Four integration paths — SDK, Hooks, Gateway, Orchestration — feed into the RossoCortex common interface. Inside it, capabilities run as plugins: the AuthBridge identity and access-control grouping alongside IBAC, SPARC, and Context-guru. Beneath the plugins sits the emerging CPEX plugin pipeline that hosts and chains them.</desc>
+
+  <!-- Palette (shades of red)
+       path fill    #fee2e2   path border   #ef4444   text #7f1d1d
+       cortex fill  #fecaca   cortex border #ef4444
+       plugin fill  #ffffff   plugin border #ef4444
+       cpex fill    #fca5a5   cpex border   #b91c1c
+       arrows       #b91c1c -->
+
+  <defs>
+    <marker id="redArrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b91c1c"/>
+    </marker>
+  </defs>
+
+  <!-- Caption: integration paths -->
+  <text x="320" y="24" text-anchor="middle" fill="#7f1d1d" font-size="13" font-weight="bold">Agents integrate via</text>
+
+  <!-- Integration path nodes -->
+  <g fill="#fee2e2" stroke="#ef4444" stroke-width="1.5">
+    <rect x="40"  y="36" width="120" height="44" rx="8"/>
+    <rect x="180" y="36" width="120" height="44" rx="8"/>
+    <rect x="320" y="36" width="120" height="44" rx="8"/>
+    <rect x="460" y="36" width="140" height="44" rx="8"/>
+  </g>
+  <g fill="#7f1d1d" font-size="14" font-weight="bold" text-anchor="middle">
+    <text x="100" y="63">SDK</text>
+    <text x="240" y="63">Hooks</text>
+    <text x="380" y="63">Gateway</text>
+    <text x="530" y="63">Orchestration</text>
+  </g>
+
+  <!-- Arrows from each path down into the RossoCortex box -->
+  <g stroke="#b91c1c" stroke-width="2" marker-end="url(#redArrow)">
+    <line x1="100" y1="80" x2="100" y2="112"/>
+    <line x1="240" y1="80" x2="240" y2="112"/>
+    <line x1="380" y1="80" x2="380" y2="112"/>
+    <line x1="530" y1="80" x2="530" y2="112"/>
+  </g>
+
+  <!-- RossoCortex common-interface container -->
+  <rect x="40" y="114" width="560" height="256" rx="12" fill="#fecaca" stroke="#ef4444" stroke-width="2"/>
+  <text x="320" y="140" text-anchor="middle" fill="#7f1d1d" font-size="17" font-weight="bold">RossoCortex</text>
+  <text x="320" y="159" text-anchor="middle" fill="#7f1d1d" font-size="12">common interface</text>
+
+  <!-- Plugin nodes -->
+  <g fill="#ffffff" stroke="#ef4444" stroke-width="1.5">
+    <rect x="64"  y="176" width="150" height="72" rx="8"/>
+    <rect x="230" y="176" width="112" height="72" rx="8"/>
+    <rect x="358" y="176" width="112" height="72" rx="8"/>
+    <rect x="486" y="176" width="90"  height="72" rx="8"/>
+  </g>
+  <g fill="#7f1d1d" text-anchor="middle">
+    <text x="139" y="208" font-size="14" font-weight="bold">AuthBridge</text>
+    <text x="139" y="226" font-size="11">Identity &amp; Access</text>
+    <text x="286" y="216" font-size="14" font-weight="bold">IBAC</text>
+    <text x="414" y="216" font-size="14" font-weight="bold">SPARC</text>
+    <text x="531" y="212" font-size="13" font-weight="bold">Context-</text>
+    <text x="531" y="228" font-size="13" font-weight="bold">guru</text>
+  </g>
+  <text x="320" y="272" text-anchor="middle" fill="#7f1d1d" font-size="12" font-style="italic">plugins</text>
+
+  <!-- CPEX plugin-pipeline band -->
+  <rect x="64" y="292" width="512" height="56" rx="8" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/>
+  <text x="320" y="317" text-anchor="middle" fill="#7f1d1d" font-size="15" font-weight="bold">CPEX</text>
+  <text x="320" y="335" text-anchor="middle" fill="#7f1d1d" font-size="12">plugin pipeline (emerging)</text>
+</svg>
