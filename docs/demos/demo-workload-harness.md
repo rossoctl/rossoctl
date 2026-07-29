@@ -5,7 +5,7 @@ sidebar_label: Run a Workload Harness
 
 # Rossoctl Workload Harness
 
-Workload harnesses drive test and evaluation traffic to Rossoctl agents. The current implementation is the **Exgentic A2A Runner** — a standalone Python runner that integrates Exgentic benchmarks with Kagenti agents using the A2A (Agent-to-Agent) protocol.
+Workload harnesses drive test and evaluation traffic to Rossoctl agents. The current implementation is the **Exgentic A2A Runner** — a standalone Python runner that integrates Exgentic benchmarks with Rossoctl agents using the A2A (Agent-to-Agent) protocol.
 
 The harness exists to robustly exercise agents and validate that the Rossoctl platform is reliable, scalable, and observable.
 
@@ -27,10 +27,10 @@ Follow the [quickstart](../overview/5-quickstart.md) or [install](../getting-sta
 
 
 ```bash
-# 1. Stand up the Kagenti cluster (see above; one-time)
+# 1. Stand up the Rossoctl cluster (see above; one-time)
 
 # 2. Install the runner
-git clone git@github.com:kagenti/workload-harness.git
+git clone git@github.com:rossoctl/workload-harness.git
 cd workload-harness/exgentic_a2a_runner
 uv sync --python 3.12
 source .venv/bin/activate
@@ -104,8 +104,8 @@ For `appworld`, use a model with strong tool-selection — e.g. `gemini-2.5-pro`
   - **Note:** The `uv` package manager will automatically use Python 3.12 when you run `uv sync --python 3.12`, regardless of your system Python version
 - [uv](https://docs.astral.sh/uv/) package manager
 - kubectl v0.6.0 (tested on v0.6.0-rc.2) 
-- Kagenti cluster running with:
-  - Kagenti backend in `kagenti-system` namespace
+- Rossoctl cluster running with:
+  - Rossoctl backend in `rossoctl-system` namespace
   - Keycloak in `keycloak` namespace
   - `team1` namespace for deployments
 
@@ -118,13 +118,13 @@ For `appworld`, use a model with strong tool-selection — e.g. `gemini-2.5-pro`
 
 ### Install from source
 
-#### Deploy a kagenti cluster
+#### Deploy a rossoctl cluster
 
 ```bash
-git clone git@github.com:kagenti/kagenti.git
-cd kagenti
+git clone git@github.com:rossoctl/rossoctl.git
+cd rossoctl
 
-env CONTAINER_ENGINE=podman  scripts/kind/setup-kagenti.sh --with-all --preload-images
+env CONTAINER_ENGINE=podman  scripts/kind/setup-rossoctl.sh --with-all --preload-images
 
 ```
 
@@ -139,11 +139,11 @@ cd exgentic_a2a_runner
 uv sync --python 3.12
 source .venv/bin/activate
 
-# Deploy and configure MCP server using Kagenti Tool API
+# Deploy and configure MCP server using Rossoctl Tool API
 # This script now combines deployment and configuration in one step
 ./deploy-benchmark.sh --benchmark tau2
 
-# Deploy and configure agent using Kagenti Agent API
+# Deploy and configure agent using Rossoctl Agent API
 # This script now combines deployment and configuration in one step
 ./deploy-agent.sh --benchmark tau2 --agent tool_calling
 ```
@@ -185,7 +185,7 @@ source .venv/bin/activate
 **Important:** Both deployment scripts now combine deployment and configuration steps:
 
 **`deploy-benchmark.sh`** will:
-1. Deploy the MCP server to the Kagenti cluster
+1. Deploy the MCP server to the Rossoctl cluster
 2. Automatically configure secrets before deployment:
    - Updates `openai-secret` with OPENAI_API_KEY (if set in environment)
    - Creates/updates `hf-secret` with HF_TOKEN (uses dummy token if not set)
@@ -194,7 +194,7 @@ source .venv/bin/activate
 5. Wait for the deployment to be ready
 
 **`deploy-agent.sh`** will:
-1. Deploy the agent to the Kagenti cluster
+1. Deploy the agent to the Rossoctl cluster
 2. Automatically configure environment variables (OPENAI_API_BASE, OPENAI_API_KEY, LLM_MODEL)
 3. Set model settings (LLM_MODEL, EXGENTIC_SET_AGENT_MODEL)
 4. Wait for the deployment to be ready
@@ -310,33 +310,33 @@ prompt-injection-driven exfiltration that traditional auth gates miss.
 - An OpenAI-compatible chat-completion endpoint for the judge (ollama,
   OpenAI, vLLM, Azure, etc.).
 - The cluster's AuthBridge sidecar image must include the `ibac`
-  plugin. IBAC landed in `kagenti-extensions` on 2026-05-17 (PR #421);
+  plugin. IBAC landed in `rossoctl-extensions` on 2026-05-17 (PR #421);
   use sidecar image **`v0.6.0-alpha.7`** or newer.
 
-  > **Caveat — not in the latest stable Kagenti release.** As of this
+  > **Caveat — not in the latest stable Rossoctl release.** As of this
   > writing, the IBAC plugin and the additive plugin-pipeline merge
   > behavior the deploy scripts depend on are only available in
   > `v0.6.0-alpha.7`, which has not yet been published in a stable
-  > Kagenti release. Installing from the official `v0.6.0` chart
+  > Rossoctl release. Installing from the official `v0.6.0` chart
   > release pulls an older alpha that will fail with errors like
   > `jwt-validation config: issuer is required` during pipeline
-  > apply. Until a release containing alpha.7 is cut, install Kagenti
+  > apply. Until a release containing alpha.7 is cut, install Rossoctl
   > from `main`:
   >
   > ```bash
-  > git clone git@github.com:kagenti/kagenti.git
-  > cd kagenti  # use main, not a release tag
-  > env CONTAINER_ENGINE=podman scripts/kind/setup-kagenti.sh --with-all --preload-images
+  > git clone git@github.com:rossoctl/rossoctl.git
+  > cd rossoctl  # use main, not a release tag
+  > env CONTAINER_ENGINE=podman scripts/kind/setup-rossoctl.sh --with-all --preload-images
   > ```
   >
   > To verify the sidecar image actually deployed:
   >
   > ```bash
-  > kubectl -n kagenti-system get cm kagenti-platform-config \
+  > kubectl -n rossoctl-system get cm rossoctl-platform-config \
   >   -o jsonpath='{.data.authbridge}'
   > ```
   >
-  > Expect `ghcr.io/kagenti/kagenti-extensions/authbridge:v0.6.0-alpha.7`
+  > Expect `ghcr.io/rossoctl/rossoctl-extensions/authbridge:v0.6.0-alpha.7`
   > or newer.
 
 **Configure the judge** in your `.env` (consumed by the IBAC plugin
@@ -428,7 +428,7 @@ isn't registered:
 reloader: reload failed  error="build: outbound: unknown plugin \"<name>\""
 ```
 
-The image tag is pinned in `kagenti/charts/kagenti/values.yaml`. To
+The image tag is pinned in `rossoctl/charts/rossoctl/values.yaml`. To
 verify what's running:
 
 ```bash
@@ -439,7 +439,7 @@ kubectl -n team1 get pod -l app.kubernetes.io/name=<agent-name> \
 > **Compatibility note.** Newer chart versions tie sidecar image
 > versions to operator versions (per-plugin config support,
 > jwt-validation field shape). When bumping the sidecar image past
-> `v0.5.0-rc.3`, confirm your kagenti-operator is recent enough —
+> `v0.5.0-rc.3`, confirm your rossoctl-operator is recent enough —
 > older operators may emit ConfigMaps the newer sidecar can't parse.
 
 ### Troubleshooting
@@ -452,7 +452,7 @@ kubectl -n team1 get pod -l app.kubernetes.io/name=<agent-name> \
 - **`Reads ... no earlier plugin writes it`**: parser ordering issue;
   shouldn't happen with the canonical-position table, but possible if a
   malformed `--plugin-config-file` introduces an unknown plugin. See
-  [`framework-architecture.md` §6](https://github.com/kagenti/kagenti-extensions/blob/main/authbridge/docs/framework-architecture.md)
+  [`framework-architecture.md` §6](https://github.com/rossoctl/rossoctl-extensions/blob/main/authbridge/docs/framework-architecture.md)
   for the underlying rules.
 - **`ibac.no_intent`** in IBAC telemetry: the inbound chain is
   misconfigured — `a2a-parser` didn't run, so `Session.Intents` is
@@ -726,7 +726,7 @@ Each session creates a span (`exgentic_a2a.session`) with:
 
 ### Using MLflow in the kind Cluster
 
-The Kagenti cluster exposes an MLflow service in the `kagenti-system` namespace. An OTEL Collector forwards traces to MLflow's `/v1/traces` endpoint with OAuth2 authentication.
+The Rossoctl cluster exposes an MLflow service in the `rossoctl-system` namespace. An OTEL Collector forwards traces to MLflow's `/v1/traces` endpoint with OAuth2 authentication.
 
 #### 1. Send runner telemetry to MLflow
 
@@ -873,9 +873,9 @@ Summary Statistics by Configuration:
 #### Troubleshooting
 
 **Connection refused:**
-- Ensure MLflow is running: `kubectl get pods -n kagenti-system -l app=mlflow`
+- Ensure MLflow is running: `kubectl get pods -n rossoctl-system -l app=mlflow`
 - Use `--forward` flag to auto port-forward from kind cluster
-- Manually port-forward: `kubectl port-forward -n kagenti-system svc/mlflow 8080:5000`
+- Manually port-forward: `kubectl port-forward -n rossoctl-system svc/mlflow 8080:5000`
 
 **No traces found:**
 - Verify traces exist in MLflow UI: http://mlflow.localtest.me:8080
@@ -883,7 +883,7 @@ Summary Statistics by Configuration:
 - MLflow tracing is enabled by default; pass `--disable-mlflow` only if you want to skip it
 
 **OAuth errors:**
-- Ensure the `mlflow-oauth-secret` exists in the `kagenti-system` namespace
+- Ensure the `mlflow-oauth-secret` exists in the `rossoctl-system` namespace
 - Verify the MLflow pod is running (token acquisition executes inside the pod)
 
 ### What Gets Traced
@@ -902,7 +902,7 @@ The runner can execute entirely inside the cluster as a Kubernetes Job — no lo
 
 ### Overview
 
-`k8s/job.yaml` is the launch template. It references secrets for credentials and passes benchmark/agent flags as container `args`. The job container uses cluster-internal DNS to reach the Kagenti API, Keycloak, MCP server, and agent — no port-forwarding is required. MLflow tracing switches automatically to HTTP/protobuf when `KUBERNETES_SERVICE_HOST` is set.
+`k8s/job.yaml` is the launch template. It references secrets for credentials and passes benchmark/agent flags as container `args`. The job container uses cluster-internal DNS to reach the Rossoctl API, Keycloak, MCP server, and agent — no port-forwarding is required. MLflow tracing switches automatically to HTTP/protobuf when `KUBERNETES_SERVICE_HOST` is set.
 
 ### Step 1 — Set up required secrets
 
@@ -914,7 +914,7 @@ export HF_TOKEN=hf_...          # optional; skip if not needed
 ./update-secrets.sh --namespace team1
 ```
 
-The `kagenti-test-user` secret (key: `password`) must already exist in `team1` — it is created by the Kagenti cluster setup and holds the Keycloak password.
+The `rossoctl-test-user` secret (key: `password`) must already exist in `team1` — it is created by the Rossoctl cluster setup and holds the Keycloak password.
 
 > **Note:** The job container itself does not have kubectl RBAC, so `update-secrets.sh` will print harmless warnings if it tries to run inside the cluster. The secrets just need to be present before the job starts.
 
@@ -987,7 +987,7 @@ To test a local image change without pushing to a registry, sync it into the kin
 cd exgentic_a2a_runner
 docker build -t ghcr.io/rossoctl/workload-harness/exgentic-a2a-runner:dev .
 export REMOTE_IMAGE_NAME=ghcr.io/rossoctl/workload-harness/exgentic-a2a-runner:dev
-export KIND_CLUSTER_NAME=kagenti
+export KIND_CLUSTER_NAME=rossoctl
 source ./sync-image-to-cluster.sh
 ```
 
@@ -1100,7 +1100,7 @@ For preset contents and pipeline mechanics, see
 
 - No retry mechanism for failed operations
 - No streaming response support
-- Tested only with local kind Kagenti installation with Podman (not tested with Docker)
+- Tested only with local kind Rossoctl installation with Podman (not tested with Docker)
 
 ## Next Steps
 
@@ -1110,4 +1110,4 @@ After successful test run:
 3. Enable OTLP exporter for telemetry collection
 4. Deploy different benchmarks (gsm8k, tau2, appworld)
 5. Test with various models via configure script
-6. Analyze results and agent performance in Kagenti UI
+6. Analyze results and agent performance in Rossoctl UI
