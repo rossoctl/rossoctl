@@ -236,3 +236,166 @@ oc get clusterversion
 ```
 
 </details>
+
+## 🔍 Troubleshooting & Validation
+
+### Common Issues and Solutions
+
+#### 1. SPIRE Agent Not Receiving SVID
+
+**Symptoms:**
+
+```bash
+kubectl exec -n team deployment/slack-researcher --container authbridge-proxy -- ls /opt/
+# Missing: svid.pem
+```
+
+**Diagnosis:**
+
+```bash
+# Check SPIRE agent logs
+kubectl logs -n spire daemonset/spire-agent
+
+# Check workload registration
+kubectl exec -n spire deployment/spire-server -- \
+  /opt/spire/bin/spire-server entry show
+
+# Verify node attestation
+kubectl exec -n spire deployment/spire-server -- \
+  /opt/spire/bin/spire-server agent list
+```
+
+**Solutions:**
+
+- Ensure agent namespace has correct labels: `shared-gateway-access=true`
+- Verify SPIRE server can reach Kubernetes API
+- Check workload selector configuration
+
+#### 2. Token Exchange Failing
+
+**Symptoms:**
+```json
+{
+  "error": "invalid_client",
+  "error_description": "Client authentication failed"
+}
+```
+
+**Diagnosis:**
+
+```bash
+# Check client registration in Keycloak
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  "http://keycloak.localtest.me:8080/admin/realms/rossoctl/clients" | \
+  jq '.[] | select(.clientId | contains("spiffe"))'
+```
+
+**Solutions:**
+
+- Verify client is registered with correct SPIFFE ID
+- Ensure JWT SVID audience matches Keycloak expectations
+- Check token exchange permissions in Keycloak client configuration
+
+#### 3. MCP Gateway Authentication Issues
+
+**Symptoms:**
+```json
+{
+  "error": "authentication_failed",
+  "message": "Invalid or missing authorization header"
+}
+```
+
+**Diagnosis:**
+
+```bash
+# Check gateway logs
+kubectl logs -n gateway-system deployment/mcp-gateway-controller
+
+# Test direct tool access (bypassing gateway)
+curl -H "Authorization: Bearer $TOKEN" \
+  http://slack-tool.team.svc.cluster.local:8000/mcp
+
+# Check HTTPRoute configuration
+kubectl get httproute slack-tool-route -o yaml
+```
+
+**Solutions:**
+
+- Verify HTTPRoute has correct authentication filters
+- Ensure tool is properly registered with gateway
+- Check token format and expiration
+
+### Debugging Commands
+
+#### SPIRE Debugging
+
+```bash
+# List all SPIRE entries
+kubectl exec -n spire deployment/spire-server -- \
+  /opt/spire/bin/spire-server entry show
+
+# Check SPIRE server health
+kubectl exec -n spire deployment/spire-server -- \
+  /opt/spire/bin/spire-server healthcheck
+
+# Validate specific workload SVID
+SPIFFE_ID="spiffe://localtest.me/ns/team/sa/slack-researcher"
+kubectl exec -n spire deployment/spire-server -- \
+  /opt/spire/bin/spire-server entry show -spiffeID $SPIFFE_ID
+```
+
+#### Keycloak Debugging
+
+```bash
+# Get admin token
+ADMIN_TOKEN=$(curl -sX POST \
+  -d "client_id=admin-cli" \
+  -d "username=admin" \
+  -d "password=admin" \
+  -d "grant_type=password" \
+  "http://keycloak.localtest.me:8080/realms/rossoctl/protocol/openid-connect/token" | \
+  jq -r .access_token)
+
+# List all clients
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  "http://keycloak.localtest.me:8080/admin/realms/rossoctl/clients" | jq .
+
+# Check specific client configuration
+CLIENT_ID="spiffe://localtest.me/ns/team/sa/slack-researcher"
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  "http://keycloak.localtest.me:8080/admin/realms/rossoctl/clients?clientId=${CLIENT_ID}" | jq .
+
+# Validate user token
+USER_TOKEN="eyJ0eXAiOiJKV1Q..."
+curl -H "Authorization: Bearer $USER_TOKEN" \
+  "http://keycloak.localtest.me:8080/realms/rossoctl/protocol/openid-connect/userinfo"
+```
+
+#### Token Validation
+
+```bash
+# Decode JWT without verification (for debugging)
+decode_jwt() {
+  echo $1 | cut -d'.' -f2 | base64 -d | jq .
+}
+
+# Usage
+TOKEN="eyJ0eXAiOiJKV1Q..."
+decode_jwt $TOKEN
+
+# Validate token expiration
+check_token_expiry() {
+  local token=$1
+  local exp=$(echo $token | cut -d'.' -f2 | base64 -d | jq -r .exp)
+  local now=$(date +%s)
+
+  if [ $exp -gt $now ]; then
+    echo "Token valid for $((exp - now)) seconds"
+  else
+    echo "Token expired $((now - exp)) seconds ago"
+  fi
+}
+
+check_token_expiry $TOKEN
+```

@@ -1,13 +1,13 @@
 ---
-sidebar_label: Cortex
+sidebar_label: Authbridge and Identity
 description: Introduction to Zero-Trust.
 ---
 
-# Cortex
+# Authbridge and Identity
 
 **_Identity, Authentication, & Authorization_**
 
-This comprehensive guide covers all aspects of identity, authentication, and authorization in the Rossoctl platform. Rossoctl implements a **Zero-Trust Architecture** that combines SPIFFE/SPIRE workload identity, OAuth2 token exchange, and Keycloak identity management to provide secure, scalable, and dynamic authentication for cloud-native AI agents.
+This guide covers identity, authentication, and authorization in the Rossoctl platform. Rossoctl implements a **Zero-Trust Architecture** that combines SPIFFE/SPIRE workload identity, OAuth2 token exchange, and Keycloak identity management to provide secure, scalable, and dynamic authentication for cloud-native AI agents.
 
 In practice, the Authorization Pattern within the Agentic Platform enables:
 
@@ -27,6 +27,8 @@ In practice, the Authorization Pattern within the Agentic Platform enables:
 ## 🏗️ Architecture Overview
 
 ### Zero-Trust Identity Foundation
+
+Rossoctl checks of the `Authorization` header on incoming A2A requests before they reach your agent, without code changes.  Rossoctl includes plugins for RFC 8693 token exchange and LLM traffic filters that can be applied to your workloads without code changes.
 
 Rossoctl's identity architecture is built on three core principles:
 
@@ -107,26 +109,12 @@ To verify SPIRE is properly configured:
 curl http://spire-oidc.localtest.me:8080/keys
 ```
 
-#### 2. Tornjak Management Interface
-
-```bash
-# Access Tornjak UI
-open http://spire-tornjak-ui.localtest.me:8080/
-```
-
 #### 3. Workload SVID Validation
 
 ```bash
 # Check if agent has received SVID
-kubectl exec -n team deployment/slack-researcher -- ls -la /opt/
+kubectl exec -n team deployment/slack-researcher --container authbridge-proxy -- ls -la /opt/
 # Should show: svid.pem, svid_key.pem, svid_bundle.pem, jwt_svid.token
-
-# Inspect JWT SVID content
-kubectl exec -n team deployment/slack-researcher -- cat /opt/jwt_svid.token
-
-# Decode JWT SVID (requires jq)
-kubectl exec -n team deployment/slack-researcher -- cat /opt/jwt_svid.token | \
-  cut -d'.' -f2 | base64 -d | jq .
 ```
 
 ---
@@ -139,13 +127,13 @@ Keycloak serves as the central identity provider that:
 
 - Manages user identities and authentication
 - Issues OAuth2/OIDC tokens
-- Enforces role-based access control (RBAC)
+- Tells Cortex if it should Enforce role-based access control (RBAC)
 - Facilitates token exchange between services
 - Validates SPIFFE identities for workload authentication
 
 ### Realm Configuration
 
-**Master Realm** is configured with:
+**rossoctl Realm** is configured with:
 
 - **Users**: Demo users with different access levels
 - **Clients**: Each agent/tool is a Keycloak client
@@ -160,53 +148,12 @@ Keycloak serves as the central identity provider that:
 | **Confidential Client** | Client secret | Backend services | Traditional services |
 | **SPIFFE Client** | JWT SVID | Workload identity | `spiffe://localtest.me/ns/team/sa/slack-researcher` |
 
-### Demo Users and Access Levels
-
-```yaml
-# Full Access Users
-slack-full-access-user:
-  password: "password"
-  roles: ["slack-full-access", "slack-partial-access"]
-  permissions:
-    - channels:read
-    - channels:history
-    - messages:write
-
-# Partial Access Users
-slack-partial-access-user:
-  password: "password"
-  roles: ["slack-partial-access"]
-  permissions:
-    - channels:read
-
-# GitHub Users
-github-full-access-user:
-  password: "password"
-  roles: ["github-full-access", "github-partial-access"]
-  permissions:
-    - repos:read
-    - issues:write
-    - issues:read
-
-github-partial-access-user:
-  password: "password"
-  roles: ["github-partial-access"]
-  permissions:
-    - issues:read
-
-# Admin Users
-admin:
-  password: "admin"
-  roles: ["admin", "*"]
-  permissions: ["*"]
-```
-
 ### Keycloak Admin Access
 
 ```bash
 # Access Keycloak Admin Console
 # on kind:
-open http://keycloak.localtest.me:8080/admin/master/console/
+open http://keycloak.localtest.me:8080/admin/rossoctl/console/
 # on OpenShift:
 open "https://$(kubectl get route mcp-proxy -n rossoctl-system -o jsonpath='{.status.ingress[0].host}')"
 
@@ -216,6 +163,167 @@ kubectl get secret keycloak-initial-admin -n keycloak -o go-template=\
 # Example output:
 # Username: admin  Password: XyZ1234!
 ```
+
+---
+
+## 🛠️ Practical Implementation Guide
+
+### Client Registration Process
+
+Keycloak client registration is handled automatically when "☑ Secure with AuthBridge" is selected during deployment.  This is fully automatic and requires no manual intervention or init containers.
+
+Internally,  registration is handled by the rossoctl-operator's ClientRegistrationReconciler.
+
+---
+
+## 🌉 AuthBridge Component
+
+The [AuthBridge Component](https://github.com/rossoctl/cortex/tree/main/authbridge) provides a complete, hands-on implementation of Rossoctl's identity and authorization patterns. It combines **Client Registration** and **AuthProxy** to demonstrate the full zero-trust authentication flow.
+
+### What AuthBridge Demonstrates
+
+| Capability | Description |
+|------------|-------------|
+| **Automatic Workload Identity** | Pod registers itself with Keycloak using SPIFFE ID |
+| **Inbound JWT Validation** | Validates incoming token signature, expiration, and issuer via JWKS; optionally validates audience. Returns 401 for invalid tokens. |
+| **Transparent Token Exchange** | Sidecar exchanges outbound tokens for correct target audience via Keycloak |
+| **Target Service Validation** | Target validates token has correct audience |
+
+### AuthBridge Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  1. Operator reconciles AgentRuntime CRs and labels target workloads            │
+│  2. Operator registers client with Keycloak (using admin credentials from       │
+│     operator namespace) and creates credentials secret in agent namespace       │
+│  3. (removed)                                                                   │
+│  4. Agent gets token from Keycloak using credentials from secret                │
+│  5. Agent sends request to target with token                                    │
+│  6. Envoy+ext-proc intercepts: validates token signature, expiration, issuer    │
+│     via JWKS (returns 401 if invalid), then exchanges token for target audience │
+│  7. Target receives request with exchanged token and validates audience         │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+  Operator                   SPIRE Agent           Keycloak              Target
+       │                         │                     │                    │
+       │ 1. Watch workload       │                     │                    │
+       │ 2. Register client      │                     │                    │
+       ├─────────────────────────┼────────────────────►│                    │
+       │                         │                     │                    │
+       │ Create credentials      │                     │                    │
+       │ secret in agent ns      │                     │                    │
+       │                         │                     │                    │
+       │              ┌─────────┐│  3. Get SVID        │                    │
+       │              │ SPIFFE  ││◄────────────────────┤                    │
+       │              │ Helper  ││                     │                    │
+       │              └─────────┘│                     │                    │
+       │                    │    │                     │                    │
+       │              ┌─────────┐│                     │                    │
+       │              │  Agent  ││  4. Get token       │                    │
+       │              │         ││────────────────────►│                    │
+       │              │         ││◄────────────────────│                    │
+       │              │         ││  (aud: agent's ID)  │                    │
+       │              │         ││                     │                    │
+       │              │         ││  5. Request + token │                    │
+       │              │         ││─────────────────────┼───────────────────►│
+       │              └─────────┘│                     │                    │
+       │                    │    │                     │                    │
+       │         ┌──────────────┐│                     │                    │
+       │         │ Envoy+ext-pr ││  6. Validate &      │                    │
+       │         │              ││     Exchange token  │                    │
+       │         │              ││────────────────────►│                    │
+       │         │              ││◄────────────────────│                    │
+       │         │              ││  (aud: target)      │                    │
+       │         │              ││─────────────────────┼───────────────────►│
+       │         └──────────────┘│                     │  7. Validate aud   │
+       │                         │                     │       "authorized" │
+```
+
+### AuthBridge Components
+
+| Component | Type | Purpose |
+|-----------|------|---------|
+| **Rossoctl Operator** | Controller | Reconciles AgentRuntime CRs, applies `rossoctl.io/type` labels to target workloads, registers them as OAuth clients in Keycloak, and creates credentials secrets in agent namespaces |
+| **SPIFFE Helper** | Container | (Optional, when SPIFFE enabled) Obtains SVID from SPIRE Agent for workload identity |
+| **Envoy + Go Processor (Ext Proc)** | Sidecar | Intercepts traffic in both directions: **inbound** — validates JWT (signature, expiration, issuer, optional audience) via JWKS, returns 401 for invalid tokens; **outbound** — exchanges tokens for target audience via Keycloak |
+
+> **Note**: Client registration is fully automatic. The operator reads Keycloak admin credentials from `keycloak-admin-secret` in the operator namespace (not from agent namespaces), providing better security isolation.
+
+### Hands-On Demos
+
+For step-by-step AuthBridge demos with real working examples, see:
+
+- **[AuthBridge Weather Demo](https://github.com/rossoctl/cortex/tree/main/authbridge/demos/weather-agent)** — Complete end-to-end example showing token exchange between a weather agent and weather tool
+- **[AuthBridge Documentation](https://github.com/rossoctl/cortex/tree/main/authbridge)** — Component documentation and additional examples
+
+### AuthBridge Documentation
+
+For complete documentation, see:
+
+- **[AuthBridge README](https://github.com/rossoctl/cortex/tree/main/authbridge)** - Full demo instructions
+- **[AuthProxy](https://github.com/rossoctl/cortex/tree/main/authbridge)** - Token validation and exchange proxy
+
+> **Note**: The AuthBridge demo in cortex includes client-registration components for demonstration purposes. In production Rossoctl deployments, client registration is handled by the rossoctl-operator controller.
+
+---
+
+## 📋 Quick Reference
+
+### Essential URLs
+
+- Keycloak Admin Console: http://keycloak.localtest.me:8080/admin/master/console/
+- Tornjak UI: http://spire-tornjak-ui.localtest.me:8080/
+- Rossoctl UI: http://rossoctl-ui.localtest.me:8080/
+- (optional) MCP Gateway: http://mcp-gateway.localtest.me:8080/mcp
+
+### Default Credentials
+```yaml
+# Keycloak Admin — run ./.github/scripts/local-setup/show-services.sh for actual credentials
+```
+
+### Common SPIFFE IDs
+
+Using local kind:
+
+```bash
+# Agents
+spiffe://localtest.me/ns/team/sa/slack-researcher
+spiffe://localtest.me/ns/team/sa/weather-service
+spiffe://localtest.me/ns/team/sa/github-issue-agent
+
+# Tools
+spiffe://localtest.me/ns/team/sa/slack-tool
+spiffe://localtest.me/ns/team/sa/weather-tool
+spiffe://localtest.me/ns/team/sa/github-tool
+
+# Infrastructure
+spiffe://localtest.me/ns/gateway-system/sa/mcp-gateway
+spiffe://localtest.me/ns/rossoctl-system/sa/operator
+```
+
+Using OpenShift:
+
+```bash
+# Agents
+spiffe://apps.cluster-swkz5.dynamic.redhatworkshops.io/ns/team/sa/slack-researcher
+spiffe://apps.cluster-swkz5.dynamic.redhatworkshops.io/ns/team/sa/weather-service
+spiffe://apps.cluster-swkz5.dynamic.redhatworkshops.io/ns/team/sa/github-issue-agent
+```
+
+### Token Exchange Endpoints
+
+```bash
+# Keycloak Token Endpoint
+POST http://keycloak.keycloak.svc.cluster.local:8080/realms/rossoctl/protocol/openid-connect/token
+
+# User Info Endpoint
+GET http://keycloak.keycloak.svc.cluster.local:8080/realms/rossoctl/protocol/openid-connect/userinfo
+
+# Token Introspection
+POST http://keycloak.keycloak.svc.cluster.local:8080/realms/rossoctl/protocol/openid-connect/token/introspect
+```
+
+---
 
 ## 🔄 OAuth2 Token Exchange Flows
 
@@ -242,7 +350,7 @@ _Figure 1: User Authentication Flow - Shows how users authenticate with Rossoctl
 **HTTP Request:**
 
 ```bash
-POST /realms/master/protocol/openid-connect/token
+POST /realms/rossoctl/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=authorization_code
@@ -284,7 +392,7 @@ _Figure 4: Agent Token Exchange Flow - Demonstrates OAuth2 token exchange betwee
 **Token Exchange Request:**
 
 ```bash
-POST /realms/master/protocol/openid-connect/token
+POST /realms/rossoctl/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 Authorization: Bearer <JWT-SVID-AGENT>
 
@@ -414,7 +522,7 @@ def validate_request(request):
 
     # Validate with Keycloak
     response = requests.get(
-        "http://keycloak.keycloak.svc.cluster.local:8080/realms/master/protocol/openid-connect/userinfo",
+        "http://keycloak.keycloak.svc.cluster.local:8080/realms/rossoctl/protocol/openid-connect/userinfo",
         headers={"Authorization": f"Bearer {token}"}
     )
 
@@ -465,522 +573,6 @@ _Figure 6: External API Access with Vault Flow - Shows how agents call internal 
   "exp": 1735686900,
   "scope": "slack-full-access"
 }
-```
-
----
-
-## 🛠️ Practical Implementation Guide
-
-### Client Registration Process
-
-#### Operator-Managed Registration
-
-Keycloak client registration is handled automatically by the rossoctl-operator's ClientRegistrationReconciler. When you deploy an agent or tool:
-
-1. **Create an AgentRuntime CR** targeting the workload with `spec.type: agent` or `spec.type: tool`
-2. **The operator reconciles** the AgentRuntime, applies the `rossoctl.io/type` label to the target workload, and registers it with Keycloak using:
-   - Client ID pattern depends on whether SPIFFE is enabled:
-     - **SPIFFE disabled**: `namespace/workload-name` (e.g., `team1/slack-researcher`)
-     - **SPIFFE enabled**: `spiffe://trustdomain/ns/namespace/sa/serviceaccount` (e.g., `spiffe://localtest.me/ns/team1/sa/slack-researcher-sa`)
-   - Keycloak admin credentials from the `keycloak-admin-secret` in the operator namespace
-3. **The operator creates** a secret in the agent namespace containing client credentials
-
-This is fully automatic and requires no manual intervention or init containers.
-
-#### Reading Client Credentials in Application Code
-
-Applications can read the client credentials from the secret created by the operator:
-
-```python
-import os
-
-# Read client credentials from operator-created secret
-# Mounted at /secrets by the platform
-client_id = open("/secrets/client-id.txt").read().strip()
-client_secret = open("/secrets/client-secret.txt").read().strip()
-
-# Use credentials for OAuth2 flows
-keycloak_url = os.getenv("KEYCLOAK_URL", "http://keycloak.keycloak.svc.cluster.local:8080")
-realm = os.getenv("KEYCLOAK_REALM", "master")
-```
-
-### Token Exchange Implementation
-
-#### Agent-Side Token Exchange
-
-```python
-import requests
-import os
-
-def exchange_token_for_tool(user_token: str, tool_audience: str) -> str:
-    """Exchange user token for tool-scoped token."""
-
-    # Read SPIFFE JWT SVID
-    with open("/opt/jwt_svid.token", "r") as f:
-        jwt_svid = f.read().strip()
-
-    # Get client ID from SVID
-    payload = jwt.decode(jwt_svid, options={"verify_signature": False})
-    client_id = payload["sub"]
-
-    # Token exchange request
-    token_exchange_data = {
-        "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
-        "subject_token": user_token,
-        "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
-        "audience": tool_audience,
-        "client_id": client_id
-    }
-
-    response = requests.post(
-        "http://keycloak.keycloak.svc.cluster.local:8080/realms/master/protocol/openid-connect/token",
-        data=token_exchange_data,
-        headers={
-            "Authorization": f"Bearer {jwt_svid}",
-            "Content-Type": "application/x-www-form-urlencoded"
-        }
-    )
-
-    if response.status_code != 200:
-        raise Exception(f"Token exchange failed: {response.text}")
-
-    return response.json()["access_token"]
-
-# Usage example
-user_token = request.headers.get("Authorization", "").replace("Bearer ", "")
-tool_token = exchange_token_for_tool(user_token, "slack-tool")
-
-# Call tool with scoped token
-tool_response = requests.post(
-    "http://slack-tool.team.svc.cluster.local:8000/mcp",
-    headers={"Authorization": f"Bearer {tool_token}"},
-    json={"method": "tools/list"}
-)
-```
-
----
-
-## 🌉 AuthBridge Component
-
-The [AuthBridge Component](https://github.com/rossoctl/cortex/tree/main/authbridge) provides a complete, hands-on implementation of Rossoctl's identity and authorization patterns. It combines **Client Registration** and **AuthProxy** to demonstrate the full zero-trust authentication flow.
-
-### What AuthBridge Demonstrates
-
-| Capability | Description |
-|------------|-------------|
-| **Automatic Workload Identity** | Pod registers itself with Keycloak using SPIFFE ID |
-| **Inbound JWT Validation** | Validates incoming token signature, expiration, and issuer via JWKS; optionally validates audience. Returns 401 for invalid tokens. |
-| **Transparent Token Exchange** | Sidecar exchanges outbound tokens for correct target audience via Keycloak |
-| **Target Service Validation** | Target validates token has correct audience |
-
-### AuthBridge Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│  1. Operator reconciles AgentRuntime CRs and labels target workloads            │
-│  2. Operator registers client with Keycloak (using admin credentials from       │
-│     operator namespace) and creates credentials secret in agent namespace       │
-│  3. (If SPIFFE enabled) SPIFFE Helper obtains SVID from SPIRE Agent             │
-│  4. Agent gets token from Keycloak using credentials from secret                │
-│  5. Agent sends request to target with token                                    │
-│  6. Envoy+ext-proc intercepts: validates token signature, expiration, issuer    │
-│     via JWKS (returns 401 if invalid), then exchanges token for target audience │
-│  7. Target receives request with exchanged token and validates audience         │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-  Operator                   SPIRE Agent           Keycloak              Target
-       │                         │                     │                    │
-       │ 1. Watch workload       │                     │                    │
-       │ 2. Register client      │                     │                    │
-       ├─────────────────────────┼────────────────────►│                    │
-       │                         │                     │                    │
-       │ Create credentials      │                     │                    │
-       │ secret in agent ns      │                     │                    │
-       │                         │                     │                    │
-       │              ┌─────────┐│  3. Get SVID        │                    │
-       │              │ SPIFFE  ││◄────────────────────┤                    │
-       │              │ Helper  ││                     │                    │
-       │              └─────────┘│                     │                    │
-       │                    │    │                     │                    │
-       │              ┌─────────┐│                     │                    │
-       │              │  Agent  ││  4. Get token       │                    │
-       │              │         ││────────────────────►│                    │
-       │              │         ││◄────────────────────│                    │
-       │              │         ││  (aud: agent's ID)  │                    │
-       │              │         ││                     │                    │
-       │              │         ││  5. Request + token │                    │
-       │              │         ││─────────────────────┼───────────────────►│
-       │              └─────────┘│                     │                    │
-       │                    │    │                     │                    │
-       │         ┌──────────────┐│                     │                    │
-       │         │ Envoy+ext-pr ││  6. Validate &      │                    │
-       │         │              ││     Exchange token  │                    │
-       │         │              ││────────────────────►│                    │
-       │         │              ││◄────────────────────│                    │
-       │         │              ││  (aud: target)      │                    │
-       │         │              ││─────────────────────┼───────────────────►│
-       │         └──────────────┘│                     │  7. Validate aud   │
-       │                         │                     │       "authorized" │
-```
-
-### AuthBridge Components
-
-| Component | Type | Purpose |
-|-----------|------|---------|
-| **Rossoctl Operator** | Controller | Reconciles AgentRuntime CRs, applies `rossoctl.io/type` labels to target workloads, registers them as OAuth clients in Keycloak, and creates credentials secrets in agent namespaces |
-| **SPIFFE Helper** | Container | (Optional, when SPIFFE enabled) Obtains SVID from SPIRE Agent for workload identity |
-| **Envoy + Go Processor (Ext Proc)** | Sidecar | Intercepts traffic in both directions: **inbound** — validates JWT (signature, expiration, issuer, optional audience) via JWKS, returns 401 for invalid tokens; **outbound** — exchanges tokens for target audience via Keycloak |
-
-> **Note**: Client registration is fully automatic. The operator reads Keycloak admin credentials from `keycloak-admin-secret` in the operator namespace (not from agent namespaces), providing better security isolation.
-
-### Hands-On Demos
-
-For step-by-step AuthBridge demos with real working examples, see:
-
-- **[AuthBridge Weather Demo](https://github.com/rossoctl/cortex/tree/main/authbridge/demos/weather-agent)** — Complete end-to-end example showing token exchange between a weather agent and weather tool
-- **[AuthBridge Documentation](https://github.com/rossoctl/cortex/tree/main/authbridge)** — Component documentation and additional examples
-
-### AuthBridge Documentation
-
-For complete documentation, see:
-
-- **[AuthBridge README](https://github.com/rossoctl/cortex/tree/main/authbridge)** - Full demo instructions
-- **[AuthProxy](https://github.com/rossoctl/cortex/tree/main/authbridge)** - Token validation and exchange proxy
-
-> **Note**: The AuthBridge demo in cortex includes client-registration components for demonstration purposes. In production Rossoctl deployments, client registration is handled by the rossoctl-operator controller.
-
----
-
-## 🔍 Troubleshooting & Validation
-
-### Common Issues and Solutions
-
-#### 1. SPIRE Agent Not Receiving SVID
-
-**Symptoms:**
-
-```bash
-kubectl exec -n team deployment/slack-researcher -- ls /opt/
-# Missing: svid.pem, jwt_svid.token
-```
-
-**Diagnosis:**
-
-```bash
-# Check SPIRE agent logs
-kubectl logs -n spire daemonset/spire-agent
-
-# Check workload registration
-kubectl exec -n spire deployment/spire-server -- \
-  /opt/spire/bin/spire-server entry show
-
-# Verify node attestation
-kubectl exec -n spire deployment/spire-server -- \
-  /opt/spire/bin/spire-server agent list
-```
-
-**Solutions:**
-
-- Ensure agent namespace has correct labels: `shared-gateway-access=true`
-- Verify SPIRE server can reach Kubernetes API
-- Check workload selector configuration
-
-#### 2. Token Exchange Failing
-
-**Symptoms:**
-```json
-{
-  "error": "invalid_client",
-  "error_description": "Client authentication failed"
-}
-```
-
-**Diagnosis:**
-
-```bash
-# Check client registration in Keycloak
-curl -H "Authorization: Bearer $ADMIN_TOKEN" \
-  "http://keycloak.localtest.me:8080/admin/realms/master/clients" | \
-  jq '.[] | select(.clientId | contains("spiffe"))'
-
-# Verify JWT SVID format
-kubectl exec -n team deployment/slack-researcher -- \
-  cat /opt/jwt_svid.token | cut -d'.' -f2 | base64 -d | jq .
-```
-
-**Solutions:**
-
-- Verify client is registered with correct SPIFFE ID
-- Ensure JWT SVID audience matches Keycloak expectations
-- Check token exchange permissions in Keycloak client configuration
-
-#### 3. MCP Gateway Authentication Issues
-
-**Symptoms:**
-```json
-{
-  "error": "authentication_failed",
-  "message": "Invalid or missing authorization header"
-}
-```
-
-**Diagnosis:**
-
-```bash
-# Check gateway logs
-kubectl logs -n gateway-system deployment/mcp-gateway-controller
-
-# Test direct tool access (bypassing gateway)
-curl -H "Authorization: Bearer $TOKEN" \
-  http://slack-tool.team.svc.cluster.local:8000/mcp
-
-# Check HTTPRoute configuration
-kubectl get httproute slack-tool-route -o yaml
-```
-
-**Solutions:**
-
-- Verify HTTPRoute has correct authentication filters
-- Ensure tool is properly registered with gateway
-- Check token format and expiration
-
-### Debugging Commands
-
-#### SPIRE Debugging
-
-```bash
-# List all SPIRE entries
-kubectl exec -n spire deployment/spire-server -- \
-  /opt/spire/bin/spire-server entry show
-
-# Check SPIRE server health
-kubectl exec -n spire deployment/spire-server -- \
-  /opt/spire/bin/spire-server healthcheck
-
-# Validate specific workload SVID
-SPIFFE_ID="spiffe://localtest.me/ns/team/sa/slack-researcher"
-kubectl exec -n spire deployment/spire-server -- \
-  /opt/spire/bin/spire-server entry show -spiffeID $SPIFFE_ID
-```
-
-#### Keycloak Debugging
-
-```bash
-# Get admin token
-ADMIN_TOKEN=$(curl -sX POST \
-  -d "client_id=admin-cli" \
-  -d "username=admin" \
-  -d "password=admin" \
-  -d "grant_type=password" \
-  "http://keycloak.localtest.me:8080/realms/master/protocol/openid-connect/token" | \
-  jq -r .access_token)
-
-# List all clients
-curl -H "Authorization: Bearer $ADMIN_TOKEN" \
-  "http://keycloak.localtest.me:8080/admin/realms/master/clients" | jq .
-
-# Check specific client configuration
-CLIENT_ID="spiffe://localtest.me/ns/team/sa/slack-researcher"
-curl -H "Authorization: Bearer $ADMIN_TOKEN" \
-  "http://keycloak.localtest.me:8080/admin/realms/master/clients?clientId=${CLIENT_ID}" | jq .
-
-# Validate user token
-USER_TOKEN="eyJ0eXAiOiJKV1Q..."
-curl -H "Authorization: Bearer $USER_TOKEN" \
-  "http://keycloak.localtest.me:8080/realms/master/protocol/openid-connect/userinfo"
-```
-
-#### Token Validation
-
-```bash
-# Decode JWT without verification (for debugging)
-decode_jwt() {
-  echo $1 | cut -d'.' -f2 | base64 -d | jq .
-}
-
-# Usage
-TOKEN="eyJ0eXAiOiJKV1Q..."
-decode_jwt $TOKEN
-
-# Validate token expiration
-check_token_expiry() {
-  local token=$1
-  local exp=$(echo $token | cut -d'.' -f2 | base64 -d | jq -r .exp)
-  local now=$(date +%s)
-
-  if [ $exp -gt $now ]; then
-    echo "Token valid for $((exp - now)) seconds"
-  else
-    echo "Token expired $((now - exp)) seconds ago"
-  fi
-}
-
-check_token_expiry $TOKEN
-```
-
----
-
-## 🛡️ Security Best Practices
-
-### Production Security Checklist
-
-#### SPIRE Configuration
-
-- [ ] Enable SPIRE server HA (multiple replicas)
-- [ ] Use persistent storage for SPIRE server database
-- [ ] Configure proper node attestation (not k8s-sat in production)
-- [ ] Enable SPIRE server TLS with proper certificates
-- [ ] Implement SPIRE server access controls
-- [ ] Set appropriate SVID TTL values (< 1 hour recommended)
-- [ ] Enable SPIRE audit logging
-
-#### Keycloak Security
-
-- [ ] Change default admin credentials
-- [ ] Enable HTTPS for all Keycloak endpoints
-- [ ] Configure proper session timeouts
-- [ ] Set up backup and recovery procedures
-- [ ] Enable audit logging
-- [ ] Implement brute force protection
-- [ ] Configure proper CORS policies
-- [ ] Use strong client secrets for confidential clients
-
-#### Token Security
-
-- [ ] Set short token lifetimes (5-15 minutes)
-- [ ] Implement token refresh mechanisms
-- [ ] Use secure token storage (never in logs)
-- [ ] Validate all token claims (aud, exp, iat)
-- [ ] Implement proper token revocation
-- [ ] Use HTTPS for all token exchanges
-- [ ] Monitor for token abuse patterns
-
-#### Network Security
-
-- [ ] Use mTLS between all internal services
-- [ ] Implement network policies to restrict traffic
-- [ ] Configure ingress with proper TLS termination
-- [ ] Use service mesh for additional security layers
-- [ ] Monitor all authentication events
-- [ ] Implement rate limiting on auth endpoints
-
-### Security Monitoring
-
-#### Key Metrics to Monitor
-
-```yaml
-# Authentication Metrics
-- authentication_requests_total
-- authentication_failures_total
-- token_exchange_requests_total
-- token_validation_failures_total
-- spire_svid_issuance_total
-- keycloak_login_attempts_total
-
-# Security Alerts
-- High authentication failure rates
-- Unusual token exchange patterns
-- SPIRE attestation failures
-- Expired certificate usage attempts
-- Suspicious user agent patterns
-```
-
-#### Audit Log Configuration
-
-```yaml
-# SPIRE Server Audit
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: spire-server-config
-data:
-  server.conf: |
-    log_level = "INFO"
-    audit_log_enabled = true
-    audit_log_path = "/var/log/spire-audit.log"
-
-# Keycloak Audit
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: keycloak-config
-data:
-  keycloak.conf: |
-    spi-events-listener-jboss-logging-success-level=info
-    spi-events-listener-jboss-logging-error-level=warn
-```
-
----
-
-## 📋 Quick Reference
-
-### Essential URLs
-
-```bash
-# Keycloak Admin Console
-http://keycloak.localtest.me:8080/admin/master/console/
-
-# Tornjak UI
-http://spire-tornjak-ui.localtest.me:8080/
-
-# Rossoctl UI
-http://rossoctl-ui.localtest.me:8080/
-
-# MCP Gateway
-http://mcp-gateway.localtest.me:8080/mcp
-```
-
-### Default Credentials
-```yaml
-# Keycloak Admin — run ./.github/scripts/local-setup/show-services.sh for actual credentials
-
-# Demo Users
-slack-full-access-user: password
-slack-partial-access-user: password
-github-full-access-user: password
-github-partial-access-user: password
-```
-
-### Common SPIFFE IDs
-
-Using local kind:
-
-```bash
-# Agents
-spiffe://localtest.me/ns/team/sa/slack-researcher
-spiffe://localtest.me/ns/team/sa/weather-service
-spiffe://localtest.me/ns/team/sa/github-issue-agent
-
-# Tools
-spiffe://localtest.me/ns/team/sa/slack-tool
-spiffe://localtest.me/ns/team/sa/weather-tool
-spiffe://localtest.me/ns/team/sa/github-tool
-
-# Infrastructure
-spiffe://localtest.me/ns/gateway-system/sa/mcp-gateway
-spiffe://localtest.me/ns/rossoctl-system/sa/operator
-```
-
-Using OpenShift:
-
-```bash
-# Agents
-spiffe://apps.cluster-swkz5.dynamic.redhatworkshops.io/ns/team/sa/slack-researcher
-spiffe://apps.cluster-swkz5.dynamic.redhatworkshops.io/ns/team/sa/weather-service
-spiffe://apps.cluster-swkz5.dynamic.redhatworkshops.io/ns/team/sa/github-issue-agent
-```
-
-### Token Exchange Endpoints
-
-```bash
-# Keycloak Token Endpoint
-POST http://keycloak.keycloak.svc.cluster.local:8080/realms/master/protocol/openid-connect/token
-
-# User Info Endpoint
-GET http://keycloak.keycloak.svc.cluster.local:8080/realms/master/protocol/openid-connect/userinfo
-
-# Token Introspection
-POST http://keycloak.keycloak.svc.cluster.local:8080/realms/master/protocol/openid-connect/token/introspect
 ```
 
 ---

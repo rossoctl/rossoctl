@@ -1,6 +1,6 @@
 ---
-description: Stress-test Rossoctl and evaluate traffic load.
-sidebar_label: Run a Workload Harness
+description: Stress-test Rossoctl and evaluate load.
+sidebar_label: Run well-known benchmarks
 ---
 
 # Rossoctl Workload Harness
