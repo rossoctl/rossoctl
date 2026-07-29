@@ -1,26 +1,23 @@
----
-draft: true       # excluded from https://www.rossoctl.dev/
----
-
 # Link Health Report
 
-> Last scan: 2026-07-27 07:08 ET | Scan ID: 2026-07-27-001
+> Last scan: 2026-07-29 07:06 ET | Scan ID: 2026-07-29-001
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| Repos scanned | 25 |
-| Total links checked | 7362 |
-| Broken (internal) | 89 |
-| Broken (external) | 646 |
-| New since last scan | +103 |
-| Fixed since last scan | -74 |
+| Repos scanned | 8 |
+| Total links checked | 1802 |
+| Broken (internal) | 24 |
+| Broken (external) | 12 |
+| New since last scan | +36 |
+| Fixed since last scan | -735 |
 
 ## Trend (last 10 scans)
 
 | Date | Internal | External | Delta |
 |------|----------|----------|-------|
+| 07-29 | 24 | 12 | -699 |
 | 07-27 | 89 | 646 | +29 |
 | 07-24 | 53 | 653 | +77 |
 | 07-20 | 28 | 601 | -26 |
@@ -30,29 +27,17 @@ draft: true       # excluded from https://www.rossoctl.dev/
 | 07-08 | 31 | 584 | +567 |
 | 06-29 | 30 | 18 | 0 |
 | 06-26 | 30 | 18 | +2 |
-| 06-24 | 29 | 17 | -1 |
 
 ## Broken Links by Repo
 
 | Repo | Internal | External | Issues |
 |------|----------|----------|--------|
-| .github | 5 | 2 | 0 |
-| OpenShell | 0 | 5 | 0 |
-| adk | 25 | 7 | 0 |
-| agent-examples | 0 | 2 | 0 |
+| .github | 6 | 2 | 0 |
 | agent-skills | 3 | 0 | 0 |
-| agentic-control-plane | 1 | 0 | 0 |
 | automation | 1 | 0 | 0 |
-| cortex | 11 | 1 | 0 |
-| ecosystem-guide | 0 | 7 | 0 |
+| cortex | 6 | 1 | 0 |
 | examples | 0 | 2 | 0 |
-| kagenti | 4 | 6 | 0 |
-| kagenti-extensions | 11 | 1 | 0 |
-| kagenti-operator | 1 | 0 | 0 |
-| operator | 1 | 0 | 0 |
-| pi | 0 | 600 | 0 |
-| rossoctl | 5 | 11 | 0 |
-| serverless-harness | 18 | 2 | 0 |
+| rossoctl | 5 | 7 | 0 |
 | workload-harness | 3 | 0 | 0 |
 
 
