@@ -28,7 +28,7 @@ In practice, the Authorization Pattern within the Agentic Platform enables:
 
 ### Zero-Trust Identity Foundation
 
-Rossoctl checks of the `Authorization` header on incoming A2A requests before they reach your agent, without code changes.  Rossoctl includes plugins for RFC 8693 token exchange and LLM traffic filters that can be applied to your workloads without code changes.
+Rossoctl checks of the `Authorization` header on incoming A2A requests before they reach your agent, without code changes. Rossoctl includes plugins for RFC 8693 token exchange and LLM traffic filters that can be applied to your workloads without code changes.
 
 Rossoctl's identity architecture is built on three core principles:
 
@@ -127,7 +127,7 @@ Keycloak serves as the central identity provider that:
 
 - Manages user identities and authentication
 - Issues OAuth2/OIDC tokens
-- Tells Cortex if it should Enforce role-based access control (RBAC)
+- Tells Cortex if it should enforce role-based access control (RBAC)
 - Facilitates token exchange between services
 - Validates SPIFFE identities for workload authentication
 
@@ -172,7 +172,7 @@ kubectl get secret keycloak-initial-admin -n keycloak -o go-template=\
 
 Keycloak client registration is handled automatically when "☑ Secure with AuthBridge" is selected during deployment.  This is fully automatic and requires no manual intervention or init containers.
 
-Internally,  registration is handled by the rossoctl-operator's ClientRegistrationReconciler.
+Internally,  registration is handled by the rossoctl-operator's `ClientRegistrationReconciler`.
 
 ---
 
@@ -244,7 +244,6 @@ The [AuthBridge Component](https://github.com/rossoctl/cortex/tree/main/authbrid
 | Component | Type | Purpose |
 |-----------|------|---------|
 | **Rossoctl Operator** | Controller | Reconciles AgentRuntime CRs, applies `rossoctl.io/type` labels to target workloads, registers them as OAuth clients in Keycloak, and creates credentials secrets in agent namespaces |
-| **SPIFFE Helper** | Container | (Optional, when SPIFFE enabled) Obtains SVID from SPIRE Agent for workload identity |
 | **Envoy + Go Processor (Ext Proc)** | Sidecar | Intercepts traffic in both directions: **inbound** — validates JWT (signature, expiration, issuer, optional audience) via JWKS, returns 401 for invalid tokens; **outbound** — exchanges tokens for target audience via Keycloak |
 
 > **Note**: Client registration is fully automatic. The operator reads Keycloak admin credentials from `keycloak-admin-secret` in the operator namespace (not from agent namespaces), providing better security isolation.
