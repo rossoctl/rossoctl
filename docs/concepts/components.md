@@ -13,7 +13,7 @@ This document provides detailed information about each component of the Rossoctl
 - [MCP Gateway](#mcp-gateway)
 - [Plugins adapter](#plugins-adapter)
 - [Rossoctl UI](#rossoctl-ui)
-- [Cortex](#cortex)
+- [RossoCortex](#rossocortex)
 - [Infrastructure Services](#infrastructure-services)
 - [Supported Agent Frameworks](#supported-agent-frameworks)
 - [Communication Protocols](#communication-protocols)
@@ -475,15 +475,45 @@ kubectl get route rossoctl-ui -n rossoctl-system -o jsonpath='{.status.ingress[0
 
 ---
 
-## Cortex
+## RossoCortex
 
 **Repository**: [rossoctl/cortex](https://github.com/rossoctl/cortex)
 
-Cortex is the security layer of Rossoctl for agentic systems. It gives every agent and tool a trusted identity and enforces authentication, secure delegation, access control, and safe behavior at each hop, replacing static credentials with dynamic, short-lived, audience-scoped tokens.
+RossoCortex is Rossoctl's data plane. It is a common interface that sits transparently between an agent and everything it interacts with — models, tools, users, and other agents — and enforces guarantees an agent cannot provide on its own. Its capabilities are delivered as plugins.
 
-This solves a critical challenge in microservices and agentic architectures: **how can workloads authenticate and communicate securely without pre-provisioned static credentials, while ensuring each action stays within what the user actually intended?**
+RossoCortex is framework-neutral: it works with any agent type, including black-box harnesses, and integrates through multiple paths (an SDK, agent hooks, a gateway, or an orchestration layer). It can be implemented in different ways, and is converging on **CPEX** as the plugin pipeline that hosts and chains those plugins under the covers.
 
-### What Cortex provides
+<!--
+The SVG is based on this ASCII art. To edit the SVG, edit this art and ask a tool to regenerate SVG.
+```
+                        Agents integrate via
+        ┌──────────┬──────────┬──────────┬────────────────┐
+        │   SDK    │  Hooks   │ Gateway  │  Orchestration │
+        └────┬─────┴────┬─────┴────┬─────┴───────┬────────┘
+             └──────────┴────┬─────┴─────────────┘
+                             ▼
+        ┌───────────────────────────────────────────────┐
+        │                  RossoCortex                  │
+        │              (common interface)               │
+        │                                               │
+        │  ┌────────────┐ ┌──────┐ ┌───────┐ ┌────────┐ │
+        │  │ AuthBridge │ │ IBAC │ │ SPARC │ │Context-│ │
+        │  │ (Identity  │ │      │ │       │ │  guru  │ │
+        │  │  & Access) │ │      │ │       │ │        │ │
+        │  └────────────┘ └──────┘ └───────┘ └────────┘ │
+        │                    plugins                    │
+        ├───────────────────────────────────────────────┤
+        │        CPEX  —  plugin pipeline (emerging)     │
+        └───────────────────────────────────────────────┘
+```
+
+-->
+
+![RossoCortex overview: a common interface that agents reach through an SDK, hooks, a gateway, or orchestration; capabilities such as the AuthBridge identity and access-control grouping, IBAC, SPARC, and Context-guru run as plugins, hosted by the emerging CPEX pipeline](./rossocortex-overview.svg)
+
+### AuthBridge (Identity & Access Control)
+
+**AuthBridge** is RossoCortex's Identity and Access Control capability grouping. It gives agents and tools a trusted identity and enforces authentication, secure delegation, and access control at every hop, replacing static credentials with dynamic, short-lived, audience-scoped tokens. It can be enabled or disabled.
 
 | Capability | Description |
 |------------|-------------|
@@ -492,22 +522,23 @@ This solves a critical challenge in microservices and agentic architectures: **h
 | **Secure Delegation** | OAuth 2.0 Token Exchange ([RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693)) with per-target audience scoping |
 | **Client Registration** | Automated Keycloak client provisioning for each workload, keyed by its SPIFFE identity |
 | **Access Control** | Policy-driven allow/deny decisions on agent and tool actions |
-| **Guardrails** | Content and behavior safety enforcement around agent activity |
 
-### Technologies Cortex supports
+### Plugin pipeline
 
-Cortex delivers these capabilities through a set of security technologies, and that set grows over time. The concepts above stay constant regardless of which technology enforces them.
+RossoCortex's plugins run in a pipeline. It is converging on **[CPEX](https://github.com/contextforge-org/cpex)** — policy orchestration that composes PDP verdicts (Cedar, OPA) for agentic entities through a declarative policy language — as that pipeline. The capabilities above stay constant regardless of which pipeline hosts the plugins.
 
-| Technology | Role | Status |
-|------------|------|--------|
-| **[CPEX](https://github.com/contextforge-org/cpex)** | Policy orchestration and access control — composes PDP verdicts (Cedar, OPA) for agentic entities using a declarative policy language | Supported |
-| **[IBAC](./ibac-plugin.md)** | Intent-Based Access Control — denies outbound actions that do not match the user's most-recent declared intent | Supported |
-| **[SPARC](./sparc-plugin.md)** | Pre-tool reflection — catches hallucinated or ungrounded tool calls before they execute | Supported |
-| **Praxis** | — | Emerging |
+### Related capabilities
+
+Beyond the AuthBridge identity and access-control grouping, other RossoCortex capabilities are delivered as sibling plugins, each documented on its own page:
+
+- **[IBAC](./ibac-plugin.md)** — Intent-Based Access Control; denies outbound actions that do not match the user's most-recent declared intent.
+- **[SPARC](./sparc-plugin.md)** — pre-tool reflection; catches hallucinated or ungrounded tool calls before they execute.
+- **[Context-guru](./contextguru.md)** — context compaction; shrinks an agent's tool-output context before it reaches the model.
+- **Praxis** — emerging.
 
 ### Foundation
 
-Cortex builds on two foundational services:
+AuthBridge builds on two foundational services shared across RossoCortex:
 
 | Service | Role |
 |---------|------|
@@ -660,7 +691,7 @@ POST /mcp    # MCP JSON-RPC messages
 ## Related Documentation
 
 - [Installation Guide](../getting-started/install.md)
-- [Cortex Identity Guide](./identity-guide.md)
+- [RossoCortex Identity Guide](./identity-guide.md)
 - [MCP Gateway Instructions](https://github.com/Kuadrant/mcp-gateway)
 - [New Agent Guide](../getting-started/new-agent.md)
 - [New Tool Guide](../getting-started/new-tool.md)
