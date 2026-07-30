@@ -277,7 +277,7 @@ The work is the developer's; Claude Code assists. This applies to:
 
 ## Documentation
 
-- [Installation Guide](docs/install.md)
+- [Installation Guide](docs/getting-started/install.md)
 - [Components](docs/components.md)
 - [AI Ops / Claude Code](docs/ai-ops/README.md)
 - [Demos](docs/demos/README.md)

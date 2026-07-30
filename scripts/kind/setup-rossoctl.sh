@@ -82,7 +82,7 @@ KUADRANT_VERSION="1.4.2"
 AGENT_SANDBOX_VERSION="v0.4.6"
 
 # Recommended container-runtime resources for a full (--with-all) install.
-# Keep in sync with the `podman machine init` command in docs/install.md.
+# Keep in sync with the `podman machine init` command in docs/getting-started/install.md.
 RECOMMENDED_MEMORY_MB=18432   # 18 GB
 RECOMMENDED_CPUS=6
 

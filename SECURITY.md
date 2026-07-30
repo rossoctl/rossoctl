@@ -10,14 +10,13 @@ please report it responsibly.
 1. **Do NOT create public GitHub issues** for security vulnerabilities
 2. **GitHub Security Advisories (preferred)**: Report vulnerabilities privately via
    [GitHub Security Advisories](../../security/advisories/new)
-3. **Email**: Send reports to **security@rossoctl.io**
+3. **Email**: Send reports to **rossoctl-maintainers@googlegroups.com**
 4. **Include**: A clear description of the vulnerability, steps to reproduce,
    affected versions, and potential impact
 
 ### Security Contacts
 
 - **rossoctl-maintainers@googlegroups.com**
-- **security@rossoctl.io**
 
 ### What to Expect
 
@@ -60,5 +59,5 @@ This project implements several security controls:
 ## Security-Related Configuration
 
 For deployment security configuration, see:
-- [docs/install.md](docs/install.md) - Installation and security setup
+- [Installation Guide](docs/getting-started/install.md) - Installation and security setup
 - [deployments/envs/](deployments/envs/) - Environment-specific configurations

@@ -50,7 +50,7 @@ You can point Rossoctl at the skillberry-store in one of two ways:
 
 ### Rossoctl
 
-- Rossoctl is installed and the UI is reachable, as described in [`docs/install.md`](../install.md).
+- Rossoctl is installed and the UI is reachable, as described in [`docs/getting-started/install.md`](../getting-started/install.md).
 - You have access to a Rossoctl-enabled namespace, for example `team1`.
 - The cluster can build example agents from GitHub.
 - You have LLM credentials ready for the generic agent (`LLM_MODEL`, `LLM_API_BASE`, `LLM_API_KEY`).
@@ -460,5 +460,5 @@ Check that:
 - [`docs/skills.md`](../skills.md) — skills feature overview and feature flag configuration
 - [`docs/superpowers/specs/2026-05-27-external-skill-registries-design.md`](../superpowers/specs/2026-05-27-external-skill-registries-design.md) — design spec for the external skill registry feature
 - [skillberry-store](https://github.ibm.com/skillberry/skillberry-store) — the external skill registry used in this demo
-- [`docs/install.md`](../install.md)
+- [`docs/getting-started/install.md`](../getting-started/install.md)
 - [`docs/local-models.md`](../local-models.md)

@@ -104,18 +104,18 @@ Produce a structured summary grouped by severity:
 ## Documentation Review: PR #<number>
 
 ### Files reviewed
-- `docs/install.md` (modified)
+- `docs/getting-started/install.md` (modified)
 - `docs/releasing.md` (new)
 
 ### Issues found
 
 #### Must fix
-- **docs/install.md:42** — Broken anchor link `#choosing-a-version` (heading was renamed)
+- **docs/getting-started/install.md:42** — Broken anchor link `#choosing-a-version` (heading was renamed)
 - **docs/releasing.md:15** — YAML snippet has incorrect indentation
 
 #### Suggestions
 - **docs/releasing.md:78** — This paragraph could be condensed to a bullet list
-- **docs/install.md:130** — Consider adding `git checkout` step to the OpenShift clone block
+- **docs/getting-started/install.md:130** — Consider adding `git checkout` step to the OpenShift clone block
 
 #### Looks good
 - Structure follows `meta:write-docs` (planned) template

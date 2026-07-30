@@ -262,5 +262,5 @@ curl http://localhost:8000/.well-known/agent.json
 ## Related Documentation
 
 - `deployments/README.md` - Deployment guide
-- `docs/install.md` - Installation guide
+- `docs/getting-started/install.md` - Installation guide
 - `docs/components.md` - Component details

@@ -131,7 +131,7 @@ cp charts/rossoctl/.secrets_template.yaml charts/rossoctl/.secrets.yaml
 scripts/kind/setup-rossoctl.sh --with-ui --with-spire --with-agent-sandbox --with-builds
 ```
 
-Use `scripts/kind/setup-rossoctl.sh --help` for all available options. For detailed instructions including OpenShift, refer to the [Installation Guide](./docs/install.md).
+Use `scripts/kind/setup-rossoctl.sh --help` for all available options. For detailed instructions including OpenShift, refer to the [Installation Guide](./docs/getting-started/install.md).
 
 ### Access the UI
 
@@ -155,7 +155,7 @@ To learn how to deploy agents and MCP tools, follow the **[Weather Agent Demo](h
 
 | Topic | Link |
 |-------|------|
-| **Installation** | [Installation Guide](./docs/install.md) (Kind & OpenShift) |
+| **Installation** | [Installation Guide](./docs/getting-started/install.md) (Kind & OpenShift) |
 | **Components** | [Component Details](./docs/components.md) |
 | **Demos & Tutorials** | [Demo Documentation](./docs/demos/README.md) |
 | **Developing Rossoctl Apps** | [Application Development Guide](./docs/developing-rossoctl-app.md) · [App Demo Example](./rossoctl/examples/app-demo/README.md) |

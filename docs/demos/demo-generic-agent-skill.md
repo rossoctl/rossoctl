@@ -26,7 +26,7 @@ The example generic agent loads skill instructions and exposes them through its 
 
 Before starting, make sure:
 
-- Rossoctl is installed and the UI is reachable, as described in [`docs/install.md`](../install.md)
+- Rossoctl is installed and the UI is reachable, as described in [`docs/getting-started/install.md`](../getting-started/install.md)
 - **the Skills feature flag is enabled** — Skills are disabled by default and must be explicitly enabled during installation (see [Enabling Skills](../skills.md#enabling-skills))
 - **the build system is deployed** — Agent builds require Shipwright and the in-cluster registry (`registry.cr-system.svc.cluster.local:5000`). Deploy with `--with-builds` or the build push step will fail with `no such host`. If you need to add it to an existing cluster: `scripts/kind/setup-rossoctl.sh --with-builds --skip-cluster`
 - you have access to a Rossoctl-enabled namespace, for example `team1`
@@ -307,6 +307,6 @@ After the demo, delete the agent and skill from the Rossoctl UI:
 ## Related references
 
 - [`docs/demos/demo-generic-agent.md`](./demo-generic-agent.md)
-- [`docs/install.md`](../install.md)
+- [`docs/getting-started/install.md`](../getting-started/install.md)
 - [`docs/local-models.md`](../local-models.md)
 - [`docs/skills.md`](../skills.md) — Skills feature flag, enabling instructions, and troubleshooting

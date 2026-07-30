@@ -15,7 +15,7 @@ for common development operations.
 
 ### Prerequisites
 
-Follow [installation](./docs/install.md) instructions.
+Follow [installation](./docs/getting-started/install.md) instructions.
 
 ### Issues
 
@@ -69,7 +69,7 @@ Documentation improvements are always welcome! When contributing documentation, 
 
 When adding diagrams to the documentation, please place them in the appropriate location:
 
-- **General images and architecture diagrams**: Place PNG, JPG, or other image files in [`docs/images/`](./docs/images/). This includes architecture diagrams, screenshots, QR codes, and other visual assets used across the documentation. We recommend using [draw.io](https://draw.io) for generating diagrams so they can be easily edited in the future. 
+- **General images and architecture diagrams**: Place PNG, JPG, or other image files in [`docs/images/`](./docs/images/). This includes architecture diagrams, screenshots, QR codes, and other visual assets used across the documentation. We recommend using [draw.io](https://draw.io) for generating diagrams so they can be easily edited in the future.
 
 - **Mermaid sequence diagrams**: Place Mermaid source files (`.mmd`) in [`docs/diagrams/`](./docs/diagrams/) and generate PNG versions in [`docs/diagrams/images/png/`](./docs/diagrams/images/png/). See the [diagrams README](./docs/diagrams/README.md) for instructions on generating diagram images from Mermaid source files.
 

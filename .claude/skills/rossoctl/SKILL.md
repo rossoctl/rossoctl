@@ -69,4 +69,4 @@ export ROSSOCTL_CONFIG_FILE=deployments/envs/dev_values.yaml
 
 ## Related Documentation
 
-- `docs/install.md`
+- `docs/getting-started/install.md`
