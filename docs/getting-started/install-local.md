@@ -18,16 +18,10 @@ git clone git@github.com:rossoctl/cortex.git
 cd cortex/authbridge/cmd/authbridge-proxy
 ```
 
-### Next, create a ContextGuru config that whose unused reverse proxy binds to a random port
-
-```bash
-cat ../../demos/context-guru/k8s/authbridge-config.yaml | sed 's/:8080/:0/' > /tmp/authbridge-config.yaml
-```
-
 ### Then, Run Cortex with AuthBridge + ContextGuru
 
 ```bash
-LOG_LEVEL=debug go run -tags include_plugin_contextguru . --config /tmp/authbridge-config.yaml
+LOG_LEVEL=debug go run -tags include_plugin_contextguru . --config ../../demos/context-guru/context-guru-tls-bridge.yaml
 ```
 
 ### Finally, run Claude against LiteLLM through AuthBridge
@@ -35,7 +29,7 @@ LOG_LEVEL=debug go run -tags include_plugin_contextguru . --config /tmp/authbrid
 Do this in a separate window.
 
 ```bash
-HTTPS_PROXY=http://localhost:8081 claude --model haiku
+NODE_EXTRA_CA_CERTS=/tmp/tls-bridge-ca/ca.crt HTTPS_PROXY=http://localhost:8081 claude
 ```
 
 At this point, ask Claude `what is 2+2?` and see log messages from Context Guru.
