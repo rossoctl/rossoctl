@@ -70,6 +70,10 @@ CERT_MANAGER_VERSION="v1.17.2"
 ISTIO_VERSION="1.28.0"
 SPIRE_CRD_VERSION="0.5.0"
 SPIRE_VERSION="0.27.0"
+# v0.2.12 fixed a mount leak that can exhaust the host mount table and disrupt
+# node services. Allow newer versions while enforcing the safe minimum.
+SPIFFE_CSI_DRIVER_MIN_VERSION="0.2.12"
+SPIFFE_CSI_DRIVER_VERSION="${SPIFFE_CSI_DRIVER_VERSION:-0.2.13}"
 GATEWAY_API_VERSION="v1.4.0"
 TEKTON_VERSION="v0.66.0"
 SHIPWRIGHT_VERSION="v0.14.0"
@@ -91,6 +95,24 @@ log_info()    { echo -e "${BLUE}→${NC} $1"; }
 log_success() { echo -e "${GREEN}✓${NC} $1"; }
 log_warn()    { echo -e "${YELLOW}⚠${NC} $1"; }
 log_error()   { echo -e "${RED}✗${NC} $1"; }
+
+version_at_least() {
+  # Image tags use numeric X.Y.Z releases. Reject prefixes and pre-release
+  # suffixes so a version can pass validation only if that exact tag is usable.
+  local version="$1" minimum="$2"
+  local version_major version_minor version_patch
+  local minimum_major minimum_minor minimum_patch
+
+  IFS=. read -r version_major version_minor version_patch <<<"$version"
+  IFS=. read -r minimum_major minimum_minor minimum_patch <<<"$minimum"
+
+  [[ "$version_major" =~ ^[0-9]+$ && "$version_minor" =~ ^[0-9]+$ && "$version_patch" =~ ^[0-9]+$ &&
+     "$minimum_major" =~ ^[0-9]+$ && "$minimum_minor" =~ ^[0-9]+$ && "$minimum_patch" =~ ^[0-9]+$ ]] || return 1
+
+  (( version_major > minimum_major )) ||
+    (( version_major == minimum_major && version_minor > minimum_minor )) ||
+    (( version_major == minimum_major && version_minor == minimum_minor && version_patch >= minimum_patch ))
+}
 
 run_cmd() {
   if $DRY_RUN; then echo "  [dry-run] $*"; else "$@"; fi
@@ -244,6 +266,8 @@ while [[ $# -gt 0 ]]; do
       echo "  --with-istio        Enable full Istio ambient mesh (mTLS, waypoints)"
       echo "                      Gateway API controller is always installed as core"
       echo "  --with-spire        Install SPIRE + SPIFFE IdP setup"
+      echo "                      Override CSI with SPIFFE_CSI_DRIVER_VERSION"
+      echo "                      (numeric X.Y.Z tag; minimum 0.2.12)"
       echo "  --with-backend      Install Rossoctl backend API"
       echo "  --with-ui           Install Rossoctl UI (auto-enables backend)"
       echo "  --with-mcp-gateway  Install MCP Gateway"
@@ -350,6 +374,12 @@ fi
 # Kuadrant provides AuthPolicy for MCP Gateway
 if $WITH_KUADRANT && ! $WITH_MCP_GATEWAY; then
   WITH_MCP_GATEWAY=true
+fi
+
+if $WITH_SPIRE && ! version_at_least "$SPIFFE_CSI_DRIVER_VERSION" "$SPIFFE_CSI_DRIVER_MIN_VERSION"; then
+  log_error "SPIFFE_CSI_DRIVER_VERSION must be a numeric X.Y.Z image tag at least"
+  log_error "${SPIFFE_CSI_DRIVER_MIN_VERSION}; got ${SPIFFE_CSI_DRIVER_VERSION}"
+  exit 1
 fi
 
 # ── Pre-flight ──────────────────────────────────────────────────────────────
@@ -675,6 +705,7 @@ if $WITH_SPIRE; then
     --set-string "global.spire.namespaces.server.labels.shared-gateway-access=true" \
     --set global.spire.ingressControllerType="" \
     --set global.spire.clusterName=agent-platform \
+    --set-string "spiffe-csi-driver.image.tag=${SPIFFE_CSI_DRIVER_VERSION}" \
     --set "global.spire.trustDomain=${DOMAIN}" \
     --set "global.spire.caSubject.country=US" \
     --set "global.spire.caSubject.organization=AgenticPlatformDemo" \
