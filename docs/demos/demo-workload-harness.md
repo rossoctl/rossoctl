@@ -3,13 +3,13 @@ description: Stress-test Rossoctl and evaluate load.
 sidebar_label: Run well-known benchmarks
 ---
 
-# Rossoctl Workload Harness
+### Rossoctl Workload Harness
 
 Workload harnesses drive test and evaluation traffic to Rossoctl agents. The current implementation is the **Exgentic A2A Runner** — a standalone Python runner that integrates Exgentic benchmarks with Rossoctl agents using the A2A (Agent-to-Agent) protocol.
 
 The harness exists to robustly exercise agents and validate that the Rossoctl platform is reliable, scalable, and observable.
 
-## Features
+#### Features
 
 - **Exgentic MCP Integration**: Communicates with Exgentic MCP server for benchmark tasks
 - **Parallel session processing**: Configurable concurrency for efficient benchmark execution and stress testing
@@ -19,7 +19,7 @@ The harness exists to robustly exercise agents and validate that the Rossoctl pl
 - **Configurable via environment variables**: Easy deployment and configuration
 - **Composable AuthBridge plugin pipeline**: Per-agent selection of inbound/outbound plugins (`jwt-validation`, `token-exchange`, `a2a-parser`, `ibac`, …) with `enforce` / `observe` / `off` policies — see [AuthBridge Plugin Pipeline](#authbridge-plugin-pipeline).
 
-## Getting Started
+#### Getting Started
 
 The minimal end-to-end path: stand up a Rossoctl cluster, build the agent + MCP images, then deploy and evaluate. Each block here is self-contained — copy the commands you need.
 
@@ -56,7 +56,7 @@ export IBAC_JUDGE_MODEL=llama3.2:3b
 
 The deploy + evaluate steps can also be run separately — see [Usage](#usage). For full plugin pipeline mechanics, see [AuthBridge Plugin Pipeline](#authbridge-plugin-pipeline).
 
-## Architecture
+#### Architecture
 
 The runner follows this execution model for each benchmark session:
 
@@ -66,7 +66,7 @@ The runner follows this execution model for each benchmark session:
 4. **Close Session**: `mcp_server.close_session(session_id)`
 5. **Record Statistics**: Track completion time, success rate, compute costs, tokens.
 
-## Benchmarks
+#### Benchmarks
 
 The runner currently drives three benchmarks via the Exgentic MCP server. Each is a separate MCP image (`./build.sh <name>` from `agent-examples/mcp/exgentic_benchmarks`) and is selected at deploy time with `--benchmark <name>`.
 
@@ -76,7 +76,7 @@ The runner currently drives three benchmarks via the Exgentic MCP server. Each i
 | `tau2` | Multi-turn customer-support conversations against a simulated user. Measures whether the agent can complete realistic task flows over several turns. | Domain tools (retail, airline, telecom) plus a user-simulator LLM. | Deploy passes `EXGENTIC_SET_BENCHMARK_USER_SIMULATOR_MODEL` so the simulator runs on the same model as the agent. The IBAC plugin also lands its canonical attack-shape tests against tau-style multi-turn traffic. |
 | `appworld` | Long-horizon, tool-heavy tasks across a simulated app ecosystem (calendar, email, contacts, etc.). Stresses tool selection and planning. | Very wide — hundreds of tools across the simulated apps. | OpenAI models can't handle this tool surface without shortlisting; use `gemini-2.5-pro` or another model with strong tool selection. |
 
-### Picking a model
+#### Picking a model
 
 The model name passed via `--model` (or `LLM_MODEL` / `EXGENTIC_SET_AGENT_MODEL`) is consumed by [LiteLLM](https://docs.litellm.ai/) on the agent side, so it follows LiteLLM's `<provider>/<model>` routing convention. The default is `Azure/gpt-4.1`.
 
@@ -94,11 +94,11 @@ The model name passed via `--model` (or `LLM_MODEL` / `EXGENTIC_SET_AGENT_MODEL`
 
 For `appworld`, use a model with strong tool-selection — e.g. `gemini-2.5-pro` — rather than an OpenAI-route model.
 
-## Installation
+#### Installation
 
 > **⏱️ Estimated Setup Time:** ~15 minutes (excluding container image pulls)
 
-### Prerequisites
+#### Prerequisites
 
 - Python 3.11 or 3.12 (Python 3.13+ is **not supported** due to dependency compatibility)
   - **Note:** The `uv` package manager will automatically use Python 3.12 when you run `uv sync --python 3.12`, regardless of your system Python version

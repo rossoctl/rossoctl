@@ -11,11 +11,11 @@ This document describes rossoctl's Kubernetes deployment. Check back in August f
 
 :::
 
-## Kubernetes Rossoctl Installation Guide
+### Kubernetes Rossoctl Installation Guide
 
 This guide covers installation on both local [Kind](https://kind.sigs.k8s.io) clusters and OpenShift environments.
 
-## Table of Contents
+### Table of Contents
 
 - [Kubernetes Prerequisites](#prerequisites)
   - [macOS Quick Start (New Machine)](#macos-quick-start-new-machine)
@@ -26,9 +26,9 @@ This guide covers installation on both local [Kind](https://kind.sigs.k8s.io) cl
 
 ---
 
-## Prerequisites
+### Prerequisites
 
-### Common Requirements
+#### Common Requirements
 
 | Tool | Version | Purpose |
 |------|---------|---------|
@@ -37,7 +37,7 @@ This guide covers installation on both local [Kind](https://kind.sigs.k8s.io) cl
 | git | ≥2.48.0 | Cloning repositories |
 | ollama | ≥v0.11.0 | Running inference without a cloud-based LLM account |
 
-### macOS Quick Start (New Machine)
+#### macOS Quick Start (New Machine)
 
 If you're setting up a brand-new Mac, install all prerequisites at once with [Homebrew](https://brew.sh):
 
@@ -70,7 +70,7 @@ podman machine init --rootful --memory 18432 --cpus 6
 podman machine start
 ```
 
-### Kind-Specific Requirements
+#### Kind-Specific Requirements
 
 | Tool | Purpose |
 |------|---------|
@@ -116,7 +116,7 @@ kind delete cluster --name rossoctl
 scripts/kind/setup-rossoctl.sh --with-istio --with-spire --with-ui --with-backend
 ```
 
-### OpenShift-Specific Requirements
+#### OpenShift-Specific Requirements
 
 | Tool | Purpose |
 |------|---------|
@@ -125,9 +125,9 @@ scripts/kind/setup-rossoctl.sh --with-istio --with-spire --with-ui --with-backen
 
 ---
 
-## Kind Installation (Local Development)
+### Kind Installation (Local Development)
 
-### Quick Start
+#### Quick Start
 
 ```bash
 # Clone the repository
@@ -245,7 +245,7 @@ scripts/kind/cleanup-rossoctl.sh
 scripts/kind/cleanup-rossoctl.sh --destroy-cluster
 ```
 
-### Using an Existing Kubernetes Cluster
+#### Using an Existing Kubernetes Cluster
 
 If you have an existing Kind cluster:
 
@@ -257,11 +257,11 @@ For non-Kind clusters, see the [OpenShift installation](#openshift-installation)
 
 ---
 
-## OpenShift Installation
+### OpenShift Installation
 
 Both Ollama (local models) and OpenAI are supported as LLM backends. See the [Local Models Guide](llms/local-models.md) for Ollama setup details.
 
-### Option A: Bash Installer (Recommended)
+#### Option A: Bash Installer (Recommended)
 
 The `scripts/ocp/setup-rossoctl.sh` script is the recommended way to install Rossoctl on OpenShift.
 It installs SPIRE, cert-manager, Keycloak, the operator, MCP Gateway, and the UI/backend in a
@@ -327,7 +327,7 @@ helm upgrade --install --create-namespace -n rossoctl-system \
   --set agentOAuthSecret.useServiceAccountCA=false
 ```
 
-### Option C: Install from Repository
+#### Option C: Install from Repository
 
 ```bash
 # Clone repository
@@ -374,15 +374,15 @@ If `Current` or `Ready` is `0`, see the [Troubleshooting Guide](../users-guides/
 
 ---
 
-## Accessing the UI
+### Accessing the UI
 
-### Kind Cluster
+#### Kind Cluster
 
 ```bash
 open http://rossoctl-ui.localtest.me:8080
 ```
 
-### OpenShift
+#### OpenShift
 
 ```bash
 echo "https://$(kubectl get route rossoctl-ui -n rossoctl-system -o jsonpath='{.status.ingress[0].host}')"
@@ -393,7 +393,7 @@ If using self-signed certificates, accept the certificate in your browser.
 The MCP Inspector and its proxy are served on a single host, so accepting the
 Inspector's certificate also covers its proxy — no separate step is needed.
 
-### Default Credentials
+#### Default Credentials
 
 Run the following script to display all service URLs and credentials:
 
@@ -410,7 +410,7 @@ kubectl get secret keycloak-initial-admin -n keycloak \
 
 ---
 
-## Keycloak Authentication
+### Keycloak Authentication
 
 Rossoctl supports two modes for how the operator and agent workloads authenticate to Keycloak:
 
@@ -421,9 +421,9 @@ Both modes are configured automatically during install. See the **[Authenticatio
 
 ---
 
-## Verifying the Installation
+### Verifying the Installation
 
-### Identity Services
+#### Identity Services
 
 ```bash
 # SPIRE OIDC (Kind)
@@ -433,14 +433,14 @@ curl http://spire-oidc.localtest.me:8080/keys
 open http://spire-tornjak-ui.localtest.me:8080/
 ```
 
-### Keycloak (Kind)
+#### Keycloak (Kind)
 
 ```bash
 open http://keycloak.localtest.me:8080/
 # Login: see .github/scripts/local-setup/show-services.sh output for credentials
 ```
 
-### UI Functionality
+#### UI Functionality
 
 From the UI you can:
 - Import and deploy A2A agents from any framework

@@ -3,7 +3,7 @@ description: Use an LLM and tool to discuss the weather.
 sidebar_label: Run the Weather Agent
 ---
 
-# Weather Agent Demo
+### Weather Agent Demo
 
 This document provides detailed steps for running the **Weather Agent** proof-of-concept (PoC) demo.
 
@@ -24,7 +24,7 @@ Here's a breakdown of the sections:
 
 ---
 
-## Import New Agent
+#### Import New Agent
 
 To deploy the Image Agent:
 
@@ -42,7 +42,7 @@ To deploy the Image Agent:
 
 ---
 
-## Import New Tool
+#### Import New Tool
 
 To deploy the Image Tool using Shipwright:
 
@@ -54,7 +54,7 @@ You will be redirected to a **Build Progress** page where you can monitor the Sh
 
 ---
 
-## Chat with the Weather Agent
+#### Chat with the Weather Agent
 
 Once the deployment is complete, you can run the demo:
 
@@ -68,7 +68,7 @@ Once the deployment is complete, you can run the demo:
 
 If you encounter any errors, check the [Troubleshooting section](../users-guides/troubleshooting.md).
 
-## Cleanup
+#### Cleanup
 
 - Select `Delete Agent`, and delete the weather agent.
 - Select `Delete Tool`, and delete the weather tool.

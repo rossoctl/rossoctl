@@ -2,9 +2,9 @@
 description: Components of the Rossoctl platform.
 ---
 
-# Rossoctl Components
+# Kubernetes deployment pattern
 
-This document provides detailed information about each component of the Rossoctl platform.
+This document provides detailed information about each component of the Rossoctl platform when deployed on Kubernetes.
 
 ## Table of Contents
 

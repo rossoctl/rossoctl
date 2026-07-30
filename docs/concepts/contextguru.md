@@ -2,7 +2,7 @@
 description: Shrink your LLM context.
 ---
 
-# Context-guru
+### Context-guru
 
 Context-guru is a [Rossoctl Cortex](https://github.com/rossoctl/cortex) plugin that compacts an
 agent's growing tool-output context before it reaches the LLM, so a task whose
@@ -17,7 +17,7 @@ Same agent, same model, same window. The only variable is context-guru:
 | **observe** | shadow (measures, doesn't apply) | raw ~18K tok (truncated); logs it *would* save 52KB→30KB | ❌ same wrong answer — proves the measurement is free |
 | **enforce** | applied | compacted **~10K tok** → **fits** | ✅ finds the TX4827 duplicate, clears the others |
 
-## Architecture
+#### Architecture
 
 context-guru is an **in-process AuthBridge plugin** (not a sidecar service). The
 agent's outbound LLM calls are routed through AuthBridge's forward proxy
@@ -50,6 +50,6 @@ The SVG is based on this ASCII art.  To edit the SVG, edit this art and ask a to
 
 ![context-guru architecture: the finance-agent routes outbound LLM calls through AuthBridge's forward proxy, whose OUTBOUND pipeline runs inference-parser then the context-guru plugin to compact tool context before the request reaches Ollama](./contextguru-architecture.svg)
 
-## Try the Demo!
+#### Try the Demo!
 
 - [Context-guru demo](https://github.com/rossoctl/cortex/tree/main/authbridge/demos/context-guru)

@@ -3,9 +3,7 @@ description: How to deploy your code onto Rossoctl.
 sidebar_label: Import a New Tool
 ---
 
-# Importing a New MCP Tool into the Platform
-
-## Overview
+## Importing a New MCP Tool into the Platform
 
 MCP (Model Context Protocol) tools extend the capabilities of AI agents by providing access to external services, APIs, and resources. Rossoctl allows you to deploy MCP tools either from source code or from pre-existing container images.
 

@@ -3,7 +3,7 @@ sidebar_label: Authbridge and Identity
 description: Introduction to Zero-Trust.
 ---
 
-# Authbridge and Identity
+## Authbridge and Identity
 
 **_Identity, Authentication, & Authorization_**
 
@@ -15,7 +15,7 @@ In practice, the Authorization Pattern within the Agentic Platform enables:
 - Secure Delegation – enforcing token exchange to propagate identity across services without excessive permissions.
 - Continuous Verification – ensuring authentication and authorization at each step, preventing privilege escalation.
 
-## 📚 Related Documentation
+### 📚 Related Documentation
 
 - **[Rossoctl Identity Overview](../2025-10.Rossoctl-Identity.pdf)** - High-level architectural concepts
 - **[AuthBridge Component](https://github.com/rossoctl/cortex/tree/main/authbridge)** - Complete end-to-end installation and demo with SPIFFE, Client Registration, and AuthProxy
@@ -24,9 +24,9 @@ In practice, the Authorization Pattern within the Agentic Platform enables:
 
 ---
 
-## 🏗️ Architecture Overview
+### 🏗️ Architecture Overview
 
-### Zero-Trust Identity Foundation
+#### Zero-Trust Identity Foundation
 
 Rossoctl checks of the `Authorization` header on incoming A2A requests before they reach your agent, without code changes. Rossoctl includes plugins for RFC 8693 token exchange and LLM traffic filters that can be applied to your workloads without code changes.
 
@@ -36,7 +36,7 @@ Rossoctl's identity architecture is built on three core principles:
 2. **Least Privilege Access** - Users and workloads receive minimum necessary permissions
 3. **Continuous Verification** - Identity and permissions are validated at every interaction
 
-### Key Components
+#### Key Components
 
 | Component | Purpose | Technology |
 |-----------|---------|------------|
@@ -48,13 +48,13 @@ Rossoctl's identity architecture is built on three core principles:
 
 ---
 
-## 🔐 SPIFFE/SPIRE Workload Identity
+### 🔐 SPIFFE/SPIRE Workload Identity
 
-### What is SPIFFE/SPIRE?
+#### What is SPIFFE/SPIRE?
 
 **SPIFFE** (Secure Production Identity Framework For Everyone) provides a universal identity control plane for distributed systems. **SPIRE** is the production-ready implementation that issues and manages SPIFFE identities.
 
-### SPIFFE Identity Format
+#### SPIFFE Identity Format
 
 In Rossoctl, workloads receive SPIFFE identities in the following format:
 
@@ -78,7 +78,7 @@ spiffe://apps.cluster-swkz5.dynamic.redhatworkshops.io/ns/team/sa/github-issue-a
 spiffe://apps.cluster-swkz5.dynamic.redhatworkshops.io/ns/gateway-system/sa/mcp-gateway
 ```
 
-### SVID Types
+#### SVID Types
 
 SPIRE issues **SPIFFE Verifiable Identity Documents (SVIDs)** in two formats:
 
@@ -97,7 +97,7 @@ SPIRE issues **SPIFFE Verifiable Identity Documents (SVIDs)** in two formats:
 }
 ```
 
-### SPIRE Environment Validation
+#### SPIRE Environment Validation
 
 To verify SPIRE is properly configured:
 
@@ -119,9 +119,9 @@ kubectl exec -n team deployment/slack-researcher --container authbridge-proxy --
 
 ---
 
-## 🎫 Keycloak Identity Management
+### 🎫 Keycloak Identity Management
 
-### Keycloak Architecture in Rossoctl
+#### Keycloak Architecture in Rossoctl
 
 Keycloak serves as the central identity provider that:
 
@@ -131,7 +131,7 @@ Keycloak serves as the central identity provider that:
 - Facilitates token exchange between services
 - Validates SPIFFE identities for workload authentication
 
-### Realm Configuration
+#### Realm Configuration
 
 **rossoctl Realm** is configured with:
 
@@ -140,7 +140,7 @@ Keycloak serves as the central identity provider that:
 - **Roles**: Granular permissions (e.g., `slack-full-access`, `github-partial-access`)
 - **Scopes**: Define token audiences and permissions
 
-### Client Types
+#### Client Types
 
 | Client Type | Authentication | Purpose | Example |
 |-------------|----------------|---------|----------|
@@ -148,7 +148,7 @@ Keycloak serves as the central identity provider that:
 | **Confidential Client** | Client secret | Backend services | Traditional services |
 | **SPIFFE Client** | JWT SVID | Workload identity | `spiffe://localtest.me/ns/team/sa/slack-researcher` |
 
-### Keycloak Admin Access
+#### Keycloak Admin Access
 
 ```bash
 # Access Keycloak Admin Console
@@ -166,9 +166,9 @@ kubectl get secret keycloak-initial-admin -n keycloak -o go-template=\
 
 ---
 
-## 🛠️ Practical Implementation Guide
+### 🛠️ Practical Implementation Guide
 
-### Client Registration Process
+#### Client Registration Process
 
 Keycloak client registration is handled automatically when "☑ Secure with AuthBridge" is selected during deployment.  This is fully automatic and requires no manual intervention or init containers.
 
@@ -176,11 +176,11 @@ Internally,  registration is handled by the rossoctl-operator's `ClientRegistrat
 
 ---
 
-## 🌉 AuthBridge Component
+### 🌉 AuthBridge Component
 
 The [AuthBridge Component](https://github.com/rossoctl/cortex/tree/main/authbridge) provides a complete, hands-on implementation of Rossoctl's identity and authorization patterns. It combines **Client Registration** and **AuthProxy** to demonstrate the full zero-trust authentication flow.
 
-### What AuthBridge Demonstrates
+#### What AuthBridge Demonstrates
 
 | Capability | Description |
 |------------|-------------|
@@ -189,7 +189,7 @@ The [AuthBridge Component](https://github.com/rossoctl/cortex/tree/main/authbrid
 | **Transparent Token Exchange** | Sidecar exchanges outbound tokens for correct target audience via Keycloak |
 | **Target Service Validation** | Target validates token has correct audience |
 
-### AuthBridge Architecture
+#### AuthBridge Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
@@ -239,7 +239,7 @@ The [AuthBridge Component](https://github.com/rossoctl/cortex/tree/main/authbrid
        │                         │                     │       "authorized" │
 ```
 
-### AuthBridge Components
+#### AuthBridge Components
 
 | Component | Type | Purpose |
 |-----------|------|---------|
@@ -248,14 +248,14 @@ The [AuthBridge Component](https://github.com/rossoctl/cortex/tree/main/authbrid
 
 > **Note**: Client registration is fully automatic. The operator reads Keycloak admin credentials from `keycloak-admin-secret` in the operator namespace (not from agent namespaces), providing better security isolation.
 
-### Hands-On Demos
+#### Hands-On Demos
 
 For step-by-step AuthBridge demos with real working examples, see:
 
 - **[AuthBridge Weather Demo](https://github.com/rossoctl/cortex/tree/main/authbridge/demos/weather-agent)** — Complete end-to-end example showing token exchange between a weather agent and weather tool
 - **[AuthBridge Documentation](https://github.com/rossoctl/cortex/tree/main/authbridge)** — Component documentation and additional examples
 
-### AuthBridge Documentation
+#### AuthBridge Documentation
 
 For complete documentation, see:
 
@@ -266,21 +266,21 @@ For complete documentation, see:
 
 ---
 
-## 📋 Quick Reference
+### 📋 Quick Reference
 
-### Essential URLs
+#### Essential URLs
 
 - Keycloak Admin Console: http://keycloak.localtest.me:8080/admin/master/console/
 - Tornjak UI: http://spire-tornjak-ui.localtest.me:8080/
 - Rossoctl UI: http://rossoctl-ui.localtest.me:8080/
 - (optional) MCP Gateway: http://mcp-gateway.localtest.me:8080/mcp
 
-### Default Credentials
+#### Default Credentials
 ```yaml
 # Keycloak Admin — run ./.github/scripts/local-setup/show-services.sh for actual credentials
 ```
 
-### Common SPIFFE IDs
+#### Common SPIFFE IDs
 
 Using local kind:
 
@@ -309,7 +309,7 @@ spiffe://apps.cluster-swkz5.dynamic.redhatworkshops.io/ns/team/sa/weather-servic
 spiffe://apps.cluster-swkz5.dynamic.redhatworkshops.io/ns/team/sa/github-issue-agent
 ```
 
-### Token Exchange Endpoints
+#### Token Exchange Endpoints
 
 ```bash
 # Keycloak Token Endpoint
@@ -324,9 +324,9 @@ POST http://keycloak.keycloak.svc.cluster.local:8080/realms/rossoctl/protocol/op
 
 ---
 
-## 🔄 OAuth2 Token Exchange Flows
+### 🔄 OAuth2 Token Exchange Flows
 
-### Token Exchange Protocol (RFC 8693)
+#### Token Exchange Protocol (RFC 8693)
 
 Rossoctl implements OAuth2 Token Exchange to enable secure token delegation across the agent ecosystem. This allows:
 
@@ -334,7 +334,7 @@ Rossoctl implements OAuth2 Token Exchange to enable secure token delegation acro
 - Least-privilege token scoping
 - Audit trails for all access requests
 
-### Authentication Flow Stages
+#### Authentication Flow Stages
 
 > **📊 Diagrams**: The following sequence diagrams illustrate Rossoctl's authentication flows. Each diagram is available as both PNG (for documentation) and SVG (for presentations) in the `docs/diagrams/images/` directory. The original Mermaid source files are preserved in collapsible sections below each diagram.
 
@@ -420,7 +420,7 @@ _Figure 4: Internal Tool Access Flow - Shows how agents call internal tools usin
 
 [View Mermaid Source Code](../diagrams/05-tool-access-delegated-token-flow.mmd)
 
-### JWT Token Structure
+#### JWT Token Structure
 
 **User Token:**
 
@@ -450,9 +450,9 @@ _Figure 4: Internal Tool Access Flow - Shows how agents call internal tools usin
 
 ---
 
-## 🌐 MCP Protocol Authentication
+### 🌐 MCP Protocol Authentication
 
-### MCP Gateway Authentication
+#### MCP Gateway Authentication
 
 The **MCP Gateway** acts as an authentication proxy for all Model Context Protocol communications:
 
@@ -510,7 +510,7 @@ spec:
       port: 8000
 ```
 
-### Tool-Specific Authentication
+#### Tool-Specific Authentication
 
 #### Slack Tool Authentication
 
@@ -576,22 +576,22 @@ _Figure 6: External API Access with Vault Flow - Shows how agents call internal 
 
 ---
 
-## 📚 Additional Resources
+### 📚 Additional Resources
 
-### Standards and Specifications
+#### Standards and Specifications
 
 - **[RFC 8693: OAuth 2.0 Token Exchange](https://tools.ietf.org/html/rfc8693)** - Token exchange specification
 - **[SPIFFE Specification](https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/)** - Workload identity framework
 - **[OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html)** - Authentication layer on OAuth 2.0
 - **[JWT RFC 7519](https://tools.ietf.org/html/rfc7519)** - JSON Web Token specification
 
-### Implementation Guides
+#### Implementation Guides
 
 - **[Keycloak Documentation](https://www.keycloak.org/documentation)** - Complete Keycloak reference
 - **[SPIRE Documentation](https://spiffe.io/docs/latest/spire-about/)** - SPIRE deployment and configuration
 - **[Istio Security](https://istio.io/latest/docs/concepts/security/)** - Service mesh security concepts
 
-### Community Resources
+#### Community Resources
 
 - **[Rossoctl GitHub Organization](https://github.com/orgs/rossoctl/repositories)** - All project repositories
 - **[Rossoctl Medium Publication](https://medium.com/rossoctl-the-agentic-platform)** - Technical blog posts

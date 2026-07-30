@@ -2,7 +2,7 @@
 description: IBAC (Intent-Based Access Control).
 ---
 
-# IBAC (Intent-Based Access Control)
+### IBAC (Intent-Based Access Control)
 
 IBAC is a [Rossoctl Cortex](https://github.com/rossoctl/cortex) plugin that compares each agent action
 against the user's most-recent declared intent (extracted from inbound A2A
@@ -18,7 +18,7 @@ authenticated and correctly scoped — it just isn't what the user wanted.
 Per-request only — no cross-request session-scoped state. The plugin runs on
 the **outbound** chain.
 
-## Threat Model
+#### Threat Model
 
 The motivating scenario is the email-poison / prompt-injection class:
 
@@ -105,6 +105,6 @@ The SVG is based on this ASCII art.  To edit the SVG, edit this art and ask a to
 
 ---
 
-## Try the Demo!
+#### Try the Demo!
 
 - [IBAC demo](https://github.com/rossoctl/cortex/tree/main/authbridge/demos/ibac)

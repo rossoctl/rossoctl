@@ -11,7 +11,7 @@ This document describes rossoctl's Kubernetes deployment. Check back in August f
 
 :::
 
-## Prerequisites for local Kubernetes (Kind) install of Rossoctl
+### Prerequisites for local Kubernetes (Kind) install of Rossoctl
 
 For this Quickstart, we'll install on a laptop-hosted Kubernetes using `kind`.
 
@@ -22,7 +22,7 @@ For more install options, see the [Installation Guide](../getting-started/instal
 - (optional) [Ollama](https://ollama.com/download) for local LLM inference.
   - Alternatively, use OpenAI or a [cloud-hosted LLM](../getting-started/llms/cloud-models.md).
 
-## Install Rossoctl on Kubernetes
+### Install Rossoctl on Kubernetes
 
 Clone the repository:
 
@@ -49,7 +49,7 @@ Deploy to `kind` self-hosted Kubernetes cluster:
 scripts/kind/setup-rossoctl.sh --with-ui --with-spire --with-agent-sandbox --with-builds
 ```
 
-## Access the Rossoctl Dashboard
+### Access the Rossoctl Dashboard
 
 Show service URLs and credentials:
 
@@ -63,7 +63,7 @@ Open the dashboard and log in with the credentials from the `show-services.sh` o
 open http://rossoctl-ui.localtest.me:8080
 ```
 
-## Install a self-hosted LLM
+### Install a self-hosted LLM
 
 :::note
 
@@ -84,6 +84,6 @@ You may skip this step and see [Cloud Models](../getting-started/llms/cloud-mode
    OLLAMA_HOST=0.0.0.0 ollama serve
    ```
 
-## Next step
+### Next step
 
 Run the [weather agent](../demos/demo-weather-agent.md).
