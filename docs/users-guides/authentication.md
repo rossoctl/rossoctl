@@ -1,5 +1,6 @@
 ---
 draft: true       # excluded from https://www.rossoctl.dev/
+sidebar_position: 2
 description: SPIFFE, Oauth2, and Keycloak
 ---
 
