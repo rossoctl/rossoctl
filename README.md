@@ -9,100 +9,48 @@
 [![License](https://img.shields.io/github/license/rossoctl/rossoctl)](LICENSE)
 [![Slack](https://img.shields.io/badge/Slack-Join%20us-4A154B?logo=slack&logoColor=white)](https://ibm.biz/rossoctl-slack)
 
-**Rossoctl** is a cloud-native middleware providing a *framework-neutral*, *scalable*, and *secure* platform for deploying and orchestrating AI agents through standardized agent communication protocols (A2A, MCP).
+## Platform primitives for trustworthy AI agents
 
-| Included Services: |  |
-|--------------------|--------|
-| - Zero-Trust Security Architecture<br>- Authentication and Authorization<br>- Trusted workload identity (SPIRE)<br>- Deployment and Configuration<br>- Scaling and Fault-tolerance<br>- Discovery of agents and tools<br>- State Persistence | <img src="banner.png" width="400"/> |
+Rossoctl is a set of platform primitives for agent security, resilience, reliability, and efficiency. It has three parts: **RossoCortex**, a data plane; a set of callable **services**; and **tooling** for observability, security, governance, and administration.
 
-## Why Rossoctl?
+It is open source, framework-neutral, and built on open standards, supporting [A2A](https://a2a-protocol.org/latest/) and [MCP](https://modelcontextprotocol.io).
 
-Despite the extensive variety of frameworks available for developing agent-based applications (LangGraph, CrewAI, AG2, etc.), there is a distinct lack of standardized methods for deploying and operating agent code in production environments. Agents are adept at reasoning, planning, and interacting with tools, but their full potential is often limited by:
+> **Get started** → [Quickstart](./docs/getting-started/install.md) · Learn more at [rossoctl.dev](https://rossoctl.dev/)
 
-- **Deployment Complexity** - Each framework requires custom deployment scripts and infrastructure
-- **Security Gaps** - No standardized approach to authentication, authorization, and workload identity
-- **Protocol Fragmentation** - Agents and tools use different communication patterns
-- **Operational Overhead** - Scaling, monitoring, and lifecycle management require custom solutions
+## The problem
 
-Rossoctl addresses these challenges by enhancing existing agent frameworks with production-ready, framework-neutral infrastructure.
+AI agents are not traditional cloud applications. They choose their tools at runtime, blur the line between data and instructions, drift from their original goals, and cannot reliably report what they actually did.
 
-## Supported AI Use‑Case Types
-Rossoctl is designed to support a broad range of AI‑agent deployment patterns, including knowledge services, synchronous and asynchronous user‑authorized assistants, continuous monitoring agents, and event‑driven workflows.
+Kubernetes decoupled application logic from the guarantees production demands around admission, isolation, and failure recovery. An agent platform has to do the same for agents: decouple agent logic from the guarantees around admission, isolation, and failure recovery, so those guarantees hold no matter which framework built the agent.
 
-See the full list and definitions in the **[Rossoctl Use Cases](./docs/use-case-types.md)** document.
+## RossoCortex, the data plane
 
-## Architecture
+RossoCortex is an intercept. It sits transparently between an agent and everything external it touches: models, tools, users, and other agents. From that single vantage point it enforces guarantees an agent cannot provide on its own.
 
-The goal of Rossoctl is to provide a pluggable agentic platform blueprint. Key functionalities are currently organized into four key pillars:
-1. Lifecycle Orchestration
-2. Networking
-3. Security
-4. Observability
+It is flexible by design: it works with different agent types, including black-box harnesses, integrates with different sandboxes, and works across container network choices.
 
-Under each of these pillars are logical components that support the workload runtime.
+| Capability | Status |
+|------------|--------|
+| Agent identity — every agent carries a verifiable identity, so the platform knows who is acting before it decides what they may do | Ready |
+| Authorization and access | Ready |
+| Intent-based access | beta in 0.7 |
+| Tool semantic validation | beta in 0.7 |
+| Context compaction | alpha in 0.7 |
+| Data-flow analysis | alpha in 0.7 |
+| Failure recovery | beta in 0.7 |
+| User interaction | beta in 0.7 |
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────────────┐
-│                                         ROSSOCTL PLATFORM                                │
-├─────────────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                         │
-│  ┌───────────────────────────────────────────────────────────────────────────────────┐  │
-│  │                                  ROSSOCTL UI*                                      │  │
-│  │          (Dashboard: Deploy, Test, Monitor Agents & Tools + Backend API)          │  │
-│  └───────────────────────────────────────────────────────────────────────────────────┘  │
-│                                                 │                                       │
-│                                                 ▼                                       │
-│  ┌───────────────────────────────────────────────────────────────────────────────────┐  │
-│  │                                    WORKLOAD RUNTIME                               │  │
-│  │   ┌──────────────────────┐    ┌──────────────────────┐    ┌───────────────────┐   │  │
-│  │   │       AGENTS         │    │        TOOLS         │    │      SKILLS       │   │  │
-│  │   │  (A2A - LangGraph,   │    │  (MCP Protocol       │    │    (Reusable      │   │  │
-│  │   │   CrewAI, Marvin,    │    │   Servers)           │    │   capabilities)   │   │  │
-│  │   │   Autogen, etc.)     │    │                      │    │                   │   │  │
-│  │   └──────────────────────┘    └──────────────────────┘    └───────────────────┘   │  │
-│  └───────────────────────────────────────────────────────────────────────────────────┘  │
-│                                                 │                                       │
-├─────────────────────────────────────────────────┼───────────────────────────────────────┤
-│                                        PLATFORM PILLARS                                 │
-│                                                 │                                       │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐  ┌────────────────┐   │
-│  │    LIFECYCLE     │  │    NETWORKING    │  │     SECURITY     │  │  OBSERVABILITY │   │
-│  │  ORCHESTRATION   │  │                  │  │                  │  │                │   │
-│  ├──────────────────┤  ├──────────────────┤  ├──────────────────┤  ├────────────────┤   │
-│  │                  │  │                  │  │                  │  │                │   │
-│  │   Agents/Tools   │  │   Tool Routing   │  │  Identity & Auth │  │    Tracing     │   │
-│  │   Lifecycle &    │  │    & Policy      │  │   (AuthBridge*)  │  │(MLflow,Langflow│   │
-│  │   Discovery      │  │  (MCP Gateway)   │  │                  │  │ Phoenix)       │   │
-│  │ (k8s workloads,  │  │                  │  │                  │  │                │   │
-│  │ labels,          │  ├──────────────────┤  ├──────────────────┤  ├────────────────┤   │
-│  │  AgentCard CRD*) │  │                  │  │                  │  │                │   │
-│  │                  │  │  Service Mesh    │  │    OAuth/OIDC    │  │   Network      │   │
-│  │                  │  │ (Istio/Ambient)  │  │    (Keycloak)    │  │ Visualization  │   │
-│  │                  │  │                  │  │                  │  │   (Kiali)      │   │
-│  │   Container      │  ├──────────────────┤  ├──────────────────┤  │                │   │
-│  │     Builds       │  │                  │  │                  │  │                │   │
-│  │  (Shipwright)    │  │ Ingress/Routing  │  │ Workload Identity│  │                │   │
-│  │                  │  │ (Gateway API)    │  │ (SPIFFE/SPIRE)   │  │                │   │
-│  │                  │  │                  │  │                  │  │                │   │
-│  └──────────────────┘  └──────────────────┘  └──────────────────┘  └────────────────┘   │
-│                                                                                         │
-├─────────────────────────────────────────────────────────────────────────────────────────┤
-│                                 KUBERNETES / OPENSHIFT                                  │
-└─────────────────────────────────────────────────────────────────────────────────────────┘
-* = Built by Rossoctl
-```
+Agents integrate with RossoCortex through multiple paths — an **SDK**, agent **hooks**, a **gateway**, or an **orchestration** layer — behind a common intercept abstraction that spans MCP tools, API/CLI tools, and agents.
 
-## Core Components
+## Rossoctl services
 
-Rossoctl provides a set of components and assets that make it easier to manage AI agents and tools and integrate their fine-grained authorization into modern cloud-native environments.
+Beyond the data plane, Rossoctl provides the building blocks agents need to do real work — lowering the risk of agentic workloads while using resources more efficiently:
 
-| Component | Description |
-|-----------|-------------|
-| **[Rossoctl UI](./rossoctl/ui-v2/)** | Dashboard for deploying agents/tools as Kubernetes Deployments, interactive testing, and monitoring |
-| **[Identity & Auth Bridge](./docs/concepts/identity-guide.md)** | Identity pattern assets that capture common authorization scenarios and provide reusable building blocks for implementing consistent authorization across services |
-| **[Agent Lifecycle Operator](https://github.com/rossoctl/operator)** | Kubernetes admission webhook for building agents from source, managing lifecycle, and coordinating platform services |
-| **[MCP Gateway](https://github.com/Kuadrant/mcp-gateway/)** | Unified gateway for Model Context Protocol (MCP) servers and tools. It acts as the entry point for policy enforcement, handling requests and routing them through the appropriate authorization patterns |
-| **[Plugins adapter](https://github.com/rossoctl/plugins-adapter)** | Adapter for security and safety plugins for Envoy-based gateways |
+- **Skills** — reusable, governed capabilities an agent can draw on, versioned and controlled rather than pasted in
+- **Tools**
+- **Memory**
+- **Knowledge base**
+- **Sandboxes**
 
 ## Quick Start
 
@@ -186,8 +134,8 @@ To reach the maintainer team, email **rossoctl-maintainers@googlegroups.com** or
 
 [Apache 2.0](./LICENSE)
 
-## QR Code for Rossoctl.io
+## QR Code for rossoctl.dev
 
-This QR Code links to <http://rossoctl.io>
+This QR Code links to <https://rossoctl.dev>
 
-![Rossoctl.io QR Code](./docs/images/Rossoctl.QRcode.png)
+<img src="./docs/images/Rossoctl.QRcode.png" alt="rossoctl.dev QR Code" width="200"/>
