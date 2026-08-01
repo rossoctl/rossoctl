@@ -284,3 +284,4 @@ The work is the developer's; Claude Code assists. This applies to:
 - [AuthBridge Demos](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/README.md) — Zero-trust agent demos (weather agent, github issue, webhook, multi-target) in cortex
 - [Skills and Patterns](docs/skills/README.md)
 - [Keycloak Patterns](docs/auth/keycloak-patterns.md)
+- [SVG Diagram Style Guide](docs/svg-diagram-style-guide.md) — palette and structure conventions for hand-authored diagrams in `docs/concepts/`; read before creating or editing one

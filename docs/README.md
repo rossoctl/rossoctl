@@ -41,6 +41,7 @@ This repo provides a UI to interface with the operator and deployed agents and t
 - [Developer's Guide](./dev-guide.md) provides instructions to get started contributing to the Rossoctl UI
 - [Import your own agent](./new-agent.md) provides instructions to import your own agent via the UI.
 - [Import your own tool](./new-tool.md) provides instructions to import your own MCP tool via the UI.
+- [SVG Diagram Style Guide](./svg-diagram-style-guide.md) documents the palette and structure conventions for the hand-authored architecture/flow diagrams in `docs/concepts/`.
 
 ## Community
 
