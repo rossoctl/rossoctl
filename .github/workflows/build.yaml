@@ -180,6 +180,7 @@ jobs:
           yq e ".agentOAuthSecret.tag = \"${REF_NAME}\"" -i values.yaml
           yq e ".apiOAuthSecret.tag = \"${REF_NAME}\"" -i values.yaml
           yq e ".mlflowOAuthSecret.tag = \"${REF_NAME}\"" -i values.yaml
+          yq e ".operatorSpiffeBootstrap.tag = \"${REF_NAME}\"" -i values.yaml
           helm package . --destination . --version ${chartVersion} --app-version ${chartVersion}
           helm push "./${chartPackageName}" oci://${{ env.REGISTRY }}/${{ env.REPO }}
 
