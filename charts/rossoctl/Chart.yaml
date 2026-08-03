@@ -2,8 +2,8 @@ apiVersion: v2
 name: rossoctl
 description: A Helm chart for deploying the rossoctl platform
 type: application
-version: 0.7.0-rc.1
-appVersion: "0.7.0-rc.1"
+version: 0.7.0-rc.2
+appVersion: "0.7.0-rc.2"
 
 dependencies:
 - name: operator-chart
