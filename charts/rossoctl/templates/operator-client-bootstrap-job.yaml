@@ -75,12 +75,7 @@ spec:
       restartPolicy: OnFailure
       containers:
       - name: bootstrap
-        # NOTE: operator-spiffe-bootstrap is not published yet and this Job is off
-        # by default (operator-chart.spiffe.operatorAuth.enabled=false). The
-        # default below is a placeholder version to satisfy the release pin-check;
-        # override via operator-chart.spiffe.operatorAuth.bootstrapImage once
-        # the image is built and pushed.
-        image: {{ (index .Values "operator-chart" "spiffe" "operatorAuth" "bootstrapImage") | default "ghcr.io/rossoctl/rossoctl/operator-spiffe-bootstrap:0.0.0-unreleased" }}
+        image: "{{ .Values.operatorSpiffeBootstrap.image }}:{{ .Values.operatorSpiffeBootstrap.tag }}"
         imagePullPolicy: IfNotPresent
         env:
         - name: KEYCLOAK_URL

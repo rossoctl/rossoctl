@@ -274,6 +274,16 @@ apiOAuthSecret:
   useServiceAccountCA: false
 
 # ------------------------------------------------------------------
+#  Operator SPIFFE Authentication Bootstrap Job Configuration
+#  Used by charts/rossoctl/templates/operator-client-bootstrap-job.yaml when
+#  operator-chart.spiffe.operatorAuth.enabled=true. Built by this repo's
+#  build.yaml CI workflow — kept in sync via scripts/pin-release-tags.sh.
+# ------------------------------------------------------------------
+operatorSpiffeBootstrap:
+  image: ghcr.io/rossoctl/rossoctl/operator-spiffe-bootstrap
+  tag: latest
+
+# ------------------------------------------------------------------
 #  Keycloak Configuration
 # ------------------------------------------------------------------
 keycloak:
