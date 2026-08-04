@@ -263,7 +263,15 @@ kind: ConfigMap
 metadata:
   name: authbridge-config
 data:
-  KEYCLOAK_URL: "https://${KC_HOST}"
+  # Admin API base for the operator's client-registration controller. This MUST
+  # be the in-cluster Service URL: the controller runs in the operator pod, where
+  # the public host (keycloak.localtest.me) resolves to [::1] and the admin token
+  # call fails ("dial tcp [::1]:443: connect: connection refused"), so the
+  # client-credentials Secret is never created and injected pods wedge on
+  # FailedMount. Token *validation* (ISSUER/*_AUDIENCE below) stays on the public
+  # host. NB the operator preserves this CI-provided value (no-clobber, #433), so
+  # it will not self-correct to the in-cluster default.
+  KEYCLOAK_URL: "${KC_INTERNAL}"
   KEYCLOAK_REALM: "${TX_REALM}"
   KEYCLOAK_NAMESPACE: "${KC_NAMESPACE}"
   ISSUER: "https://${KC_HOST}/realms/${TX_REALM}"
