@@ -1,6 +1,6 @@
 dependencies:
 - name: operator-chart
   repository: oci://ghcr.io/rossoctl/operator
-  version: 0.3.0-rc.1
-digest: sha256:c798887308cd9bbca68a26ae623381d493c840cb5b72bf02be99c716c676ba48
-generated: "2026-07-27T13:24:58.215107-04:00"
+  version: 0.3.0-rc.2
+digest: sha256:ce4e0a25cbf7df45b8f3ee726f18df8d20f8aebf05ab115d0c640da3136133c6
+generated: "2026-08-03T20:13:07.456217-04:00"
