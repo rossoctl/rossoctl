@@ -724,6 +724,7 @@ export interface DashboardConfig {
   traces: string;
   network: string;
   mlflow: string;
+  dataGovernance: string;
   traceAnalysis: string | null;
   mcpInspector: string | null;
   mcpProxy: string | null;

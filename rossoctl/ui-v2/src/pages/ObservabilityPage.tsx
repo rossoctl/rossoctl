@@ -23,6 +23,7 @@ import {
   NetworkIcon,
   ExternalLinkAltIcon,
   CubesIcon,
+  SecurityIcon,
 } from '@patternfly/react-icons';
 import { useQuery } from '@tanstack/react-query';
 
@@ -97,6 +98,7 @@ export const ObservabilityPage: React.FC = () => {
   const tracesUrl = dashboards?.traces || '';
   const networkUrl = dashboards?.network || '';
   const mlflowUrl = dashboards?.mlflow || '';
+  const dataGovernanceUrl = dashboards?.dataGovernance || '';
   const traceAnalysisUrl = dashboards?.traceAnalysis || '';
 
   return (
@@ -150,6 +152,17 @@ export const ObservabilityPage: React.FC = () => {
             />
           </GridItem>
 
+          <GridItem md={6} lg={4}>
+            <DashboardCard
+              title="Data Governance"
+              description="Inspect agent interaction traces, data flows, and governed entities. Walk the resource tree captured from OpenTelemetry spans."
+              icon={<SecurityIcon />}
+              url={dataGovernanceUrl}
+              buttonText="Open Data Governance"
+              isLoading={isLoading}
+            />
+          </GridItem>
+
           {mlflowUrl && (
             <GridItem md={6} lg={4}>
               <DashboardCard
@@ -181,6 +194,7 @@ export const ObservabilityPage: React.FC = () => {
           const tools = [
             tracesUrl && 'Phoenix for traces',
             'Kiali for service mesh',
+            dataGovernanceUrl && 'Data Governance for interaction traces',
             mlflowUrl && 'MLflow for experiment tracking',
           ].filter(Boolean) as string[];
           const toolList =

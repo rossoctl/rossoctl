@@ -29,6 +29,7 @@ data:
   TRACE_ANALYSIS_DASHBOARD_URL: ""
   {{- end }}
   NETWORK_TRAFFIC_DASHBOARD_URL: "http://kiali.{{ .Values.ui.domainName }}:8080"
+  DATA_GOVERNANCE_DASHBOARD_URL: "http://dg.{{ .Values.ui.domainName }}:8080"
   MCP_INSPECTOR_URL: "http://mcp-inspector.{{ .Values.ui.domainName }}:8080"
   # Proxy served on the inspector host under /mcp-proxy by the nginx sidecar
   # (single origin).
@@ -188,6 +189,12 @@ spec:
                 configMapKeyRef:
                   name: "{{ .Values.ui.configmap }}"
                   key: "MLFLOW_DASHBOARD_URL"
+                  optional: true
+            - name: DATA_GOVERNANCE_DASHBOARD_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: "{{ .Values.ui.configmap }}"
+                  key: "DATA_GOVERNANCE_DASHBOARD_URL"
                   optional: true
             - name: TRACE_ANALYSIS_DASHBOARD_URL
               valueFrom:

@@ -134,6 +134,7 @@ class Settings(BaseSettings):
     network_dashboard_url: str = ""
     mlflow_dashboard_url: str = ""
     trace_analysis_dashboard_url: str = ""
+    data_governance_dashboard_url: str = ""
     mcp_inspector_url: str = ""
     mcp_proxy_full_address: str = ""
     keycloak_console_url: str = ""

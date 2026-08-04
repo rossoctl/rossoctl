@@ -73,6 +73,7 @@ class DashboardConfigResponse(BaseModel):
     traces: str
     network: str
     mlflow: str
+    dataGovernance: str
     traceAnalysis: Optional[str] = None
     mcpInspector: Optional[str] = None
     mcpProxy: Optional[str] = None
