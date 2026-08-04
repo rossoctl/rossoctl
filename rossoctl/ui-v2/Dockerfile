@@ -28,7 +28,13 @@ RUN npm run build
 FROM nginx:1.31-alpine@sha256:8b1e78743a03dbb2c95171cc58639fef29abc8816598e27fb910ed2e621e589a
 
 # Copy nginx configuration (server block only; mounted at conf.d/default.conf).
+# Force world-readable perms: the container runs as non-root UID 1001 (see below),
+# and COPY preserves the builder's umask — under podman that yields root-only 0640,
+# so nginx (UID 1001) hits "[emerg] Permission denied" reading default.conf and
+# crashloops. BuildKit/docker happens to copy 0644; the explicit chmod makes the
+# image builder-independent.
 COPY ui-v2/nginx.conf /etc/nginx/conf.d/default.conf
+RUN chmod 0644 /etc/nginx/conf.d/default.conf
 
 # Pin worker_processes to a fixed count in the *main* nginx.conf.
 # The stock image ships `worker_processes auto;`, which spawns one worker per
