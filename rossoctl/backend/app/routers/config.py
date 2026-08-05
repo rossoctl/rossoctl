@@ -117,9 +117,7 @@ async def get_dashboard_config() -> DashboardConfigResponse:
         traces=settings.traces_dashboard_url,
         network=settings.network_dashboard_url or f"http://kiali.{domain}:8080",
         mlflow=settings.mlflow_dashboard_url,
-        dataGovernance=(
-            settings.data_governance_dashboard_url or f"http://dg.{domain}:8080"
-        ),
+        dataGovernance=(settings.data_governance_dashboard_url or f"http://dg.{domain}:8080"),
         traceAnalysis=settings.trace_analysis_dashboard_url or None,
         mcpInspector=settings.mcp_inspector_url or None,
         mcpProxy=settings.mcp_proxy_full_address or None,
