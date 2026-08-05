@@ -155,7 +155,7 @@ export const ObservabilityPage: React.FC = () => {
           <GridItem md={6} lg={4}>
             <DashboardCard
               title="Data Governance"
-              description="Inspect agent interaction traces, data flows, and governed entities. Walk the resource tree captured from OpenTelemetry spans."
+              description="Inspect agent interaction traces, data flows, and governed entities. Walk the resource tree captured from OpenTelemetry spans. Early alpha version."
               icon={<SecurityIcon />}
               url={dataGovernanceUrl}
               buttonText="Open Data Governance"
