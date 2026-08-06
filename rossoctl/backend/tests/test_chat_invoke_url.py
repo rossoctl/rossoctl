@@ -14,7 +14,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
-from app.routers.chat import _invoke_url_cache, _resolve_invoke_url
+from app.routers.chat import _invoke_url_cache, _resolve_invoke_url, get_agent_card
 
 
 @pytest.fixture
@@ -106,14 +106,31 @@ class TestResolveInvokeUrl:
         assert url == "http://myagent.ns.svc.cluster.local:8443"
 
     @pytest.mark.asyncio
-    async def test_falls_back_on_404(self, mock_kube, mock_resolve_base):
-        """When agent card endpoint returns 404, return base URL."""
-        mock_resp = httpx.Response(404, text="not found", request=httpx.Request("GET", "http://x"))
+    async def test_falls_back_to_legacy_card_path_on_404(self, mock_kube, mock_resolve_base):
+        """When the current card endpoint is missing, try the legacy endpoint."""
+        missing = httpx.Response(404, text="not found", request=httpx.Request("GET", "http://x"))
+        legacy_card = {
+            "name": "legacy-agent",
+            "url": "http://myagent.ns.svc.cluster.local:8443/a2a/invoke",
+        }
+        found = httpx.Response(
+            200,
+            json=legacy_card,
+            request=httpx.Request("GET", "http://x"),
+        )
 
-        with patch("httpx.AsyncClient.get", new_callable=AsyncMock, return_value=mock_resp):
+        with patch(
+            "httpx.AsyncClient.get",
+            new_callable=AsyncMock,
+            side_effect=[missing, found],
+        ) as mock_get:
             url = await _resolve_invoke_url("myagent", "ns", mock_kube)
 
-        assert url == "http://myagent.ns.svc.cluster.local:8443"
+        assert url == "http://myagent.ns.svc.cluster.local:8443/a2a/invoke"
+        assert [call.args[0] for call in mock_get.await_args_list] == [
+            "/.well-known/agent-card.json",
+            "/.well-known/agent.json",
+        ]
 
     @pytest.mark.asyncio
     async def test_rejects_path_traversal(self, mock_kube, mock_resolve_base):
@@ -212,6 +229,44 @@ class TestResolveInvokeUrl:
             url = await _resolve_invoke_url("myagent", "ns", mock_kube)
 
         assert url == "http://myagent.ns.svc.cluster.local:8443/a2a/invoke"
+
+
+class TestGetAgentCard:
+    @pytest.mark.asyncio
+    async def test_falls_back_to_legacy_card_path_on_404(self, mock_kube, mock_resolve_base):
+        """The agent-card API supports agents that only expose the legacy endpoint."""
+        missing = httpx.Response(404, text="not found", request=httpx.Request("GET", "http://x"))
+        legacy_card = {
+            "name": "legacy-agent",
+            "version": "1.0.0",
+            "url": "http://myagent.ns.svc.cluster.local:8443",
+        }
+        found = httpx.Response(
+            200,
+            json=legacy_card,
+            request=httpx.Request("GET", "http://x"),
+        )
+
+        with patch(
+            "httpx.AsyncClient.get",
+            new_callable=AsyncMock,
+            side_effect=[missing, found],
+        ) as mock_get:
+            card = await get_agent_card("ns", "myagent", mock_kube)
+
+        assert card.name == "legacy-agent"
+        assert [call.args[0] for call in mock_get.await_args_list] == [
+            "/.well-known/agent-card.json",
+            "/.well-known/agent.json",
+        ]
+
+    @pytest.mark.asyncio
+    async def test_rejects_invalid_agent_identity(self, mock_kube, mock_resolve_base):
+        """Reject invalid path parameters before constructing the agent URL."""
+        with pytest.raises(Exception, match="Invalid agent name or namespace"):
+            await get_agent_card("ns", "invalid/name", mock_kube)
+
+        mock_resolve_base.assert_not_called()
 
 
 class TestInvokeUrlCache:
