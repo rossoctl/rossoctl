@@ -452,7 +452,7 @@ kubectl -n team1 get pod -l app.kubernetes.io/name=<agent-name> \
 - **`Reads ... no earlier plugin writes it`**: parser ordering issue;
   shouldn't happen with the canonical-position table, but possible if a
   malformed `--plugin-config-file` introduces an unknown plugin. See
-  [`framework-architecture.md` §6](https://github.com/rossoctl/rossoctl-extensions/blob/main/authbridge/docs/framework-architecture.md)
+  [`framework-architecture.md` §6](https://github.com/rossoctl/cortex/blob/main/authbridge/docs/framework-architecture.md)
   for the underlying rules.
 - **`ibac.no_intent`** in IBAC telemetry: the inbound chain is
   misconfigured — `a2a-parser` didn't run, so `Session.Intents` is
