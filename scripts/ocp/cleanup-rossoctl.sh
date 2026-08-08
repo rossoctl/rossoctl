@@ -8,8 +8,9 @@
 # Uses parallel deletion where possible for faster cleanup.
 #
 # Usage:
-#   ./scripts/ocp/cleanup-rossoctl.sh            # Interactive (prompts for confirmation)
-#   ./scripts/ocp/cleanup-rossoctl.sh --yes      # Skip confirmation prompt
+#   ./scripts/ocp/cleanup-rossoctl.sh                        # Interactive (prompts for confirmation)
+#   ./scripts/ocp/cleanup-rossoctl.sh --yes                  # Skip confirmation prompt
+#   ./scripts/ocp/cleanup-rossoctl.sh --preserve-cert-manager # Keep cert-manager (Step 7)
 #
 # This script:
 #   1. Uninstalls Helm releases (parallel): rossoctl, mcp-gateway, kuadrant-operator, rossoctl-deps
@@ -19,21 +20,34 @@
 #   5. Removes MLflow resources (CR, OAuth proxy, RoleBindings)
 #   6. Deletes shared trust ClusterIssuers, Certificates, and cacerts secrets
 #   7. Removes cert-manager OLM operator + namespace (must be last)
+#      -- SKIPPED when --preserve-cert-manager is passed. On clusters where
+#         cert-manager also manages resources OUTSIDE rossoctl (e.g. the
+#         ingress/API wildcard certs via a letsencrypt ClusterIssuer and a
+#         cluster-specific DNS-01 solver secret), deleting the cert-manager
+#         namespace drops that solver secret. setup-rossoctl.sh reinstalls
+#         cert-manager but does NOT recreate the cluster-specific secret, so
+#         the next cert renewal fails silently. Use --preserve-cert-manager on
+#         those clusters.
 # ============================================================================
 
 set -euo pipefail
 
 AUTO_YES=false
+PRESERVE_CERT_MANAGER=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --yes|-y) AUTO_YES=true; shift ;;
+    --preserve-cert-manager) PRESERVE_CERT_MANAGER=true; shift ;;
     -h|--help)
       echo "Usage: $0 [OPTIONS]"
       echo ""
       echo "Options:"
-      echo "  --yes, -y    Skip confirmation prompt"
-      echo "  -h, --help   Show this help"
+      echo "  --yes, -y                  Skip confirmation prompt"
+      echo "  --preserve-cert-manager    Skip Step 7; keep the cert-manager operator +"
+      echo "                             namespace (and any cluster-specific issuer/solver"
+      echo "                             secrets it holds, e.g. ingress/API cert renewal)"
+      echo "  -h, --help                 Show this help"
       exit 0
       ;;
     *) echo "Unknown option: $1"; exit 1 ;;
@@ -83,10 +97,18 @@ echo "============================================"
 echo ""
 echo "This will remove:"
 echo "  - Helm releases: rossoctl, mcp-gateway, kuadrant-operator, rossoctl-deps"
-echo "  - Namespaces: rossoctl-system, mcp-system, gateway-system, keycloak, istio-cni,"
-echo "    istio-system, istio-ztunnel, openshift-builds,"
-echo "    zero-trust-workload-identity-manager, cert-manager-operator, cert-manager,"
-echo "    kuadrant-system, agent-sandbox-system, team1, team2"
+if $PRESERVE_CERT_MANAGER; then
+  echo "  - Namespaces: rossoctl-system, mcp-system, gateway-system, keycloak, istio-cni,"
+  echo "    istio-system, istio-ztunnel, openshift-builds,"
+  echo "    zero-trust-workload-identity-manager,"
+  echo "    kuadrant-system, agent-sandbox-system, team1, team2"
+  echo "  - cert-manager: PRESERVED (--preserve-cert-manager)"
+else
+  echo "  - Namespaces: rossoctl-system, mcp-system, gateway-system, keycloak, istio-cni,"
+  echo "    istio-system, istio-ztunnel, openshift-builds,"
+  echo "    zero-trust-workload-identity-manager, cert-manager-operator, cert-manager,"
+  echo "    kuadrant-system, agent-sandbox-system, team1, team2"
+fi
 echo "  - agent-sandbox controller manifests (if present)"
 echo "  - MLflow CR, OAuth proxy, and RoleBindings (if present)"
 echo "  - ClusterIssuers: istio-mesh-root-selfsigned, istio-mesh-ca"
@@ -306,22 +328,28 @@ echo ""
 # ---------------------------------------------------------------------------
 # Step 7: Remove cert-manager OLM operator + namespaces (must be last)
 # ---------------------------------------------------------------------------
-log_info "Step 7: Removing cert-manager operator..."
+if $PRESERVE_CERT_MANAGER; then
+  log_info "Step 7: SKIPPED (--preserve-cert-manager)"
+  log_warn "  cert-manager operator + namespace PRESERVED"
+  log_warn "  (letsencrypt/DNS-01 issuers and cluster-specific solver secrets kept intact)"
+else
+  log_info "Step 7: Removing cert-manager operator..."
 
-$KUBECTL delete subscription --all -n cert-manager-operator --timeout=30s 2>/dev/null && \
-  log_success "  cert-manager Subscription deleted" || \
-  log_info "  No Subscription found in cert-manager-operator"
+  $KUBECTL delete subscription --all -n cert-manager-operator --timeout=30s 2>/dev/null && \
+    log_success "  cert-manager Subscription deleted" || \
+    log_info "  No Subscription found in cert-manager-operator"
 
-CSV=$($KUBECTL get csv -n cert-manager-operator -o name 2>/dev/null | head -1)
-if [ -n "$CSV" ]; then
-  $KUBECTL delete "$CSV" -n cert-manager-operator --timeout=30s 2>/dev/null && \
-    log_success "  cert-manager CSV deleted" || \
-    log_warn "  Failed to delete cert-manager CSV"
+  CSV=$($KUBECTL get csv -n cert-manager-operator -o name 2>/dev/null | head -1)
+  if [ -n "$CSV" ]; then
+    $KUBECTL delete "$CSV" -n cert-manager-operator --timeout=30s 2>/dev/null && \
+      log_success "  cert-manager CSV deleted" || \
+      log_warn "  Failed to delete cert-manager CSV"
+  fi
+
+  _delete_ns cert-manager-operator &
+  _delete_ns cert-manager          &
+  wait
 fi
-
-_delete_ns cert-manager-operator &
-_delete_ns cert-manager          &
-wait
 echo ""
 
 ELAPSED=$(( SECONDS - START_SECONDS ))
@@ -329,7 +357,12 @@ MINS=$(( ELAPSED / 60 ))
 SECS=$(( ELAPSED % 60 ))
 
 echo "============================================"
-echo "  Rossoctl Cleanup Complete  (${MINS}m ${SECS}s)"
+if $PRESERVE_CERT_MANAGER; then
+  echo "  Rossoctl Cleanup Complete  (${MINS}m ${SECS}s)"
+  echo "  cert-manager PRESERVED (--preserve-cert-manager)"
+else
+  echo "  Rossoctl Cleanup Complete  (${MINS}m ${SECS}s)"
+fi
 echo "============================================"
 echo ""
 echo "To redeploy, run: ./scripts/ocp/setup-rossoctl.sh"
