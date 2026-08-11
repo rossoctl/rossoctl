@@ -13,13 +13,13 @@ The Rossoctl UI v2 integrates with Keycloak for authentication using the OpenID 
 │   Browser    │─────▶│  Backend API │─────▶│  Kubernetes  │
 │  (React UI)  │◀─────│   (FastAPI)  │      │   Cluster    │
 └──────────────┘      └──────────────┘      └──────────────┘
-       │                                              
-       │ OIDC Flow                                    
-       ▼                                              
-┌──────────────┐                                     
-│   Keycloak   │                                     
-│   (IdP)      │                                     
-└──────────────┘                                     
+       │
+       │ OIDC Flow
+       ▼
+┌──────────────┐
+│   Keycloak   │
+│   (IdP)      │
+└──────────────┘
 ```
 
 ### Authentication Flow
@@ -386,8 +386,8 @@ open http://rossoctl-ui.localtest.me:8080/agents
 
 - [Keycloak Documentation](https://www.keycloak.org/documentation)
 - [OpenID Connect Specification](https://openid.net/specs/openid-connect-core-1_0.html)
-- [Keycloak JS Adapter](https://www.keycloak.org/docs/latest/securing_apps/#_javascript_adapter)
-- [PatternFly Authentication Patterns](https://www.patternfly.org/patterns/authentication/)
+- [Keycloak JS Adapter](https://www.keycloak.org/securing-apps/javascript-adapter)
+- [PatternFly Authentication Patterns](https://www.patternfly.org/components/login-page/design-guidelines/)
 
 ## Need Help?
 

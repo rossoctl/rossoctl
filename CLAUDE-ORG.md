@@ -6,7 +6,7 @@ This document provides context for AI assistants working across the Rossoctl org
 
 **Rossoctl** is a cloud-native middleware platform for deploying and orchestrating AI agents. The project provides a framework-neutral, scalable, and secure infrastructure for running agents built with any framework through standardized protocols (A2A, MCP).
 
-**Website**: [rossoctl.io](http://rossoctl.io)
+**Website**: [rossoctl.dev](https://www.rossoctl.dev/)
 **GitHub Organization**: [github.com/rossoctl](https://github.com/rossoctl)
 **Slack**: [Rossoctl Slack](https://ibm.biz/rossoctl-slack)
 

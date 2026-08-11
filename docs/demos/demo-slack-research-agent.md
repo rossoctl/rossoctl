@@ -42,7 +42,7 @@ For this demo, prior to installing Rossoctl, you need to add two variables to th
 [Slack Bot Token](https://docs.slack.dev/quickstart) page and follow instructions to generate the bot token:
 
 1. Create a pre-configured app
-1. Select the Slack workspace (e.g. [rossoctl-dev](https://rossoctl-dev.slack.com) reach out to us to be added.)
+1. Select the Slack workspace
 1. Edit Configurations
     * Change the name, by replacing `my-powerful-app` with a custom name
     * Modify Slack scopes according to what are required. [See note below]

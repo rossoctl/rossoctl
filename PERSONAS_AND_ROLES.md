@@ -406,7 +406,7 @@ The Rossoctl platform serves **10 core personas** across eight specialized repos
 
 **Get Involved**:
 
-- 🌐 **Website**: [rossoctl.io](http://rossoctl.io)
+- 🌐 **Website**: [rossoctl.io](https://www.rossoctl.dev/)
 - 💬 **Slack**: [Join our community](https://ibm.biz/rossoctl-slack)
 - 📖 **Blog**: [Rossoctl Medium Publication](https://medium.com/rossoctl-the-agentic-platform)
 - 🐙 **GitHub**: [github.com/rossoctl](https://github.com/rossoctl)
