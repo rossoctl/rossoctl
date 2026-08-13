@@ -4884,6 +4884,9 @@ async def fetch_env_from_url(request: FetchEnvUrlRequest) -> FetchEnvUrlResponse
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
+_K8S_NAME_RE = re.compile(r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$")
+
+
 if settings.rossoctl_feature_flag_authbridge_api:
 
     @router.get(
@@ -4939,8 +4942,15 @@ if settings.rossoctl_feature_flag_authbridge_api:
         Set the AuthBridge configuration for an Agent.
         """
 
-        namespace = sanitize_log(namespace)
-        name = sanitize_log(name)
+        if not _K8S_NAME_RE.fullmatch(namespace):
+            raise HTTPException(status_code=400, detail="Invalid namespace")
+        if not _K8S_NAME_RE.fullmatch(name):
+            raise HTTPException(status_code=400, detail="Invalid name")
+
+        try:
+            yaml.safe_load(new_authbridge_config_yaml)
+        except yaml.YAMLError as e:
+            raise HTTPException(status_code=400, detail=f"Invalid YAML: {e}") from e
 
         kube.upsert_configmap(
             namespace=namespace,
