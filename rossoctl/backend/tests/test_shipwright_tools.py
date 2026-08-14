@@ -460,3 +460,94 @@ class TestToolBuildInfoResponse:
         assert response.toolConfig is not None
         assert response.toolConfig.protocol == "streamable_http"
         assert response.toolConfig.createHttpRoute is True
+
+
+class TestToolResourceOverrideRoundTrip:
+    """A tool built from source must end up with the resources chosen at
+    form-submit time. That requires the overrides to survive the whole
+    store-then-read-back path: CreateToolRequest -> Build annotation ->
+    ResourceConfigFromBuild -> finalize. A break anywhere in that chain
+    silently downgrades the workload to the platform defaults."""
+
+    def test_build_manifest_stores_resource_overrides(self):
+        request = CreateToolRequest(
+            name="gpu-tool",
+            namespace="team1",
+            protocol="streamable_http",
+            framework="Python",
+            deploymentMethod="source",
+            gitUrl="https://github.com/example/tools",
+            contextDir="tools/gpu",
+            k8sResourceLimits={"cpu": "2", "memory": "4Gi"},
+            k8sResourceRequests={"cpu": "500m", "memory": "1Gi"},
+        )
+
+        manifest = _build_tool_shipwright_build_manifest(request)
+
+        tool_config = json.loads(manifest["metadata"]["annotations"]["rossoctl.io/tool-config"])
+        assert tool_config["k8sResourceLimits"] == {"cpu": "2", "memory": "4Gi"}
+        assert tool_config["k8sResourceRequests"] == {"cpu": "500m", "memory": "1Gi"}
+
+    def test_build_manifest_omits_absent_resource_overrides(self):
+        request = CreateToolRequest(
+            name="plain-tool",
+            namespace="team1",
+            protocol="streamable_http",
+            framework="Python",
+            deploymentMethod="source",
+            gitUrl="https://github.com/example/tools",
+            contextDir="tools/plain",
+        )
+
+        manifest = _build_tool_shipwright_build_manifest(request)
+
+        tool_config = json.loads(manifest["metadata"]["annotations"]["rossoctl.io/tool-config"])
+        assert "k8sResourceLimits" not in tool_config
+        assert "k8sResourceRequests" not in tool_config
+
+    def test_extracted_config_preserves_resource_overrides(self):
+        """ResourceConfigFromBuild drops annotation keys it does not declare, so
+        this guards against the fields being silently discarded on read-back."""
+        build = {
+            "metadata": {
+                "name": "gpu-tool",
+                "namespace": "team1",
+                "annotations": {
+                    "rossoctl.io/tool-config": json.dumps(
+                        {
+                            "protocol": "streamable_http",
+                            "framework": "Python",
+                            "k8sResourceLimits": {"cpu": "2", "memory": "4Gi"},
+                            "k8sResourceRequests": {"cpu": "500m", "memory": "1Gi"},
+                        }
+                    )
+                },
+            }
+        }
+
+        config = extract_resource_config_from_build(build, ResourceType.TOOL)
+
+        assert config is not None
+        assert config.k8sResourceLimits == {"cpu": "2", "memory": "4Gi"}
+        assert config.k8sResourceRequests == {"cpu": "500m", "memory": "1Gi"}
+        # The finalize path reads this via model_dump(); confirm it survives too.
+        assert config.model_dump()["k8sResourceLimits"] == {"cpu": "2", "memory": "4Gi"}
+
+    def test_finalize_request_accepts_resource_overrides(self):
+        """An explicit override on the finalize call must be representable, so it
+        can take precedence over whatever the annotation stored."""
+        request = FinalizeToolBuildRequest(
+            k8sResourceLimits={"cpu": "8", "memory": "16Gi"},
+            k8sResourceRequests={"cpu": "1", "memory": "2Gi"},
+        )
+
+        assert request.k8sResourceLimits == {"cpu": "8", "memory": "16Gi"}
+        assert request.k8sResourceRequests == {"cpu": "1", "memory": "2Gi"}
+
+    def test_finalize_request_defaults_to_none_for_inheritance(self):
+        """None is the sentinel that means 'inherit the stored value', so it must
+        not be conflated with an empty dict."""
+        request = FinalizeToolBuildRequest()
+
+        assert request.k8sResourceLimits is None
+        assert request.k8sResourceRequests is None

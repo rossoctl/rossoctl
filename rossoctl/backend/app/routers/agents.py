@@ -323,7 +323,23 @@ class CreateAgentRequest(BaseModel):
     shipwrightConfig: Optional[ShipwrightBuildConfig] = None
 
     # Optional per-agent overrides for container resource limits/requests
-    # (falls back to DEFAULT_RESOURCE_LIMITS / DEFAULT_RESOURCE_REQUESTS)
+    # (falls back to DEFAULT_RESOURCE_LIMITS / DEFAULT_RESOURCE_REQUESTS).
+    #
+    # These are two flat parameters rather than a single aggregating
+    # ResourceConfig{limits, requests} model on purpose. They map 1:1 onto the
+    # two independent dicts the manifest builders already emit, so each can be
+    # overridden without forcing the caller to supply the other, and each falls
+    # back to its own platform default independently. A wrapper model would add
+    # a nesting level and a partially-populated intermediate object without
+    # changing what reaches the container spec.
+    #
+    # The dict accepts arbitrary keys and unvalidated quantity strings. This is
+    # deliberate: validating them here would mean reimplementing Kubernetes
+    # quantity parsing and the set of valid resource names (including extended
+    # resources such as nvidia.com/gpu), a complex validation path that would
+    # still have to be kept in sync with the API server. Instead the values are
+    # passed through and an invalid entry is rejected by the Kubernetes API at
+    # create time, with its error surfaced to the caller.
     k8sResourceLimits: Optional[Dict[str, str]] = None
     k8sResourceRequests: Optional[Dict[str, str]] = None
 
@@ -2607,6 +2623,10 @@ def _build_agent_shipwright_build_manifest(
         resource_config["tlsBridgeEnabled"] = True
     if request.persistentStorage:
         resource_config["persistentStorage"] = request.persistentStorage.model_dump()
+    if request.k8sResourceLimits:
+        resource_config["k8sResourceLimits"] = request.k8sResourceLimits
+    if request.k8sResourceRequests:
+        resource_config["k8sResourceRequests"] = request.k8sResourceRequests
     # Add env vars if present
     if request.envVars:
         resource_config["envVars"] = [ev.model_dump(exclude_none=True) for ev in request.envVars]
@@ -4087,6 +4107,11 @@ class FinalizeShipwrightBuildRequest(BaseModel):
     mcpToolName: Optional[str] = None
     llmPreset: Optional[str] = None
     llmModel: Optional[str] = None
+    # Mirror CreateAgentRequest.k8sResourceLimits/k8sResourceRequests. None →
+    # inherit the value stashed on the BuildRun annotation at form-submit time,
+    # so a build-from-source agent gets the same resources as a direct-image one.
+    k8sResourceLimits: Optional[Dict[str, str]] = None
+    k8sResourceRequests: Optional[Dict[str, str]] = None
 
     @model_validator(mode="after")
     def _check_mtls_compatible_with_mode(self) -> "FinalizeShipwrightBuildRequest":
@@ -4417,6 +4442,21 @@ async def finalize_shipwright_build(
         if final_persistent_storage is None and stored_config.get("persistentStorage"):
             final_persistent_storage = PersistentStorageConfig(**stored_config["persistentStorage"])
 
+        # Per-workload resource overrides. Same store-then-read-back flow as
+        # mtlsMode: None on the finalize request → inherit whatever the form
+        # stashed on the BuildRun annotation, else fall back to the platform
+        # defaults inside the manifest builders.
+        final_k8s_resource_limits = (
+            request.k8sResourceLimits
+            if request.k8sResourceLimits is not None
+            else stored_config.get("k8sResourceLimits")
+        )
+        final_k8s_resource_requests = (
+            request.k8sResourceRequests
+            if request.k8sResourceRequests is not None
+            else stored_config.get("k8sResourceRequests")
+        )
+
         final_mcp_tool_name = (
             request.mcpToolName
             if request.mcpToolName is not None
@@ -4459,6 +4499,8 @@ async def finalize_shipwright_build(
             mcpToolName=final_mcp_tool_name,
             llmPreset=final_llm_preset,
             llmModel=final_llm_model,
+            k8sResourceLimits=final_k8s_resource_limits,
+            k8sResourceRequests=final_k8s_resource_requests,
         )
         agent_request = apply_agent_import_defaults(agent_request, kube)
 

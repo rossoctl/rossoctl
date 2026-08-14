@@ -254,7 +254,12 @@ class CreateToolRequest(BaseModel):
     outboundRoutes: Optional[List["OutboundRoute"]] = None
 
     # Optional per-tool overrides for container resource limits/requests
-    # (falls back to DEFAULT_RESOURCE_LIMITS / DEFAULT_RESOURCE_REQUESTS)
+    # (falls back to DEFAULT_RESOURCE_LIMITS / DEFAULT_RESOURCE_REQUESTS).
+    #
+    # Two flat parameters rather than a single aggregating ResourceConfig, and
+    # arbitrary keys accepted without quantity validation. See the matching
+    # fields on CreateAgentRequest in agents.py for the full rationale on both
+    # choices; the two request models are kept symmetrical on purpose.
     k8sResourceLimits: Optional[Dict[str, str]] = None
     k8sResourceRequests: Optional[Dict[str, str]] = None
 
@@ -276,6 +281,11 @@ class FinalizeToolBuildRequest(BaseModel):
     outboundPortsExclude: Optional[str] = None
     inboundPortsExclude: Optional[str] = None
     defaultOutboundPolicy: Optional[Literal["passthrough", "exchange"]] = None
+    # Mirror CreateToolRequest.k8sResourceLimits/k8sResourceRequests so a tool
+    # built from source gets the same resources as a direct-image one instead of
+    # silently falling back to the platform defaults.
+    k8sResourceLimits: Optional[Dict[str, str]] = None
+    k8sResourceRequests: Optional[Dict[str, str]] = None
 
 
 class ToolShipwrightBuildInfoResponse(BaseModel):  # pylint: disable=too-many-instance-attributes
@@ -650,6 +660,10 @@ def _build_tool_shipwright_build_manifest(
     # Add persistent storage config if present (for StatefulSet)
     if request.persistentStorage:
         resource_config["persistentStorage"] = request.persistentStorage.model_dump()
+    if request.k8sResourceLimits:
+        resource_config["k8sResourceLimits"] = request.k8sResourceLimits
+    if request.k8sResourceRequests:
+        resource_config["k8sResourceRequests"] = request.k8sResourceRequests
     # Add env vars if present
     if request.envVars:
         resource_config["envVars"] = [ev.model_dump() for ev in request.envVars]
@@ -2200,6 +2214,19 @@ async def finalize_tool_shipwright_build(
             if request.defaultOutboundPolicy is not None
             else tool_config_dict.get("defaultOutboundPolicy")
         )
+        # Per-workload resource overrides: explicit on the finalize request wins,
+        # else inherit what the form stashed on the Build annotation, else the
+        # manifest builders fall back to the platform defaults.
+        final_k8s_resource_limits = (
+            request.k8sResourceLimits
+            if request.k8sResourceLimits is not None
+            else tool_config_dict.get("k8sResourceLimits")
+        )
+        final_k8s_resource_requests = (
+            request.k8sResourceRequests
+            if request.k8sResourceRequests is not None
+            else tool_config_dict.get("k8sResourceRequests")
+        )
 
         # Ensure a dedicated ServiceAccount exists so the webhook's
         # SPIFFE identity uses the workload name, not the ReplicaSet hash.
@@ -2253,6 +2280,8 @@ async def finalize_tool_shipwright_build(
                 outbound_ports_exclude=outbound_ports_exclude,
                 inbound_ports_exclude=inbound_ports_exclude,
                 auth_bridge_mode=auth_bridge_mode,
+                resource_limits=final_k8s_resource_limits,
+                resource_requests=final_k8s_resource_requests,
             )
             kube.create_statefulset(namespace, workload_manifest)
             logger.info(
@@ -2276,6 +2305,8 @@ async def finalize_tool_shipwright_build(
                 outbound_ports_exclude=outbound_ports_exclude,
                 inbound_ports_exclude=inbound_ports_exclude,
                 auth_bridge_mode=auth_bridge_mode,
+                resource_limits=final_k8s_resource_limits,
+                resource_requests=final_k8s_resource_requests,
             )
             kube.create_deployment(namespace, workload_manifest)
             logger.info(

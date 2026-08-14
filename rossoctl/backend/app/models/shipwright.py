@@ -133,6 +133,12 @@ class ResourceConfigFromBuild(BaseModel):
     envVars: Optional[List[Dict[str, Any]]] = None
     skills: Optional[List[str]] = None
     servicePorts: Optional[List[Dict[str, Any]]] = None
+    # Per-workload resource overrides stashed at form-submit time. Declared here
+    # because this model drops undeclared annotation keys (Pydantic's default
+    # extra="ignore"), so a field absent from the model is invisible to callers
+    # that read it back via model_dump() during Shipwright finalize.
+    k8sResourceLimits: Optional[Dict[str, str]] = None
+    k8sResourceRequests: Optional[Dict[str, str]] = None
 
 
 class ShipwrightBuildInfoResponse(BaseModel):
