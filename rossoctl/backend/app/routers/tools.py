@@ -253,6 +253,11 @@ class CreateToolRequest(BaseModel):
     # Outbound routing rules (authproxy-routes ConfigMap)
     outboundRoutes: Optional[List["OutboundRoute"]] = None
 
+    # Optional per-tool overrides for container resource limits/requests
+    # (falls back to DEFAULT_RESOURCE_LIMITS / DEFAULT_RESOURCE_REQUESTS)
+    k8sResourceLimits: Optional[Dict[str, str]] = None
+    k8sResourceRequests: Optional[Dict[str, str]] = None
+
 
 class FinalizeToolBuildRequest(BaseModel):
     """Request to finalize a tool Shipwright build by creating the Deployment/StatefulSet."""
@@ -1215,6 +1220,8 @@ def _build_tool_deployment_manifest(
     outbound_ports_exclude: Optional[str] = None,
     inbound_ports_exclude: Optional[str] = None,
     auth_bridge_mode: Optional[str] = None,
+    resource_limits: Optional[Dict[str, str]] = None,
+    resource_requests: Optional[Dict[str, str]] = None,
 ) -> dict:
     """
     Build a Kubernetes Deployment manifest for an MCP tool.
@@ -1325,8 +1332,8 @@ def _build_tool_deployment_manifest(
                             "env": all_env_vars,
                             "ports": container_ports,
                             "resources": {
-                                "limits": DEFAULT_RESOURCE_LIMITS,
-                                "requests": DEFAULT_RESOURCE_REQUESTS,
+                                "limits": resource_limits or DEFAULT_RESOURCE_LIMITS,
+                                "requests": resource_requests or DEFAULT_RESOURCE_REQUESTS,
                             },
                             "volumeMounts": [
                                 {"name": "cache", "mountPath": "/app/.cache"},
@@ -1371,6 +1378,8 @@ def _build_tool_statefulset_manifest(
     outbound_ports_exclude: Optional[str] = None,
     inbound_ports_exclude: Optional[str] = None,
     auth_bridge_mode: Optional[str] = None,
+    resource_limits: Optional[Dict[str, str]] = None,
+    resource_requests: Optional[Dict[str, str]] = None,
 ) -> dict:
     """
     Build a Kubernetes StatefulSet manifest for an MCP tool.
@@ -1486,8 +1495,8 @@ def _build_tool_statefulset_manifest(
                             "env": all_env_vars,
                             "ports": container_ports,
                             "resources": {
-                                "limits": DEFAULT_RESOURCE_LIMITS,
-                                "requests": DEFAULT_RESOURCE_REQUESTS,
+                                "limits": resource_limits or DEFAULT_RESOURCE_LIMITS,
+                                "requests": resource_requests or DEFAULT_RESOURCE_REQUESTS,
                             },
                             "volumeMounts": [
                                 {"name": "data", "mountPath": "/data"},
@@ -1751,6 +1760,8 @@ async def create_tool(
                     outbound_ports_exclude=request.outboundPortsExclude,
                     inbound_ports_exclude=request.inboundPortsExclude,
                     auth_bridge_mode=request.authBridgeMode,
+                    resource_limits=request.k8sResourceLimits,
+                    resource_requests=request.k8sResourceRequests,
                 )
                 kube.create_statefulset(request.namespace, workload_manifest)
                 created.append(("StatefulSet", request.name))
@@ -1774,6 +1785,8 @@ async def create_tool(
                     outbound_ports_exclude=request.outboundPortsExclude,
                     inbound_ports_exclude=request.inboundPortsExclude,
                     auth_bridge_mode=request.authBridgeMode,
+                    resource_limits=request.k8sResourceLimits,
+                    resource_requests=request.k8sResourceRequests,
                 )
                 kube.create_deployment(request.namespace, workload_manifest)
                 created.append(("Deployment", request.name))

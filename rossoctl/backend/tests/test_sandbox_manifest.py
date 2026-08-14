@@ -32,6 +32,8 @@ def _make_request(**overrides):
     req.defaultOutboundPolicy = overrides.get("defaultOutboundPolicy", None)
     req.persistentStorage = overrides.get("persistentStorage", None)
     req.skills = overrides.get("skills", None)
+    req.k8sResourceLimits = overrides.get("k8sResourceLimits", None)
+    req.k8sResourceRequests = overrides.get("k8sResourceRequests", None)
     return req
 
 

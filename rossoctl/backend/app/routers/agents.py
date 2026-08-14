@@ -322,6 +322,11 @@ class CreateAgentRequest(BaseModel):
     # Shipwright build configuration
     shipwrightConfig: Optional[ShipwrightBuildConfig] = None
 
+    # Optional per-agent overrides for container resource limits/requests
+    # (falls back to DEFAULT_RESOURCE_LIMITS / DEFAULT_RESOURCE_REQUESTS)
+    k8sResourceLimits: Optional[Dict[str, str]] = None
+    k8sResourceRequests: Optional[Dict[str, str]] = None
+
     @field_validator("workloadType")
     @classmethod
     def validate_workload_type(cls, v: str) -> str:
@@ -3189,8 +3194,8 @@ def _build_deployment_manifest(
                             "image": image,
                             "imagePullPolicy": DEFAULT_IMAGE_POLICY,
                             "resources": {
-                                "limits": DEFAULT_RESOURCE_LIMITS,
-                                "requests": DEFAULT_RESOURCE_REQUESTS,
+                                "limits": request.k8sResourceLimits or DEFAULT_RESOURCE_LIMITS,
+                                "requests": request.k8sResourceRequests or DEFAULT_RESOURCE_REQUESTS,
                             },
                             "env": env_vars,
                             "ports": [
@@ -3392,8 +3397,8 @@ def _build_statefulset_manifest(
                             "image": image,
                             "imagePullPolicy": DEFAULT_IMAGE_POLICY,
                             "resources": {
-                                "limits": DEFAULT_RESOURCE_LIMITS,
-                                "requests": DEFAULT_RESOURCE_REQUESTS,
+                                "limits": request.k8sResourceLimits or DEFAULT_RESOURCE_LIMITS,
+                                "requests": request.k8sResourceRequests or DEFAULT_RESOURCE_REQUESTS,
                             },
                             "env": env_vars,
                             "ports": [
@@ -3536,8 +3541,8 @@ def _build_job_manifest(
                             "image": image,
                             "imagePullPolicy": DEFAULT_IMAGE_POLICY,
                             "resources": {
-                                "limits": DEFAULT_RESOURCE_LIMITS,
-                                "requests": DEFAULT_RESOURCE_REQUESTS,
+                                "limits": request.k8sResourceLimits or DEFAULT_RESOURCE_LIMITS,
+                                "requests": request.k8sResourceRequests or DEFAULT_RESOURCE_REQUESTS,
                             },
                             "env": env_vars,
                             "ports": [
@@ -3645,8 +3650,8 @@ def _build_sandbox_manifest(
                             "image": image,
                             "imagePullPolicy": DEFAULT_IMAGE_POLICY,
                             "resources": {
-                                "limits": DEFAULT_RESOURCE_LIMITS,
-                                "requests": DEFAULT_RESOURCE_REQUESTS,
+                                "limits": request.k8sResourceLimits or DEFAULT_RESOURCE_LIMITS,
+                                "requests": request.k8sResourceRequests or DEFAULT_RESOURCE_REQUESTS,
                             },
                             "env": env_vars,
                             "ports": [
