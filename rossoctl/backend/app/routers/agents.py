@@ -3195,7 +3195,8 @@ def _build_deployment_manifest(
                             "imagePullPolicy": DEFAULT_IMAGE_POLICY,
                             "resources": {
                                 "limits": request.k8sResourceLimits or DEFAULT_RESOURCE_LIMITS,
-                                "requests": request.k8sResourceRequests or DEFAULT_RESOURCE_REQUESTS,
+                                "requests": request.k8sResourceRequests
+                                or DEFAULT_RESOURCE_REQUESTS,
                             },
                             "env": env_vars,
                             "ports": [
@@ -3398,7 +3399,8 @@ def _build_statefulset_manifest(
                             "imagePullPolicy": DEFAULT_IMAGE_POLICY,
                             "resources": {
                                 "limits": request.k8sResourceLimits or DEFAULT_RESOURCE_LIMITS,
-                                "requests": request.k8sResourceRequests or DEFAULT_RESOURCE_REQUESTS,
+                                "requests": request.k8sResourceRequests
+                                or DEFAULT_RESOURCE_REQUESTS,
                             },
                             "env": env_vars,
                             "ports": [
@@ -3542,7 +3544,8 @@ def _build_job_manifest(
                             "imagePullPolicy": DEFAULT_IMAGE_POLICY,
                             "resources": {
                                 "limits": request.k8sResourceLimits or DEFAULT_RESOURCE_LIMITS,
-                                "requests": request.k8sResourceRequests or DEFAULT_RESOURCE_REQUESTS,
+                                "requests": request.k8sResourceRequests
+                                or DEFAULT_RESOURCE_REQUESTS,
                             },
                             "env": env_vars,
                             "ports": [
@@ -3651,7 +3654,8 @@ def _build_sandbox_manifest(
                             "imagePullPolicy": DEFAULT_IMAGE_POLICY,
                             "resources": {
                                 "limits": request.k8sResourceLimits or DEFAULT_RESOURCE_LIMITS,
-                                "requests": request.k8sResourceRequests or DEFAULT_RESOURCE_REQUESTS,
+                                "requests": request.k8sResourceRequests
+                                or DEFAULT_RESOURCE_REQUESTS,
                             },
                             "env": env_vars,
                             "ports": [
