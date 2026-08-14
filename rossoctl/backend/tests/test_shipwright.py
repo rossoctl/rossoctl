@@ -50,6 +50,8 @@ from app.core.constants import (
     ROSSOCTL_SPIRE_LABEL,
     ROSSOCTL_SPIRE_ENABLED_VALUE,
     RESOURCE_TYPE_AGENT,
+    DEFAULT_RESOURCE_LIMITS,
+    DEFAULT_RESOURCE_REQUESTS,
 )
 
 
@@ -1050,3 +1052,55 @@ class TestSpireLabel:
 
         pod_labels = manifest["spec"]["template"]["metadata"]["labels"]
         assert pod_labels.get(ROSSOCTL_SPIRE_LABEL) == ROSSOCTL_SPIRE_ENABLED_VALUE
+
+
+class TestResourceOverridePropagation:
+    """Verify k8sResourceLimits/k8sResourceRequests overrides reach the
+    generated container resources, and fall back to platform defaults
+    when not provided."""
+
+    def test_agent_deployment_uses_custom_resources(self):
+        request = CreateAgentRequest(
+            name="test-agent",
+            namespace="team1",
+            protocol="a2a",
+            framework="LangGraph",
+            deploymentMethod="image",
+            containerImage="registry.example.com/test-agent:v1",
+            k8sResourceLimits={"cpu": "1", "memory": "2Gi"},
+            k8sResourceRequests={"cpu": "250m", "memory": "512Mi"},
+        )
+        manifest = _build_deployment_manifest(request, image="registry.example.com/test-agent:v1")
+
+        resources = manifest["spec"]["template"]["spec"]["containers"][0]["resources"]
+        assert resources["limits"] == {"cpu": "1", "memory": "2Gi"}
+        assert resources["requests"] == {"cpu": "250m", "memory": "512Mi"}
+
+    def test_agent_statefulset_falls_back_to_defaults_without_overrides(self):
+        request = CreateAgentRequest(
+            name="test-agent",
+            namespace="team1",
+            protocol="a2a",
+            framework="LangGraph",
+            deploymentMethod="image",
+            containerImage="registry.example.com/test-agent:v1",
+            workloadType="statefulset",
+        )
+        manifest = _build_statefulset_manifest(request, image="registry.example.com/test-agent:v1")
+
+        resources = manifest["spec"]["template"]["spec"]["containers"][0]["resources"]
+        assert resources["limits"] == DEFAULT_RESOURCE_LIMITS
+        assert resources["requests"] == DEFAULT_RESOURCE_REQUESTS
+
+    def test_tool_deployment_uses_custom_resources(self):
+        manifest = _build_tool_deployment_manifest(
+            name="test-tool",
+            namespace="team1",
+            image="registry.example.com/test-tool:v1",
+            resource_limits={"cpu": "1", "memory": "2Gi"},
+            resource_requests={"cpu": "250m", "memory": "512Mi"},
+        )
+
+        resources = manifest["spec"]["template"]["spec"]["containers"][0]["resources"]
+        assert resources["limits"] == {"cpu": "1", "memory": "2Gi"}
+        assert resources["requests"] == {"cpu": "250m", "memory": "512Mi"}
