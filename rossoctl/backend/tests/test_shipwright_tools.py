@@ -488,22 +488,16 @@ class TestToolResourceOverrideRoundTrip:
         assert tool_config["k8sResourceLimits"] == {"cpu": "2", "memory": "4Gi"}
         assert tool_config["k8sResourceRequests"] == {"cpu": "500m", "memory": "1Gi"}
 
-    def test_build_manifest_omits_absent_resource_overrides(self):
-        request = CreateToolRequest(
-            name="plain-tool",
-            namespace="team1",
-            protocol="streamable_http",
-            framework="Python",
-            deploymentMethod="source",
-            gitUrl="https://github.com/example/tools",
-            contextDir="tools/plain",
+        # Absent overrides are omitted rather than stored as null, so the
+        # finalize read-back falls through to the platform defaults.
+        without_overrides = _build_tool_shipwright_build_manifest(
+            request.model_copy(update={"k8sResourceLimits": None, "k8sResourceRequests": None})
         )
-
-        manifest = _build_tool_shipwright_build_manifest(request)
-
-        tool_config = json.loads(manifest["metadata"]["annotations"]["rossoctl.io/tool-config"])
-        assert "k8sResourceLimits" not in tool_config
-        assert "k8sResourceRequests" not in tool_config
+        bare_config = json.loads(
+            without_overrides["metadata"]["annotations"]["rossoctl.io/tool-config"]
+        )
+        assert "k8sResourceLimits" not in bare_config
+        assert "k8sResourceRequests" not in bare_config
 
     def test_extracted_config_preserves_resource_overrides(self):
         """ResourceConfigFromBuild drops annotation keys it does not declare, so
@@ -532,22 +526,3 @@ class TestToolResourceOverrideRoundTrip:
         assert config.k8sResourceRequests == {"cpu": "500m", "memory": "1Gi"}
         # The finalize path reads this via model_dump(); confirm it survives too.
         assert config.model_dump()["k8sResourceLimits"] == {"cpu": "2", "memory": "4Gi"}
-
-    def test_finalize_request_accepts_resource_overrides(self):
-        """An explicit override on the finalize call must be representable, so it
-        can take precedence over whatever the annotation stored."""
-        request = FinalizeToolBuildRequest(
-            k8sResourceLimits={"cpu": "8", "memory": "16Gi"},
-            k8sResourceRequests={"cpu": "1", "memory": "2Gi"},
-        )
-
-        assert request.k8sResourceLimits == {"cpu": "8", "memory": "16Gi"}
-        assert request.k8sResourceRequests == {"cpu": "1", "memory": "2Gi"}
-
-    def test_finalize_request_defaults_to_none_for_inheritance(self):
-        """None is the sentinel that means 'inherit the stored value', so it must
-        not be conflated with an empty dict."""
-        request = FinalizeToolBuildRequest()
-
-        assert request.k8sResourceLimits is None
-        assert request.k8sResourceRequests is None

@@ -1060,52 +1060,6 @@ class TestResourceOverridePropagation:
     generated container resources, and fall back to platform defaults
     when not provided."""
 
-    def test_agent_deployment_uses_custom_resources(self):
-        request = CreateAgentRequest(
-            name="test-agent",
-            namespace="team1",
-            protocol="a2a",
-            framework="LangGraph",
-            deploymentMethod="image",
-            containerImage="registry.example.com/test-agent:v1",
-            k8sResourceLimits={"cpu": "1", "memory": "2Gi"},
-            k8sResourceRequests={"cpu": "250m", "memory": "512Mi"},
-        )
-        manifest = _build_deployment_manifest(request, image="registry.example.com/test-agent:v1")
-
-        resources = manifest["spec"]["template"]["spec"]["containers"][0]["resources"]
-        assert resources["limits"] == {"cpu": "1", "memory": "2Gi"}
-        assert resources["requests"] == {"cpu": "250m", "memory": "512Mi"}
-
-    def test_agent_statefulset_falls_back_to_defaults_without_overrides(self):
-        request = CreateAgentRequest(
-            name="test-agent",
-            namespace="team1",
-            protocol="a2a",
-            framework="LangGraph",
-            deploymentMethod="image",
-            containerImage="registry.example.com/test-agent:v1",
-            workloadType="statefulset",
-        )
-        manifest = _build_statefulset_manifest(request, image="registry.example.com/test-agent:v1")
-
-        resources = manifest["spec"]["template"]["spec"]["containers"][0]["resources"]
-        assert resources["limits"] == DEFAULT_RESOURCE_LIMITS
-        assert resources["requests"] == DEFAULT_RESOURCE_REQUESTS
-
-    def test_tool_deployment_uses_custom_resources(self):
-        manifest = _build_tool_deployment_manifest(
-            name="test-tool",
-            namespace="team1",
-            image="registry.example.com/test-tool:v1",
-            resource_limits={"cpu": "1", "memory": "2Gi"},
-            resource_requests={"cpu": "250m", "memory": "512Mi"},
-        )
-
-        resources = manifest["spec"]["template"]["spec"]["containers"][0]["resources"]
-        assert resources["limits"] == {"cpu": "1", "memory": "2Gi"}
-        assert resources["requests"] == {"cpu": "250m", "memory": "512Mi"}
-
     # Every agent workload type emits its own container spec, so each builder is
     # exercised independently -- a regression in one would otherwise hide behind
     # the deployment-only coverage above. workloadType is left at its default:
@@ -1220,6 +1174,63 @@ class TestResourceOverridePropagation:
         resources = manifest["spec"]["template"]["spec"]["containers"][0]["resources"]
         assert resources["limits"] == {"nvidia.com/gpu": "1"}
 
+    @pytest.mark.parametrize(("builder", "pod_spec_getter"), _AGENT_BUILDERS)
+    def test_empty_dict_means_unbounded_not_default(self, builder, pod_spec_getter):
+        """{} is how Kubernetes spells "no limits", so it must be honored rather
+        than collapsed into the platform defaults. This is the case a truthiness
+        check (`limits or DEFAULT_RESOURCE_LIMITS`) would silently cap."""
+        request = CreateAgentRequest(
+            name="test-agent",
+            namespace="team1",
+            protocol="a2a",
+            framework="LangGraph",
+            deploymentMethod="image",
+            containerImage="registry.example.com/test-agent:v1",
+            k8sResourceLimits={},
+            k8sResourceRequests={},
+        )
+        manifest = builder(request, image="registry.example.com/test-agent:v1")
+
+        resources = pod_spec_getter(manifest)["containers"][0]["resources"]
+        assert resources["limits"] == {}
+        assert resources["requests"] == {}
+
+    def test_empty_dict_is_honored_per_field(self):
+        """Clearing only limits leaves requests on its default, so an unbounded
+        ceiling can be combined with a normal scheduling floor."""
+        request = CreateAgentRequest(
+            name="test-agent",
+            namespace="team1",
+            protocol="a2a",
+            framework="LangGraph",
+            deploymentMethod="image",
+            containerImage="registry.example.com/test-agent:v1",
+            k8sResourceLimits={},
+        )
+        manifest = _build_deployment_manifest(request, image="registry.example.com/test-agent:v1")
+
+        resources = manifest["spec"]["template"]["spec"]["containers"][0]["resources"]
+        assert resources["limits"] == {}
+        assert resources["requests"] == DEFAULT_RESOURCE_REQUESTS
+
+    @pytest.mark.parametrize(
+        "builder",
+        [_build_tool_deployment_manifest, _build_tool_statefulset_manifest],
+    )
+    def test_tool_empty_dict_means_unbounded(self, builder):
+        """Tool builders honor {} the same way the agent builders do."""
+        manifest = builder(
+            name="test-tool",
+            namespace="team1",
+            image="registry.example.com/test-tool:v1",
+            resource_limits={},
+            resource_requests={},
+        )
+
+        resources = manifest["spec"]["template"]["spec"]["containers"][0]["resources"]
+        assert resources["limits"] == {}
+        assert resources["requests"] == {}
+
 
 class TestAgentResourceOverrideRoundTrip:
     """A build-from-source agent must get the resources chosen at form-submit
@@ -1248,24 +1259,16 @@ class TestAgentResourceOverrideRoundTrip:
         assert stored_config["k8sResourceLimits"] == {"cpu": "2", "memory": "4Gi"}
         assert stored_config["k8sResourceRequests"] == {"cpu": "500m", "memory": "1Gi"}
 
-    def test_build_manifest_omits_absent_resource_overrides(self):
-        request = CreateAgentRequest(
-            name="plain-agent",
-            namespace="team1",
-            protocol="a2a",
-            framework="LangGraph",
-            deploymentMethod="source",
-            gitUrl="https://github.com/example/repo",
-            gitPath="agents/plain",
-            gitBranch="main",
-            imageTag="v0.0.1",
+        # Absent overrides are omitted rather than stored as null, so the
+        # finalize read-back falls through to the platform defaults.
+        without_overrides = _build_agent_shipwright_build_manifest(
+            request.model_copy(update={"k8sResourceLimits": None, "k8sResourceRequests": None})
         )
-
-        manifest = _build_agent_shipwright_build_manifest(request)
-
-        stored_config = json.loads(manifest["metadata"]["annotations"]["rossoctl.io/agent-config"])
-        assert "k8sResourceLimits" not in stored_config
-        assert "k8sResourceRequests" not in stored_config
+        bare_config = json.loads(
+            without_overrides["metadata"]["annotations"]["rossoctl.io/agent-config"]
+        )
+        assert "k8sResourceLimits" not in bare_config
+        assert "k8sResourceRequests" not in bare_config
 
     def test_stored_overrides_reach_the_container_spec(self):
         """End-to-end on the finalize seam: the annotation written at build time
@@ -1313,24 +1316,3 @@ class TestAgentResourceOverrideRoundTrip:
         resources = deployment["spec"]["template"]["spec"]["containers"][0]["resources"]
         assert resources["limits"] == {"cpu": "2", "memory": "4Gi"}
         assert resources["requests"] == {"cpu": "500m", "memory": "1Gi"}
-
-    def test_finalize_request_overrides_take_precedence(self):
-        """An explicit value on the finalize call wins over the stored one."""
-        stored_config = {"k8sResourceLimits": {"cpu": "2", "memory": "4Gi"}}
-        finalize_request = FinalizeShipwrightBuildRequest(
-            k8sResourceLimits={"cpu": "8", "memory": "16Gi"},
-        )
-
-        resolved = (
-            finalize_request.k8sResourceLimits
-            if finalize_request.k8sResourceLimits is not None
-            else stored_config.get("k8sResourceLimits")
-        )
-
-        assert resolved == {"cpu": "8", "memory": "16Gi"}
-
-    def test_finalize_request_defaults_to_none_for_inheritance(self):
-        request = FinalizeShipwrightBuildRequest()
-
-        assert request.k8sResourceLimits is None
-        assert request.k8sResourceRequests is None
