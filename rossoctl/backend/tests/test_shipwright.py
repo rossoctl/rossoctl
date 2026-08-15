@@ -1108,8 +1108,16 @@ class TestResourceOverridePropagation:
         assert resources["limits"] == DEFAULT_RESOURCE_LIMITS
         assert resources["requests"] == DEFAULT_RESOURCE_REQUESTS
 
-    def test_tool_statefulset_uses_custom_resources(self):
-        manifest = _build_tool_statefulset_manifest(
+    # Both tool builders emit their own container spec, so every resource case
+    # runs against each one. Covering only the statefulset would let a
+    # deployment-path regression through whenever the wrong values are still
+    # non-empty (a fallback- or {}-only check cannot see that).
+    _TOOL_BUILDERS = [_build_tool_deployment_manifest, _build_tool_statefulset_manifest]
+
+    @pytest.mark.parametrize("builder", _TOOL_BUILDERS)
+    def test_tool_workloads_use_custom_resources(self, builder):
+        """Overrides reach the container spec for both tool workload types."""
+        manifest = builder(
             name="test-tool",
             namespace="team1",
             image="registry.example.com/test-tool:v1",
@@ -1121,10 +1129,7 @@ class TestResourceOverridePropagation:
         assert resources["limits"] == {"cpu": "1", "memory": "2Gi"}
         assert resources["requests"] == {"cpu": "250m", "memory": "512Mi"}
 
-    @pytest.mark.parametrize(
-        "builder",
-        [_build_tool_deployment_manifest, _build_tool_statefulset_manifest],
-    )
+    @pytest.mark.parametrize("builder", _TOOL_BUILDERS)
     def test_tool_workloads_fall_back_to_defaults(self, builder):
         """Tool builders keep the platform defaults when no override is passed."""
         manifest = builder(
@@ -1213,10 +1218,7 @@ class TestResourceOverridePropagation:
         assert resources["limits"] == {}
         assert resources["requests"] == DEFAULT_RESOURCE_REQUESTS
 
-    @pytest.mark.parametrize(
-        "builder",
-        [_build_tool_deployment_manifest, _build_tool_statefulset_manifest],
-    )
+    @pytest.mark.parametrize("builder", _TOOL_BUILDERS)
     def test_tool_empty_dict_means_unbounded(self, builder):
         """Tool builders honor {} the same way the agent builders do."""
         manifest = builder(
