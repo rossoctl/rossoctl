@@ -659,9 +659,9 @@ def _build_tool_shipwright_build_manifest(
     # Add persistent storage config if present (for StatefulSet)
     if request.persistentStorage:
         resource_config["persistentStorage"] = request.persistentStorage.model_dump()
-    if request.k8sResourceLimits:
+    if request.k8sResourceLimits is not None:
         resource_config["k8sResourceLimits"] = request.k8sResourceLimits
-    if request.k8sResourceRequests:
+    if request.k8sResourceRequests is not None:
         resource_config["k8sResourceRequests"] = request.k8sResourceRequests
     # Add env vars if present
     if request.envVars:
