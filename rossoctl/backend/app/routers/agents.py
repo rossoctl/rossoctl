@@ -327,9 +327,9 @@ class CreateAgentRequest(BaseModel):
     #
     # Note: The keys and quantity strings are not validated. This is
     # deliberate: validating them here would mean testing Kubernetes
-    # shapes (including extended
-    # resources such as nvidia.com/gpu), a complex validation path that would
-    # still have to be kept in sync with the API server.
+    # shapes (including extended resources such as nvidia.com/gpu),
+    # a complex validation path that would still have to be kept in sync
+    # with the API server.
     k8sResourceLimits: Optional[Dict[str, str]] = None
     k8sResourceRequests: Optional[Dict[str, str]] = None
 
