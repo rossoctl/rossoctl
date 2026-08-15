@@ -325,21 +325,11 @@ class CreateAgentRequest(BaseModel):
     # Optional per-agent overrides for container resource limits/requests
     # (falls back to DEFAULT_RESOURCE_LIMITS / DEFAULT_RESOURCE_REQUESTS).
     #
-    # These are two flat parameters rather than a single aggregating
-    # ResourceConfig{limits, requests} model on purpose. They map 1:1 onto the
-    # two independent dicts the manifest builders already emit, so each can be
-    # overridden without forcing the caller to supply the other, and each falls
-    # back to its own platform default independently. A wrapper model would add
-    # a nesting level and a partially-populated intermediate object without
-    # changing what reaches the container spec.
-    #
-    # The dict accepts arbitrary keys and unvalidated quantity strings. This is
-    # deliberate: validating them here would mean reimplementing Kubernetes
-    # quantity parsing and the set of valid resource names (including extended
+    # Note: The keys and quantity strings are not validated. This is
+    # deliberate: validating them here would mean testing Kubernetes
+    # shapes (including extended
     # resources such as nvidia.com/gpu), a complex validation path that would
-    # still have to be kept in sync with the API server. Instead the values are
-    # passed through and an invalid entry is rejected by the Kubernetes API at
-    # create time, with its error surfaced to the caller.
+    # still have to be kept in sync with the API server.
     k8sResourceLimits: Optional[Dict[str, str]] = None
     k8sResourceRequests: Optional[Dict[str, str]] = None
 
@@ -3026,6 +3016,24 @@ def _build_common_annotations(request: "CreateAgentRequest") -> Dict[str, str]:
     return annotations
 
 
+def build_container_resources(
+    limits: Optional[Dict[str, str]] = None,
+    requests: Optional[Dict[str, str]] = None,
+) -> Dict[str, Dict[str, str]]:
+    """Build a container "resources" block from optional per-workload overrides.
+
+    None means "not specified" and selects the platform default. An empty dict is
+    honored as-is, because {} is how Kubernetes spells "no limits" -- it yields an
+    unbounded container rather than one capped at DEFAULT_RESOURCE_LIMITS. Testing
+    truthiness instead (`limits or DEFAULT_RESOURCE_LIMITS`) would collapse those
+    two cases and silently cap a workload the caller asked to leave uncapped.
+    """
+    return {
+        "limits": DEFAULT_RESOURCE_LIMITS if limits is None else limits,
+        "requests": DEFAULT_RESOURCE_REQUESTS if requests is None else requests,
+    }
+
+
 def _build_selector_labels(request: "CreateAgentRequest") -> Dict[str, str]:
     """
     Build selector labels for matching pods to workloads and services.
@@ -3213,11 +3221,9 @@ def _build_deployment_manifest(
                             "name": "agent",
                             "image": image,
                             "imagePullPolicy": DEFAULT_IMAGE_POLICY,
-                            "resources": {
-                                "limits": request.k8sResourceLimits or DEFAULT_RESOURCE_LIMITS,
-                                "requests": request.k8sResourceRequests
-                                or DEFAULT_RESOURCE_REQUESTS,
-                            },
+                            "resources": build_container_resources(
+                                request.k8sResourceLimits, request.k8sResourceRequests
+                            ),
                             "env": env_vars,
                             "ports": [
                                 {
@@ -3417,11 +3423,9 @@ def _build_statefulset_manifest(
                             "name": "agent",
                             "image": image,
                             "imagePullPolicy": DEFAULT_IMAGE_POLICY,
-                            "resources": {
-                                "limits": request.k8sResourceLimits or DEFAULT_RESOURCE_LIMITS,
-                                "requests": request.k8sResourceRequests
-                                or DEFAULT_RESOURCE_REQUESTS,
-                            },
+                            "resources": build_container_resources(
+                                request.k8sResourceLimits, request.k8sResourceRequests
+                            ),
                             "env": env_vars,
                             "ports": [
                                 {
@@ -3562,11 +3566,9 @@ def _build_job_manifest(
                             "name": "agent",
                             "image": image,
                             "imagePullPolicy": DEFAULT_IMAGE_POLICY,
-                            "resources": {
-                                "limits": request.k8sResourceLimits or DEFAULT_RESOURCE_LIMITS,
-                                "requests": request.k8sResourceRequests
-                                or DEFAULT_RESOURCE_REQUESTS,
-                            },
+                            "resources": build_container_resources(
+                                request.k8sResourceLimits, request.k8sResourceRequests
+                            ),
                             "env": env_vars,
                             "ports": [
                                 {
@@ -3672,11 +3674,9 @@ def _build_sandbox_manifest(
                             "name": "agent",
                             "image": image,
                             "imagePullPolicy": DEFAULT_IMAGE_POLICY,
-                            "resources": {
-                                "limits": request.k8sResourceLimits or DEFAULT_RESOURCE_LIMITS,
-                                "requests": request.k8sResourceRequests
-                                or DEFAULT_RESOURCE_REQUESTS,
-                            },
+                            "resources": build_container_resources(
+                                request.k8sResourceLimits, request.k8sResourceRequests
+                            ),
                             "env": env_vars,
                             "ports": [
                                 {

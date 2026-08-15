@@ -44,8 +44,6 @@ from app.core.constants import (
     WORKLOAD_TYPE_DEPLOYMENT,
     WORKLOAD_TYPE_STATEFULSET,
     DEFAULT_IN_CLUSTER_PORT,
-    DEFAULT_RESOURCE_LIMITS,
-    DEFAULT_RESOURCE_REQUESTS,
     DEFAULT_ENV_VARS,
     # Shipwright constants
     SHIPWRIGHT_CRD_GROUP,
@@ -99,6 +97,7 @@ from app.utils.routes import (
 from app.routers.agents import (
     _ensure_authbridge_configmaps,
     _ensure_authproxy_routes,
+    build_container_resources,
     OutboundRoute,
 )
 
@@ -1345,10 +1344,9 @@ def _build_tool_deployment_manifest(
                             },
                             "env": all_env_vars,
                             "ports": container_ports,
-                            "resources": {
-                                "limits": resource_limits or DEFAULT_RESOURCE_LIMITS,
-                                "requests": resource_requests or DEFAULT_RESOURCE_REQUESTS,
-                            },
+                            "resources": build_container_resources(
+                                resource_limits, resource_requests
+                            ),
                             "volumeMounts": [
                                 {"name": "cache", "mountPath": "/app/.cache"},
                                 {"name": "tmp", "mountPath": "/tmp"},
@@ -1508,10 +1506,9 @@ def _build_tool_statefulset_manifest(
                             },
                             "env": all_env_vars,
                             "ports": container_ports,
-                            "resources": {
-                                "limits": resource_limits or DEFAULT_RESOURCE_LIMITS,
-                                "requests": resource_requests or DEFAULT_RESOURCE_REQUESTS,
-                            },
+                            "resources": build_container_resources(
+                                resource_limits, resource_requests
+                            ),
                             "volumeMounts": [
                                 {"name": "data", "mountPath": "/data"},
                                 {"name": "cache", "mountPath": "/app/.cache"},
