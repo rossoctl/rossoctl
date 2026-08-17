@@ -259,14 +259,12 @@ def _ensure_authproxy_routes(
     routes: List["OutboundRoute"],
 ) -> None:
     """Create or update the authproxy-routes ConfigMap with outbound token exchange rules."""
-    import yaml as _yaml
-
     # AuthProxy go-processor expects a YAML list at file root (static.go), not {"routes": [...]}.
     routes_list = [r.model_dump() for r in routes]
     kube.upsert_configmap(
         namespace=namespace,
         name="authproxy-routes",
-        data={"routes.yaml": _yaml.dump(routes_list, default_flow_style=False)},
+        data={"routes.yaml": yaml.dump(routes_list, default_flow_style=False)},
     )
     logger.info(
         "Upserted authproxy-routes ConfigMap in namespace '%s' with %d route(s)",

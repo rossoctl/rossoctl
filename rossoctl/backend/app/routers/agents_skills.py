@@ -15,6 +15,7 @@ import json
 import logging
 from typing import Any, Dict, List, Optional
 
+import kubernetes.client as k8s_client
 from kubernetes.client import ApiException
 
 from app.core.constants import (
@@ -370,8 +371,6 @@ def _build_fetcher_scripts_data() -> Dict[str, str]:
 
 def _ensure_fetcher_scripts_cm(kube: "KubernetesService", namespace: str) -> None:
     """Create or replace the rossoctl-skill-fetcher-scripts ConfigMap in namespace."""
-    import kubernetes.client as k8s_client
-
     body = k8s_client.V1ConfigMap(
         metadata=k8s_client.V1ObjectMeta(
             name=SKILL_FETCHER_SCRIPTS_CM,

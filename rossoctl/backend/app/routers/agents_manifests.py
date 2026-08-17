@@ -8,8 +8,9 @@ Builds the env vars, labels/annotations, resource blocks and the four supported
 workload manifests (Deployment, StatefulSet, Job, Sandbox) plus the Service and
 AgentRuntime CR that accompany them.
 
-All four workload builders share the same ``_build_env_vars`` +
-``_get_linked_skill_mounts`` pair, which is why they live together here.
+All four workload builders go through the same pair of helpers --
+``_build_env_vars`` (defined here) and ``_get_linked_skill_mounts`` (imported
+from ``agents_skills``) -- which is why the four builders live together here.
 
 Split out of ``agents.py``; re-exported there for backwards compatibility.
 """
