@@ -34,10 +34,10 @@ class TestSanitizeK8sName:
         assert sanitize_k8s_name("-.skill.-") == "skill"
 
     def test_empty_and_invalid_fallback(self):
-        """Test that empty or all-invalid strings return 'skill' as fallback."""
-        assert sanitize_k8s_name("") == "skill"
-        assert sanitize_k8s_name("---") == "skill"
-        assert sanitize_k8s_name("...") == "skill"
+        """Test that empty or all-invalid strings return 'resource' as fallback."""
+        assert sanitize_k8s_name("") == "resource"
+        assert sanitize_k8s_name("---") == "resource"
+        assert sanitize_k8s_name("...") == "resource"
 
 
 # Made with Bob

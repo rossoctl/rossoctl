@@ -804,6 +804,15 @@ router.include_router(authbridge_router)
 
 # Names re-exported for backwards compatibility (imported by app.routers.tools,
 # app.services.reconciliation, app.services.agent_env_defaults and the tests).
+#
+# The underscore-prefixed entries below are deliberate, not an oversight. Before
+# this module was split up they were module-level privates of `agents.py`, and
+# roughly twenty test modules still import them from `app.routers.agents` (e.g.
+# `from app.routers.agents import _build_sandbox_manifest`); the tests also patch
+# some of them by that dotted path. Listing them keeps those imports working and
+# stops linters from stripping the "unused" re-export imports above. Removing an
+# entry here will break the importing test rather than fail anything in this
+# file, so prefer updating the importers first if you want one gone.
 __all__ = [
     # router + endpoints owned by this module
     "router",
