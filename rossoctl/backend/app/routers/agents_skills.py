@@ -40,12 +40,12 @@ from app.models.shipwright import (
     ResourceType,
 )
 from app.routers.agents_models import CreateAgentRequest
-from app.routers.skills import _sanitize_k8s_name
 from app.services.kubernetes import KubernetesService
 from app.services.shipwright import (
     build_shipwright_build_manifest,
     build_shipwright_buildrun_manifest,
 )
+from app.utils.naming import sanitize_k8s_name
 
 logger = logging.getLogger(__name__)
 
@@ -267,7 +267,7 @@ def _get_linked_skill_mounts(
     for index, skill_name in enumerate(skills):
         if not skill_name:
             continue
-        cm_name = _sanitize_k8s_name(skill_name)
+        cm_name = sanitize_k8s_name(skill_name)
         volume_name = f"skill-{index}"
         mount_path = f"{AGENT_SKILLS_MOUNT_ROOT}/{cm_name}"
         volumes.append(
@@ -297,7 +297,7 @@ def _is_skill_external(kube: "KubernetesService", namespace: str, skill_name: st
     """Return True if the named skill ConfigMap is an external registry reference."""
     try:
         cm = kube.core_api.read_namespaced_config_map(
-            name=_sanitize_k8s_name(skill_name), namespace=namespace
+            name=sanitize_k8s_name(skill_name), namespace=namespace
         )
         labels = cm.metadata.labels or {}
         return labels.get(SKILL_SOURCE_LABEL) == SKILL_SOURCE_EXTERNAL
@@ -416,7 +416,7 @@ def _get_external_skill_data(
 
         try:
             cm = kube.core_api.read_namespaced_config_map(
-                name=_sanitize_k8s_name(skill_name), namespace=namespace
+                name=sanitize_k8s_name(skill_name), namespace=namespace
             )
         except ApiException:
             continue
@@ -430,7 +430,7 @@ def _get_external_skill_data(
             SKILL_REGISTRY_SKILL_VERSION_ANNOTATION, "latest"
         )
 
-        cm_name = _sanitize_k8s_name(skill_name)
+        cm_name = sanitize_k8s_name(skill_name)
         emptydir_vol_name = f"skill-ext-{index}"
         mount_path = f"{AGENT_SKILLS_MOUNT_ROOT}/{cm_name}"
 

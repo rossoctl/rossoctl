@@ -42,6 +42,7 @@ from app.core.constants import (
     SKILL_USAGE_ANNOTATION,
 )
 from app.services.kubernetes import KubernetesService, get_kubernetes_service
+from app.utils.naming import sanitize_k8s_name
 
 logger = logging.getLogger(__name__)
 
@@ -64,12 +65,6 @@ def _skill_signature(skill: Dict[str, Any]) -> str:
         sort_keys=True,
     )
     return hashlib.sha256(payload.encode()).hexdigest()[:16]
-
-
-def _sanitize_k8s_name(name: str) -> str:
-    out = "".join(c.lower() if c.isalnum() or c in ("-", ".") else "-" for c in name)
-    out = out.strip("-.")
-    return out or "skill"
 
 
 def _get_autosync_config(kube: KubernetesService) -> Optional[Dict[str, str]]:
@@ -162,7 +157,7 @@ def _create_autosync_skill(
 ) -> None:
     skill_name = skill["name"]
     version = skill.get("version") or "latest"
-    resource_name = _sanitize_k8s_name(skill_name)
+    resource_name = sanitize_k8s_name(skill_name)
     labels = {
         SKILL_TYPE_LABEL: SKILL_TYPE_VALUE,
         SKILL_SOURCE_LABEL: SKILL_SOURCE_EXTERNAL,

@@ -45,6 +45,7 @@ from app.core.constants import (
     SKILL_AUTOSYNC_LABEL,
 )
 from app.services.kubernetes import KubernetesService, get_kubernetes_service
+from app.utils.naming import sanitize_k8s_name
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/skills", tags=["skills"])
@@ -235,13 +236,6 @@ class CreateExternalSkillRequest(BaseModel):
         return v
 
 
-def _sanitize_k8s_name(name: str) -> str:
-    """Sanitize a name to be valid for Kubernetes resource names."""
-    out = "".join(c.lower() if c.isalnum() or c in ("-", ".") else "-" for c in name)
-    out = out.strip("-.")
-    return out or "skill"
-
-
 def _sanitize_configmap_key(key: str) -> str:
     """Sanitize a file path to be valid for Kubernetes ConfigMap keys.
 
@@ -412,7 +406,7 @@ def _get_cm(kube: KubernetesService, namespace: str, name: str):
 
 def _patch_annotations(kube: KubernetesService, namespace: str, name: str, annotations: dict):
     """Patch ConfigMap annotations."""
-    cm_name = _sanitize_k8s_name(name)
+    cm_name = sanitize_k8s_name(name)
     body = {"metadata": {"annotations": annotations}}
     try:
         kube.core_api.patch_namespaced_config_map(name=cm_name, namespace=namespace, body=body)
@@ -518,7 +512,7 @@ async def create_skill(
     if not display_name:
         raise HTTPException(status_code=400, detail="Skill name is required")
 
-    cm_name = _sanitize_k8s_name(display_name)
+    cm_name = sanitize_k8s_name(display_name)
 
     labels = {
         SKILL_TYPE_LABEL: SKILL_TYPE_VALUE,
@@ -526,7 +520,7 @@ async def create_skill(
         APP_KUBERNETES_IO_NAME: cm_name,
     }
     if request.category:
-        labels[SKILL_CATEGORY_LABEL] = _sanitize_k8s_name(request.category)
+        labels[SKILL_CATEGORY_LABEL] = sanitize_k8s_name(request.category)
 
     annotations = {
         SKILL_DISPLAY_NAME_ANNOTATION: display_name,
@@ -610,7 +604,7 @@ async def create_external_skill(
         raise HTTPException(status_code=400, detail="registryType is required")
 
     kube = get_kubernetes_service()
-    resource_name = _sanitize_k8s_name(request.name)
+    resource_name = sanitize_k8s_name(request.name)
 
     labels: Dict[str, str] = {
         SKILL_TYPE_LABEL: SKILL_TYPE_VALUE,
@@ -738,7 +732,7 @@ async def delete_skill(
     kube: KubernetesService = Depends(get_kubernetes_service),
 ) -> dict:
     """Delete a skill (ConfigMap) from the cluster."""
-    cm_name = _sanitize_k8s_name(name)
+    cm_name = sanitize_k8s_name(name)
     try:
         kube.core_api.delete_namespaced_config_map(name=cm_name, namespace=namespace)
         return {
