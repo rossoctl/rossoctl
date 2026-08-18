@@ -214,10 +214,10 @@ spec:
             )
 
     def test_backward_compatibility_no_routes(self):
-        """Agents without spec.auth still work (no routes injected).
+        """Agents with AgentRuntime but without spec.auth still work (no routes injected).
 
         This verifies that the new route injection logic doesn't break
-        existing agents that don't have AgentRuntime or don't have auth config.
+        existing agents that have AgentRuntime but no auth config.
         """
         deployment = """
 apiVersion: apps/v1
@@ -242,8 +242,22 @@ spec:
         command: ["sleep", "3600"]
 """
 
-        # Deploy WITHOUT an AgentRuntime
+        agentruntime = """
+apiVersion: agent.rossoctl.dev/v1alpha1
+kind: AgentRuntime
+metadata:
+  name: test-no-routes-agent
+spec:
+  type: agent
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: test-no-routes-agent
+"""
+
+        # Deploy WITH AgentRuntime but WITHOUT spec.auth
         assert _kubectl_apply(deployment, TX_NAMESPACE), "Failed to create deployment"
+        assert _kubectl_apply(agentruntime, TX_NAMESPACE), "Failed to create AgentRuntime"
 
         try:
             cm_name = "authbridge-config-test-no-routes-agent"
@@ -254,10 +268,14 @@ spec:
             routes = _get_token_exchange_routes(cm_name, TX_NAMESPACE)
             # routes should be None or empty list
             assert routes is None or len(routes) == 0, (
-                f"Expected no routes for agent without AgentRuntime, got {routes}"
+                f"Expected no routes for agent without spec.auth, got {routes}"
             )
 
         finally:
+            subprocess.run(
+                ["kubectl", "delete", "agentruntime", "test-no-routes-agent", "-n", TX_NAMESPACE],
+                timeout=30,
+            )
             subprocess.run(
                 ["kubectl", "delete", "deployment", "test-no-routes-agent", "-n", TX_NAMESPACE],
                 timeout=30,
