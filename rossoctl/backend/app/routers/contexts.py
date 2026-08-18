@@ -45,6 +45,8 @@ def _path_segment(value: str, field: str, max_length: int = 63) -> str:
 
 
 async def _request(method: str, path: str, body: dict | None = None) -> httpx.Response:
+    if not settings.context_service_url.strip():
+        raise HTTPException(status_code=400, detail="Context Service integration is disabled")
     try:
         async with httpx.AsyncClient(timeout=settings.context_service_timeout) as client:
             response = await client.request(method, _url(path), json=body)

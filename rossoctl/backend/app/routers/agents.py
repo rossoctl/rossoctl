@@ -327,7 +327,7 @@ class CreateAgentRequest(BaseModel):
     # Persistent storage (for Sandbox and StatefulSet workloads)
     persistentStorage: Optional[PersistentStorageConfig] = None
 
-    # Named Context Service resources. Requires the context-service feature flag.
+    # Named Context Service resources. Requires CONTEXT_SERVICE_URL.
     contexts: Optional[List[ContextAttachment]] = None
 
     # Shipwright build configuration

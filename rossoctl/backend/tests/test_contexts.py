@@ -61,6 +61,18 @@ async def test_list_contexts_proxies_namespace() -> None:
 
 
 @pytest.mark.asyncio
+async def test_context_proxy_requires_service_url() -> None:
+    with (
+        patch("app.routers.contexts.settings.context_service_url", ""),
+        patch("app.routers.contexts.httpx.AsyncClient") as client,
+        pytest.raises(HTTPException, match="integration is disabled"),
+    ):
+        await contexts.list_contexts("team1")
+
+    client.assert_not_called()
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("operation", "args", "message"),
     [
