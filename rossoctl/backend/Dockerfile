@@ -41,6 +41,13 @@ COPY --from=builder /app/.venv /app/.venv
 # Copy application code
 COPY backend/app/ ./app/
 
+# Bake the release tag in as the reported backend version. Mirrors what
+# ui-v2/Dockerfile does to package.json, so the backend's GET /auth/config and the
+# UI's version badge report the same string from the same source. CI passes
+# RELEASE_TAG for every image in the build matrix (.github/workflows/build.yaml).
+ARG RELEASE_TAG=unknown
+ENV ROSSOCTL_BACKEND_VERSION=${RELEASE_TAG}
+
 # Set environment variables
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1

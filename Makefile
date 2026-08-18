@@ -90,7 +90,7 @@ build-load-ui-backend:
 		echo "Info: Podman backend detected. Using --load flag for build."; \
 	fi
 	@echo ""
-	docker build -t $(UI_BACKEND_REPO):$(UI_BACKEND_TAG) -f $(UI_BACKEND_DIR)/Dockerfile $(DOCKER_BUILD_CONTEXT) $(DOCKER_BUILD_FLAGS)
+	docker build -t $(UI_BACKEND_REPO):$(UI_BACKEND_TAG) -f $(UI_BACKEND_DIR)/Dockerfile $(DOCKER_BUILD_CONTEXT) $(DOCKER_BUILD_FLAGS) --build-arg RELEASE_TAG=$(RELEASE_TAG)
 	@echo ""
 	@echo "Loading backend image into kind cluster $(KIND_CLUSTER_NAME)..."
 	kind load docker-image $(UI_BACKEND_REPO):$(UI_BACKEND_TAG) --name $(KIND_CLUSTER_NAME)

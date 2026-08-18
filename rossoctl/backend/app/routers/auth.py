@@ -5,6 +5,7 @@
 Authentication API endpoints.
 """
 
+from importlib.metadata import PackageNotFoundError, version as package_version
 from typing import Optional, List
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -43,10 +44,33 @@ class AuthConfigResponse(BaseModel):
     """
 
     enabled: bool
+    version: str
     keycloak_url: Optional[str] = None
     realm: Optional[str] = None
     client_id: Optional[str] = None
     redirect_uri: Optional[str] = None
+
+
+def _backend_version() -> str:
+    """Resolve the rossoctl-backend version.
+
+    Prefers ROSSOCTL_BACKEND_VERSION, which backend/Dockerfile bakes in from the
+    RELEASE_TAG build arg. That is the same source ui-v2/Dockerfile substitutes
+    into package.json for the UI's version badge, so both report an identical
+    string for a given build.
+
+    Outside a built image (local dev, tests) that env var is unset, so fall back
+    to the installed package metadata -- i.e. backend/pyproject.toml's version.
+    Returns "unknown" if neither is available; note the runtime image installs
+    dependencies only, so package metadata is genuinely absent there and the env
+    var is the only source.
+    """
+    if settings.rossoctl_backend_version:
+        return settings.rossoctl_backend_version
+    try:
+        return package_version("rossoctl-backend")
+    except PackageNotFoundError:
+        return "unknown"
 
 
 @router.get("/config", response_model=AuthConfigResponse)
@@ -58,10 +82,11 @@ async def get_auth_config() -> AuthConfigResponse:
     the frontend to initialize keycloak-js without build-time env vars.
     """
     if not settings.enable_auth:
-        return AuthConfigResponse(enabled=False)
+        return AuthConfigResponse(enabled=False, version=_backend_version())
 
     return AuthConfigResponse(
         enabled=True,
+        version=_backend_version(),
         keycloak_url=settings.effective_keycloak_url,
         realm=settings.effective_keycloak_realm,
         client_id=settings.effective_client_id,

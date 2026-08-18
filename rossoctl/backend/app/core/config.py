@@ -26,6 +26,12 @@ class Settings(BaseSettings):
     debug: bool = False
     domain_name: str = "localtest.me"
 
+    # Version reported by GET /auth/config. backend/Dockerfile bakes this in from
+    # the RELEASE_TAG build arg — the same source ui-v2/Dockerfile substitutes into
+    # package.json for the UI version badge — so both report the same string.
+    # Empty (local dev/tests) falls back to rossoctl-backend package metadata.
+    rossoctl_backend_version: str = ""
+
     @property
     def is_running_in_cluster(self) -> bool:
         """Check if the backend is running inside a Kubernetes cluster."""

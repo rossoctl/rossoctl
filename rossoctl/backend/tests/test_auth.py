@@ -5,6 +5,7 @@
 Tests for authentication and authorization utilities.
 """
 
+import asyncio
 from contextlib import contextmanager
 from unittest.mock import AsyncMock, patch
 
@@ -434,3 +435,69 @@ class TestValidateTokenRoleMapping:
         with mock_jwt_decode(realm_roles=[]):
             token_data = await validate_token("fake-token")
             assert ROLE_VIEWER in token_data.roles
+
+
+class TestAuthConfigVersion:
+    """Tests for the version reported by GET /auth/config."""
+
+    def test_version_present_when_auth_disabled(self):
+        """The early auth-disabled return path still reports a version."""
+        from app.routers.auth import get_auth_config
+
+        with patch("app.routers.auth.settings") as mock_settings:
+            mock_settings.enable_auth = False
+            mock_settings.rossoctl_backend_version = ""
+            result = asyncio.run(get_auth_config())
+
+        assert result.enabled is False
+        assert result.version
+
+    def test_version_present_when_auth_enabled(self):
+        """The authenticated config path reports the same version."""
+        from app.routers.auth import get_auth_config
+
+        with patch("app.routers.auth.settings") as mock_settings:
+            mock_settings.enable_auth = True
+            mock_settings.rossoctl_backend_version = ""
+            mock_settings.effective_keycloak_url = "http://keycloak"
+            mock_settings.effective_keycloak_realm = "rossoctl"
+            mock_settings.effective_client_id = "rossoctl-ui"
+            mock_settings.effective_redirect_uri = "http://ui"
+            result = asyncio.run(get_auth_config())
+
+        assert result.enabled is True
+        assert result.version
+
+    def test_version_matches_backend_package_metadata(self):
+        """Falling back to package metadata reports backend/pyproject.toml's version."""
+        from importlib.metadata import version as package_version
+
+        from app.routers.auth import _backend_version
+
+        with patch("app.routers.auth.settings") as mock_settings:
+            mock_settings.rossoctl_backend_version = ""
+            assert _backend_version() == package_version("rossoctl-backend")
+
+    def test_setting_overrides_package_metadata(self):
+        """ROSSOCTL_BACKEND_VERSION wins so a deployment can report its image version."""
+        from app.routers.auth import _backend_version
+
+        with patch("app.routers.auth.settings") as mock_settings:
+            mock_settings.rossoctl_backend_version = "0.7.0-alpha.6"
+            assert _backend_version() == "0.7.0-alpha.6"
+
+    def test_version_falls_back_to_unknown_without_metadata(self):
+        """The container installs dependencies only, so metadata may be absent."""
+        from importlib.metadata import PackageNotFoundError
+
+        from app.routers.auth import _backend_version
+
+        with (
+            patch("app.routers.auth.settings") as mock_settings,
+            patch(
+                "app.routers.auth.package_version",
+                side_effect=PackageNotFoundError("rossoctl-backend"),
+            ),
+        ):
+            mock_settings.rossoctl_backend_version = ""
+            assert _backend_version() == "unknown"
