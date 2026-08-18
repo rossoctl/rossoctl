@@ -61,12 +61,32 @@ async def test_list_contexts_proxies_namespace() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("operation", "args", "message"),
+    [
+        (contexts.list_contexts, ("../master",), "namespace"),
+        (contexts.get_context, ("team1", "research/../../admin"), "name"),
+        (contexts.delete_context, ("Team1", "research"), "namespace"),
+        (contexts.resolve_context, ("team1", "x" * 51), "name"),
+    ],
+)
+async def test_context_paths_reject_invalid_kubernetes_names(
+    operation, args: tuple[str, ...], message: str
+) -> None:
+    with (
+        patch.object(contexts, "_request", new=AsyncMock()) as request,
+        pytest.raises(HTTPException, match=message),
+    ):
+        await operation(*args)
+
+    request.assert_not_awaited()
+
+
+@pytest.mark.asyncio
 async def test_context_attachments_require_service_url() -> None:
     with patch("app.routers.agents.settings.context_service_url", ""):
         with pytest.raises(HTTPException, match="disabled"):
-            await _resolve_context_mounts(
-                "team1", [ContextAttachment(name="research")], "sandbox"
-            )
+            await _resolve_context_mounts("team1", [ContextAttachment(name="research")], "sandbox")
 
 
 @pytest.mark.asyncio
@@ -88,9 +108,7 @@ async def test_context_attachments_resolve_pvc_for_sandbox_and_statefulset(
             ("sandbox", _build_sandbox_manifest),
             ("statefulset", _build_statefulset_manifest),
         ):
-            volumes, mounts = await _resolve_context_mounts(
-                "team1", [attachment], workload_type
-            )
+            volumes, mounts = await _resolve_context_mounts("team1", [attachment], workload_type)
             agent_request = CreateAgentRequest(
                 name="research-agent",
                 namespace="team1",
@@ -135,6 +153,4 @@ async def test_context_attachments_reject_non_pvc_attachment() -> None:
 @pytest.mark.asyncio
 async def test_context_attachments_reject_deployment() -> None:
     with pytest.raises(HTTPException, match="statefulset or sandbox"):
-        await _resolve_context_mounts(
-            "team1", [ContextAttachment(name="research")], "deployment"
-        )
+        await _resolve_context_mounts("team1", [ContextAttachment(name="research")], "deployment")
