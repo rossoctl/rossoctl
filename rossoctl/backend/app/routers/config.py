@@ -43,6 +43,7 @@ class FeatureFlagsResponse(BaseModel):
     )
     traceAnalysis: bool = Field(description="Trace-analysis Observability card")
     simulatedTools: bool = Field(description="Simulated MCP tools generated from an OpenAPI spec")
+    contextService: bool = Field(description="Named context resources backed by Context Service")
 
 
 class ComponentStatus(BaseModel):
@@ -97,6 +98,7 @@ async def get_feature_flags(
         agentImportDefaults=settings.rossoctl_feature_flag_agent_import_defaults,
         traceAnalysis=settings.rossoctl_feature_flag_trace_analysis,
         simulatedTools=settings.rossoctl_feature_flag_simulated_tools,
+        contextService=bool(settings.context_service_url.strip()),
     )
 
 

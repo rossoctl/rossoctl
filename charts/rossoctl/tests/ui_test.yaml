@@ -34,3 +34,27 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].resources.requests.memory
           value: 64Mi
+
+  - it: leaves Context Service disabled when no URL is configured
+    documentSelector:
+      path: spec.template.spec.containers[0].name
+      value: backend
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CONTEXT_SERVICE_URL
+          any: true
+
+  - it: configures Context Service when its URL is set
+    set:
+      ui.backend.contextServiceUrl: http://context-service.example:8080
+    documentSelector:
+      path: spec.template.spec.containers[0].name
+      value: backend
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CONTEXT_SERVICE_URL
+            value: http://context-service.example:8080

@@ -132,6 +132,9 @@ class Settings(BaseSettings):
     skill_registry_allowed_hosts: str = ""
     # Trace-analysis Observability card (links to the standalone trace-analysis component)
     rossoctl_feature_flag_trace_analysis: bool = False  # Trace-analysis Observability card
+    # Named context resources and agent attachments. An empty URL disables the integration.
+    context_service_url: str = ""
+    context_service_timeout: float = 10.0
 
     # AuthBridge runtime config (mounted from Helm-managed ConfigMap)
     authbridge_runtime_config_path: str = "/etc/rossoctl/authbridge/config.yaml"

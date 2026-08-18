@@ -117,6 +117,17 @@ if settings.rossoctl_feature_flag_skills:
             "SKILLS flag enabled but skills modules not installed — skipping"
         )
 
+_contexts_module_loaded = False
+if settings.context_service_url.strip():
+    try:
+        from app.routers import contexts  # noqa: E402
+
+        _contexts_module_loaded = True
+    except ImportError:
+        logging.getLogger(__name__).warning(
+            "CONTEXT_SERVICE flag enabled but context module not installed — skipping"
+        )
+
 _acp_modules_loaded = False
 if settings.rossoctl_feature_flag_acp:
     try:
@@ -290,6 +301,10 @@ if _integrations_modules_loaded:
 if _skills_modules_loaded:
     app.include_router(skills.router, prefix="/api/v1")
     logger.info("Feature flag SKILLS enabled — skills routes registered")
+
+if _contexts_module_loaded:
+    app.include_router(contexts.router, prefix="/api/v1")
+    logger.info("Feature flag CONTEXT_SERVICE enabled — context routes registered")
 
 if _acp_modules_loaded:
     app.include_router(acp.router, prefix="/api/v1")

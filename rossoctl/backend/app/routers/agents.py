@@ -232,6 +232,14 @@ class PersistentStorageConfig(BaseModel):
     size: str = "1Gi"
 
 
+class ContextAttachment(BaseModel):
+    """A named Context Service resource mounted into the agent."""
+
+    name: str
+    mountPath: str = "/workspace"
+    readOnly: bool = False
+
+
 class CreateAgentRequest(BaseModel):
     """Request to create a new agent."""
 
@@ -318,6 +326,9 @@ class CreateAgentRequest(BaseModel):
 
     # Persistent storage (for Sandbox and StatefulSet workloads)
     persistentStorage: Optional[PersistentStorageConfig] = None
+
+    # Named Context Service resources. Requires the context-service feature flag.
+    contexts: Optional[List[ContextAttachment]] = None
 
     # Shipwright build configuration
     shipwrightConfig: Optional[ShipwrightBuildConfig] = None
@@ -2617,6 +2628,8 @@ def _build_agent_shipwright_build_manifest(
         resource_config["k8sResourceLimits"] = request.k8sResourceLimits
     if request.k8sResourceRequests is not None:
         resource_config["k8sResourceRequests"] = request.k8sResourceRequests
+    if request.contexts:
+        resource_config["contexts"] = [attachment.model_dump() for attachment in request.contexts]
     # Add env vars if present
     if request.envVars:
         resource_config["envVars"] = [ev.model_dump(exclude_none=True) for ev in request.envVars]
@@ -3736,6 +3749,62 @@ def _build_sandbox_manifest(
     return manifest
 
 
+async def _resolve_context_mounts(
+    namespace: str,
+    attachments: Optional[List[ContextAttachment]],
+    workload_type: str,
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Resolve named contexts into Kubernetes PVC volumes and mounts."""
+    if not attachments:
+        return [], []
+    if workload_type not in {WORKLOAD_TYPE_STATEFULSET, WORKLOAD_TYPE_SANDBOX}:
+        raise HTTPException(
+            status_code=400,
+            detail="context attachments require a statefulset or sandbox workload",
+        )
+    if not settings.context_service_url.strip():
+        raise HTTPException(status_code=400, detail="Context Service integration is disabled")
+
+    from app.routers.contexts import resolve_context  # pylint: disable=import-outside-toplevel
+
+    volumes: List[Dict[str, Any]] = []
+    mounts: List[Dict[str, Any]] = []
+    seen_paths: set[str] = set()
+    for index, attachment in enumerate(attachments):
+        if not attachment.mountPath.startswith("/"):
+            raise HTTPException(status_code=400, detail="context mountPath must be absolute")
+        if attachment.mountPath in seen_paths:
+            raise HTTPException(status_code=400, detail="context mountPath values must be unique")
+        seen_paths.add(attachment.mountPath)
+        resource = await resolve_context(namespace, attachment.name)
+        resource_attachment = resource.get("attachment", {})
+        if resource_attachment.get("kind") != "pvc":
+            raise HTTPException(
+                status_code=502, detail="Context Service returned a non-PVC attachment"
+            )
+        claim_name = resource_attachment.get("claimName")
+        if not claim_name:
+            raise HTTPException(status_code=502, detail="Context Service returned no PVC claim")
+        volume_name = f"context-{index}"
+        volumes.append(
+            {
+                "name": volume_name,
+                "persistentVolumeClaim": {
+                    "claimName": claim_name,
+                    "readOnly": attachment.readOnly,
+                },
+            }
+        )
+        mounts.append(
+            {
+                "name": volume_name,
+                "mountPath": attachment.mountPath,
+                "readOnly": attachment.readOnly,
+            }
+        )
+    return volumes, mounts
+
+
 @router.post(
     "", response_model=CreateAgentResponse, dependencies=[Depends(require_roles(ROLE_OPERATOR))]
 )
@@ -3784,6 +3853,12 @@ async def create_agent(
         local_skills = [
             s for s in request.skills if s and not _is_skill_external(kube, request.namespace, s)
         ]
+
+    context_volumes, context_mounts = await _resolve_context_mounts(
+        request.namespace, request.contexts, request.workloadType
+    )
+    ext_volumes.extend(context_volumes)
+    ext_volume_mounts.extend(context_mounts)
 
     request = apply_agent_import_defaults(request, kube)
 
@@ -4457,6 +4532,10 @@ async def finalize_shipwright_build(
             else stored_config.get("k8sResourceRequests")
         )
 
+        final_contexts = request.contexts
+        if final_contexts is None and stored_config.get("contexts"):
+            final_contexts = [ContextAttachment(**item) for item in stored_config["contexts"]]
+
         final_mcp_tool_name = (
             request.mcpToolName
             if request.mcpToolName is not None
@@ -4494,6 +4573,7 @@ async def finalize_shipwright_build(
             inboundPortsExclude=final_inbound_ports_exclude,
             defaultOutboundPolicy=final_default_outbound_policy,
             persistentStorage=final_persistent_storage,
+            contexts=final_contexts,
             gitPath=stored_config.get("gitPath")
             or build.get("spec", {}).get("source", {}).get("contextDir", ""),
             mcpToolName=final_mcp_tool_name,
@@ -4503,6 +4583,11 @@ async def finalize_shipwright_build(
             k8sResourceRequests=final_k8s_resource_requests,
         )
         agent_request = apply_agent_import_defaults(agent_request, kube)
+        context_volumes, context_mounts = await _resolve_context_mounts(
+            namespace, final_contexts, final_workload_type
+        )
+        build_ext_volumes.extend(context_volumes)
+        build_ext_volume_mounts.extend(context_mounts)
 
         # Ensure a dedicated ServiceAccount exists so the webhook's
         # SPIFFE identity uses the workload name, not the ReplicaSet hash.

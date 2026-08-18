@@ -146,6 +146,10 @@ spec:
             - name: SKILL_REGISTRY_ALLOWED_HOSTS
               value: {{ .Values.ui.backend.skillRegistryAllowedHosts | quote }}
             {{- end }}
+            {{- if .Values.ui.backend.contextServiceUrl }}
+            - name: CONTEXT_SERVICE_URL
+              value: {{ .Values.ui.backend.contextServiceUrl | quote }}
+            {{- end }}
             # Feature flags
             - name: ROSSOCTL_FEATURE_FLAG_SANDBOX
               value: "{{ .Values.featureFlags.sandbox }}"

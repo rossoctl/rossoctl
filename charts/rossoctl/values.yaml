@@ -212,6 +212,10 @@ ui:
   backend:
     image: ghcr.io/rossoctl/rossoctl/backend
     tag: v0.7.0-alpha.6
+    # Optional Context Service API URL. Empty disables context resource APIs and
+    # agent context attachments. Example:
+    # http://context-service.serverless-harness.svc.cluster.local:8080
+    contextServiceUrl: ""
     # Default registry for source-based builds (Kind: registry.cr-system.svc.cluster.local:5000)
     defaultRegistryUrl: ""
     # Default Shipwright build strategy for internal registries
