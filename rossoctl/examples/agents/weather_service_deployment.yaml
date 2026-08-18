@@ -96,9 +96,11 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: weather-service
-  # SPIFFE-based authentication with token exchange for calling tools
+  # Token exchange routes for calling tools.
+  # Authentication mode is set globally at the namespace level via
+  # authBridge.clientAuthType (federated-jwt or client-secret).
+  # These routes only take effect when federated-jwt is enabled.
   auth:
-    mode: federated-jwt
     outbound:
       # Request SPIFFE token with weather-tool audience when calling the MCP server
       - destination:
