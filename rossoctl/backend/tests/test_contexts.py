@@ -17,6 +17,7 @@ from app.routers.agents import (
     _resolve_context_mounts,
     get_agent,
 )
+from app.routers.agents_manifests import CONTEXTS_ANNOTATION, _record_contexts
 
 
 @pytest.mark.asyncio
@@ -158,6 +159,7 @@ async def test_context_attachments_resolve_pvc_for_sandbox_and_statefulset(
                 ext_volumes=volumes,
                 ext_volume_mounts=mounts,
             )
+            _record_contexts(manifest, resolved)
             pod_spec = (
                 manifest["spec"]["podTemplate"]["spec"]
                 if workload_type == "sandbox"
@@ -167,6 +169,7 @@ async def test_context_attachments_resolve_pvc_for_sandbox_and_statefulset(
             assert pod_spec["containers"][0]["volumeMounts"][-1]["mountPath"] == "/workspace"
             context_volume = next(v for v in pod_spec["volumes"] if v["name"] == "context-0")
             assert context_volume["persistentVolumeClaim"]["claimName"] == "context-research"
+            assert json.loads(manifest["metadata"]["annotations"][CONTEXTS_ANNOTATION]) == resolved
             assert resolved == [
                 {
                     "name": "research",
@@ -234,7 +237,7 @@ async def test_get_statefulset_agent_reports_context_attachments() -> None:
             "name": "research-agent",
             "namespace": "team1",
             "labels": {},
-            "annotations": {"rossoctl.io/contexts": json.dumps(attachments)},
+            "annotations": {CONTEXTS_ANNOTATION: json.dumps(attachments)},
         },
         "spec": {},
         "status": {},
@@ -244,6 +247,60 @@ async def test_get_statefulset_agent_reports_context_attachments() -> None:
     result = await get_agent("team1", "research-agent", kube)
 
     assert result["contexts"] == attachments
+
+
+@pytest.mark.asyncio
+async def test_get_sandbox_agent_reports_context_attachments() -> None:
+    attachments = [
+        {
+            "name": "research",
+            "type": "workspace",
+            "mountPath": "/workspace",
+            "readOnly": False,
+            "claimName": "context-research",
+        }
+    ]
+    kube = MagicMock()
+    kube.get_deployment.side_effect = ApiException(status=404)
+    kube.get_statefulset.side_effect = ApiException(status=404)
+    kube.get_job.side_effect = ApiException(status=404)
+    kube.get_sandbox.return_value = {
+        "metadata": {
+            "name": "research-sandbox",
+            "namespace": "team1",
+            "labels": {},
+            "annotations": {CONTEXTS_ANNOTATION: json.dumps(attachments)},
+        },
+        "spec": {},
+        "status": {},
+    }
+    kube.get_service.side_effect = ApiException(status=404)
+
+    with patch("app.routers.agents.settings.rossoctl_feature_flag_agent_sandbox", True):
+        result = await get_agent("team1", "research-sandbox", kube)
+
+    assert result["workloadType"] == "sandbox"
+    assert result["contexts"] == attachments
+
+
+@pytest.mark.asyncio
+async def test_get_agent_with_malformed_contexts_omits_field() -> None:
+    kube = MagicMock()
+    kube.get_deployment.return_value = {
+        "metadata": {
+            "name": "legacy-agent",
+            "namespace": "team1",
+            "labels": {},
+            "annotations": {CONTEXTS_ANNOTATION: "not-json"},
+        },
+        "spec": {},
+        "status": {},
+    }
+    kube.get_service.side_effect = ApiException(status=404)
+
+    result = await get_agent("team1", "legacy-agent", kube)
+
+    assert "contexts" not in result
 
 
 @pytest.mark.asyncio

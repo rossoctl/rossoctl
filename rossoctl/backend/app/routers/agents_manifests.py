@@ -63,6 +63,7 @@ from app.routers.agents_models import (
 )
 from app.routers.agents_skills import _get_linked_skill_mounts
 from app.services.kubernetes import KubernetesService
+from app.utils.routes import get_agent_url
 
 CONTEXTS_ANNOTATION = "rossoctl.io/contexts"
 
@@ -74,8 +75,6 @@ def _record_contexts(manifest: Dict[str, Any], contexts: List[Dict[str, Any]]) -
             json.dumps(contexts, separators=(",", ":"))
         )
 
-
-from app.utils.routes import get_agent_url
 
 logger = logging.getLogger(__name__)
 
