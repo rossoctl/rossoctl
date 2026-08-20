@@ -22,6 +22,7 @@ Names those submodules define are re-exported here (see ``__all__``) because
 other modules and the test suite import them from ``app.routers.agents``.
 """
 
+import json
 import logging
 from typing import Any
 
@@ -90,6 +91,7 @@ from app.routers.agents_env import (
 # the patch effective -- do not promote it to a module-level import there.
 from app.routers.agents_finalize import finalize_router, finalize_shipwright_build
 from app.routers.agents_manifests import (
+    CONTEXTS_ANNOTATION,
     build_container_resources,
     _agentruntime_supported_workload,
     _build_agentruntime_manifest,
@@ -547,6 +549,13 @@ async def get_agent(
         "workloadType": labels.get(ROSSOCTL_WORKLOAD_TYPE_LABEL, workload_type),
         "readyStatus": ready_status,  # Computed ready status for frontend
     }
+
+    stored_contexts = annotations.get(CONTEXTS_ANNOTATION)
+    if stored_contexts:
+        try:
+            response["contexts"] = json.loads(stored_contexts)
+        except (TypeError, json.JSONDecodeError):
+            logger.warning("Ignoring invalid context attachment annotation on agent")
 
     # Add service info if available
     if service:

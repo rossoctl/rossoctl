@@ -77,7 +77,9 @@ Once running, access the OpenAPI documentation:
 
 ### Agents
 - `GET /api/v1/agents` - List all agents across namespaces
-- `GET /api/v1/agents/{namespace}/{name}` - Get specific agent details
+- `GET /api/v1/agents/{namespace}/{name}` - Get specific agent details. When present,
+  `contexts` reports the attachments declared when Rosso created the workload; it is a
+  metadata snapshot and is not continuously reconciled with manual Kubernetes changes.
 - `GET /api/v1/agents/{namespace}/{name}/route-status` - Check HTTPRoute/Route status for agent
 - `DELETE /api/v1/agents/{namespace}/{name}` - Delete agent
 - `POST /api/v1/agents` - Create new agent (supports deployment from image or source code via Shipwright)

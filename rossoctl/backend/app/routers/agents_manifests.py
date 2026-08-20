@@ -63,6 +63,18 @@ from app.routers.agents_models import (
 )
 from app.routers.agents_skills import _get_linked_skill_mounts
 from app.services.kubernetes import KubernetesService
+
+CONTEXTS_ANNOTATION = "rossoctl.io/contexts"
+
+
+def _record_contexts(manifest: Dict[str, Any], contexts: List[Dict[str, Any]]) -> None:
+    """Persist declared attachments for GET; this snapshot is not live reconciliation."""
+    if contexts:
+        manifest.setdefault("metadata", {}).setdefault("annotations", {})[CONTEXTS_ANNOTATION] = (
+            json.dumps(contexts, separators=(",", ":"))
+        )
+
+
 from app.utils.routes import get_agent_url
 
 logger = logging.getLogger(__name__)
@@ -901,10 +913,10 @@ async def _resolve_context_mounts(
     namespace: str,
     attachments: Optional[List[ContextAttachment]],
     workload_type: str,
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
     """Resolve named contexts into Kubernetes PVC volumes and mounts."""
     if not attachments:
-        return [], []
+        return [], [], []
     if workload_type not in {WORKLOAD_TYPE_STATEFULSET, WORKLOAD_TYPE_SANDBOX}:
         raise HTTPException(
             status_code=400,
@@ -917,6 +929,7 @@ async def _resolve_context_mounts(
 
     volumes: List[Dict[str, Any]] = []
     mounts: List[Dict[str, Any]] = []
+    resolved: List[Dict[str, Any]] = []
     seen_paths: set[str] = set()
     for index, attachment in enumerate(attachments):
         if not attachment.mountPath.startswith("/"):
@@ -933,6 +946,9 @@ async def _resolve_context_mounts(
         claim_name = resource_attachment.get("claimName")
         if not claim_name:
             raise HTTPException(status_code=502, detail="Context Service returned no PVC claim")
+        context_type = resource.get("type")
+        if not context_type:
+            raise HTTPException(status_code=502, detail="Context Service returned no type")
         volume_name = f"context-{index}"
         volumes.append(
             {
@@ -950,4 +966,13 @@ async def _resolve_context_mounts(
                 "readOnly": attachment.readOnly,
             }
         )
-    return volumes, mounts
+        resolved.append(
+            {
+                "name": attachment.name,
+                "type": context_type,
+                "mountPath": attachment.mountPath,
+                "readOnly": attachment.readOnly,
+                "claimName": claim_name,
+            }
+        )
+    return volumes, mounts, resolved

@@ -46,6 +46,7 @@ from app.routers.agents_manifests import (
     _build_statefulset_manifest,
     _create_or_replace_service,
     _ensure_agentruntime,
+    _record_contexts,
     _resolve_context_mounts,
 )
 from app.routers.agents_models import CreateAgentRequest, CreateAgentResponse
@@ -121,7 +122,7 @@ async def create_agent(
             s for s in request.skills if s and not _is_skill_external(kube, request.namespace, s)
         ]
 
-    context_volumes, context_mounts = await _resolve_context_mounts(
+    context_volumes, context_mounts, resolved_contexts = await _resolve_context_mounts(
         request.namespace, request.contexts, request.workloadType
     )
     ext_volumes.extend(context_volumes)
@@ -201,6 +202,7 @@ async def create_agent(
                     ext_volume_mounts=ext_volume_mounts,
                     ext_skill_paths=ext_skill_paths,
                 )
+                _record_contexts(workload_manifest, resolved_contexts)
                 kube.create_deployment(
                     namespace=request.namespace,
                     body=workload_manifest,
@@ -219,6 +221,7 @@ async def create_agent(
                     ext_volume_mounts=ext_volume_mounts,
                     ext_skill_paths=ext_skill_paths,
                 )
+                _record_contexts(workload_manifest, resolved_contexts)
                 kube.create_statefulset(
                     namespace=request.namespace,
                     body=workload_manifest,
@@ -237,6 +240,7 @@ async def create_agent(
                     ext_volume_mounts=ext_volume_mounts,
                     ext_skill_paths=ext_skill_paths,
                 )
+                _record_contexts(workload_manifest, resolved_contexts)
                 kube.create_job(
                     namespace=request.namespace,
                     body=workload_manifest,
@@ -253,6 +257,7 @@ async def create_agent(
                     ext_volume_mounts=ext_volume_mounts,
                     ext_skill_paths=ext_skill_paths,
                 )
+                _record_contexts(sandbox_manifest, resolved_contexts)
                 kube.create_sandbox(
                     namespace=request.namespace,
                     body=sandbox_manifest,

@@ -53,6 +53,7 @@ from app.routers.agents_manifests import (
     _build_statefulset_manifest,
     _create_or_replace_service,
     _ensure_agentruntime,
+    _record_contexts,
     _resolve_context_mounts,
 )
 from app.routers.agents_models import (
@@ -444,7 +445,7 @@ async def finalize_shipwright_build(
             k8sResourceRequests=final_k8s_resource_requests,
         )
         agent_request = apply_agent_import_defaults(agent_request, kube)
-        context_volumes, context_mounts = await _resolve_context_mounts(
+        context_volumes, context_mounts, resolved_contexts = await _resolve_context_mounts(
             namespace, final_contexts, final_workload_type
         )
         build_ext_volumes.extend(context_volumes)
@@ -499,6 +500,7 @@ async def finalize_shipwright_build(
                 ext_volume_mounts=build_ext_volume_mounts,
                 ext_skill_paths=build_ext_skill_paths,
             )
+            _record_contexts(workload_manifest, resolved_contexts)
             # Add additional labels from Build
             workload_manifest["metadata"]["labels"].update(
                 {k: v for k, v in build_labels.items() if k.startswith("rossoctl.io/")}
@@ -522,6 +524,7 @@ async def finalize_shipwright_build(
                 ext_volume_mounts=build_ext_volume_mounts,
                 ext_skill_paths=build_ext_skill_paths,
             )
+            _record_contexts(workload_manifest, resolved_contexts)
             # Add additional labels from Build
             workload_manifest["metadata"]["labels"].update(
                 {k: v for k, v in build_labels.items() if k.startswith("rossoctl.io/")}
@@ -545,6 +548,7 @@ async def finalize_shipwright_build(
                 ext_volume_mounts=build_ext_volume_mounts,
                 ext_skill_paths=build_ext_skill_paths,
             )
+            _record_contexts(workload_manifest, resolved_contexts)
             # Add additional labels from Build
             workload_manifest["metadata"]["labels"].update(
                 {k: v for k, v in build_labels.items() if k.startswith("rossoctl.io/")}
@@ -568,6 +572,7 @@ async def finalize_shipwright_build(
                 ext_volume_mounts=build_ext_volume_mounts,
                 ext_skill_paths=build_ext_skill_paths,
             )
+            _record_contexts(sandbox_manifest, resolved_contexts)
             rossoctl_build_labels = {
                 k: v
                 for k, v in build_labels.items()
