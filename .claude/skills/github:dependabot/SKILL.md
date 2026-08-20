@@ -296,7 +296,7 @@ git rebase main
 ## Related Skills
 
 - `github:prs` - General PR health analysis
-- `github:pr-review` - In-depth review of a single PR
+- `github-pr-review` - In-depth review of a single PR. Not bundled in this repo; import via `/plugin install github-pr-review@rossoctl-agent-skills`.
 - `ci:status` - Detailed CI check analysis
 - `git:rebase` - Fix merge conflicts and rebase branches
 - `cve:scan` - Scan dependencies for security vulnerabilities

@@ -162,5 +162,5 @@ Quick reference for the complete review criteria:
 ## Related Skills
 
 - `meta:write-docs` (planned) — Documentation writing standards and templates
-- `github:pr-review` — General PR review workflow (code + docs)
+- `github-pr-review` — General PR review workflow (code + docs). Not bundled in this repo; import via `/plugin install github-pr-review@rossoctl-agent-skills`.
 - `repo:pr` — PR creation conventions

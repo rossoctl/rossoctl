@@ -61,7 +61,7 @@ sequenceDiagram
 #### test_skill_files__all__key_skills_exist
 
 - **What:** Key rossoctl skills must exist in the repo
-- **Asserts:** `github:pr-review`, `rca:ci`, `k8s:health`, `test:review` exist
+- **Asserts:** `rca:ci`, `k8s:health`, `test:review`, `k8s:pods` exist (the `github-pr-review` skill migrated to rossoctl/agent-skills — import via `/plugin install github-pr-review@rossoctl-agent-skills`)
 - **Debug points:** Skills directory path, missing skills
 - **Agent coverage:** ALL (repo-level check)
 
@@ -284,7 +284,7 @@ query = f"SELECT * FROM users WHERE id={user_input}"
 | `adk_agent` | Skill in user prompt | LLM follows instructions via tool calling |
 | `claude_sdk_agent` | Skill in system prompt | Skill injected before user message |
 | `openshell_claude` | Native `.claude/skills/` | Claude Code reads skill directory |
-| `openshell_opencode` | Skill file passed to CLI | `opencode run --skill github:pr-review` |
+| `openshell_opencode` | Skill file passed to CLI | `opencode run --skill k8s:health` |
 
 ## Future Expansion
 

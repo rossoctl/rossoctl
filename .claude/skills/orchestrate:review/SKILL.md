@@ -64,7 +64,7 @@ Record PR metadata in a working table:
 
 ## Phase 2: Per-PR Review
 
-For each PR, run the `github:pr-review` checklist:
+For each PR, run the `github-pr-review` checklist (import via `/plugin install github-pr-review@rossoctl-agent-skills` for the full workflow, or follow the inline checklist below):
 
 ### Commit Conventions
 - Signed-off (`Signed-off-by:` trailer present)
@@ -216,6 +216,6 @@ sed -i '' 's/| review .*/| review | complete | -- | YYYY-MM-DD |/' /tmp/rossoctl
 ## Related Skills
 
 - `orchestrate` -- Parent router
-- `github:pr-review` -- Per-PR review checklist (invoked during Phase 2)
+- `github-pr-review` -- Per-PR review checklist (invoked during Phase 2). Not bundled in this repo; import via `/plugin install github-pr-review@rossoctl-agent-skills`.
 - `orchestrate:scan` -- Scan report used for cross-referencing
 - `orchestrate:plan` -- Plan used to verify all phases were executed

@@ -246,7 +246,6 @@
     "github:last-week": { "path": ".claude/skills/github:last-week/SKILL.md" },
     "github:last-week-org": { "path": ".claude/skills/github:last-week-org/SKILL.md" },
     "github:my-status": { "path": ".claude/skills/github:my-status/SKILL.md" },
-    "github:pr-review": { "path": ".claude/skills/github:pr-review/SKILL.md" },
     "github:prs": { "path": ".claude/skills/github:prs/SKILL.md" },
     "helm": { "path": ".claude/skills/helm/SKILL.md" },
     "helm:debug": { "path": ".claude/skills/helm:debug/SKILL.md" },

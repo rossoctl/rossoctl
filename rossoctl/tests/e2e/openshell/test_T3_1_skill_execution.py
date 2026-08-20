@@ -74,7 +74,7 @@ class TestSkillInfra:
         if not os.path.isdir(skills_dir):
             pytest.skip(f"Skills directory not found: {skills_dir}")
 
-        expected = ["github:pr-review", "rca:ci", "k8s:health", "test:review"]
+        expected = ["rca:ci", "k8s:health", "test:review", "k8s:pods"]
         for skill in expected:
             skill_path = os.path.join(skills_dir, skill, "SKILL.md")
             assert os.path.exists(skill_path), (

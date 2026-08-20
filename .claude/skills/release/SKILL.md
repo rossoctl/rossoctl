@@ -877,4 +877,4 @@ grep '^\- \[x\]' /tmp/rossoctl/release/v0.6.0/rc-fixes.md
 - `docs/releasing.md` — Full release process and policy
 - `git:commit` — Commit format conventions
 - `ci:status` — CI failure analysis
-- `github:pr-review` — PR review workflow
+- `github-pr-review` — PR review workflow. Not bundled in this repo; import via `/plugin install github-pr-review@rossoctl-agent-skills`.

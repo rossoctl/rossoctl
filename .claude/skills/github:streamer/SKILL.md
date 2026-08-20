@@ -346,6 +346,6 @@ Categories:
 - `git:rebase` - Rebase branches after upstream merges
 - `repo:pr` - PR format conventions
 - `commit` - Commit message format
-- `github:pr-review` - Automated PR review
+- `github-pr-review` - Automated PR review. Not bundled in this repo; import via `/plugin install github-pr-review@rossoctl-agent-skills`.
 - `cve:scan` - Security scanning
 - `tdd:ci` - CI-driven iteration on PRs
