@@ -1,0 +1,179 @@
+{{- /*
+Mesh self-heal Part B (rossoctl/rossoctl#1899): a feature-flagged CronJob that probes the gateway
+and, on a recoverable mesh-wide 503 (expired ztunnel/waypoint certs after a host suspend), runs
+scripts/k8s/mesh-recover.sh --fix with cooldown / max-restart safety and loud Events.
+OFF by default; Kind/dev-only (the ambient cert-expiry failure mode does not apply on OpenShift).
+Durable fix is upstream (istio/ztunnel#1679); this is a stop-gap remediator.
+*/ -}}
+{{- if and .Values.meshSelfHeal.enabled (not .Values.openshift) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mesh-selfheal-scripts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rossoctl.labels" . | nindent 4 }}
+data:
+  # mesh-recover.sh is a verbatim copy of scripts/k8s/mesh-recover.sh, kept in sync by
+  # scripts/check-mesh-recover-sync.sh (Helm .Files.Get cannot read outside the chart).
+  mesh-recover.sh: |
+{{ .Files.Get "files/mesh-recover.sh" | indent 4 }}
+  mesh-selfheal-wrapper.sh: |
+{{ .Files.Get "files/mesh-selfheal-wrapper.sh" | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mesh-selfheal-state
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rossoctl.labels" . | nindent 4 }}
+  annotations:
+    # Preserve cooldown/restart-count state across chart upgrades.
+    helm.sh/resource-policy: keep
+data: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mesh-selfheal
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rossoctl.labels" . | nindent 4 }}
+---
+# Cluster-scoped: the remediator rollout-restarts ztunnel (istio-system / istio-ztunnel),
+# waypoints and the gateway (rossoctl-system) — different namespaces — so restart perms are
+# cluster-wide but limited to read + patch (rollout restart is a patch of the pod template).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Namespace }}-mesh-selfheal
+  labels:
+    {{- include "rossoctl.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments", "daemonsets"]
+    verbs: ["get", "list", "patch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Namespace }}-mesh-selfheal
+  labels:
+    {{- include "rossoctl.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Release.Namespace }}-mesh-selfheal
+subjects:
+  - kind: ServiceAccount
+    name: mesh-selfheal
+    namespace: {{ .Release.Namespace }}
+---
+# Namespaced: the state ConfigMap and Events live in the release namespace.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mesh-selfheal
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rossoctl.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["mesh-selfheal-state"]
+    verbs: ["get", "patch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mesh-selfheal
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rossoctl.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: mesh-selfheal
+subjects:
+  - kind: ServiceAccount
+    name: mesh-selfheal
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mesh-selfheal
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rossoctl.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.meshSelfHeal.schedule | quote }}
+  # Never overlap ticks; a stuck rollout shouldn't stack jobs.
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 120
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 300
+      template:
+        metadata:
+          labels:
+            app: mesh-selfheal
+            # Keep this pod OUT of ambient — its kubectl/curl must not traverse the (possibly
+            # broken) ztunnel it is trying to repair. Same mechanism the gateway pods use.
+            istio.io/dataplane-mode: none
+        spec:
+          serviceAccountName: mesh-selfheal
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: mesh-selfheal
+              image: {{ .Values.meshSelfHeal.image | quote }}
+              command: ["bash", "/scripts/mesh-selfheal-wrapper.sh"]
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              env:
+                - name: GATEWAY_URL
+                  value: {{ .Values.meshSelfHeal.gatewayUrl | quote }}
+                - name: PROBE_HOST
+                  value: {{ .Values.meshSelfHeal.probeHost | quote }}
+                - name: INCLUDE_SPIRE
+                  value: {{ .Values.meshSelfHeal.includeSpire | quote }}
+                - name: COOLDOWN_SECONDS
+                  value: {{ .Values.meshSelfHeal.cooldownSeconds | quote }}
+                - name: MAX_RESTARTS
+                  value: {{ .Values.meshSelfHeal.maxRestarts | quote }}
+                - name: WINDOW_SECONDS
+                  value: {{ .Values.meshSelfHeal.windowSeconds | quote }}
+                - name: STATE_NS
+                  value: {{ .Release.Namespace | quote }}
+                - name: STATE_CM
+                  value: "mesh-selfheal-state"
+                - name: CRONJOB_NAME
+                  value: "mesh-selfheal"
+              resources:
+                {{- toYaml .Values.meshSelfHeal.resources | nindent 16 }}
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+          volumes:
+            - name: scripts
+              configMap:
+                name: mesh-selfheal-scripts
+                defaultMode: 0755
+{{- end }}

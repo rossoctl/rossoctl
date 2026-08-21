@@ -441,3 +441,33 @@ mlflow:
     # Set to true in ocp_values.yaml for production deployments
     enabled: false
     secretName: mlflow-oauth-secret
+
+# [MESH SELF-HEAL] Dev/Kind-only CronJob that auto-recovers a mesh-wide 503 caused by expired
+# ztunnel/waypoint mTLS certs after a long host suspend (rossoctl/rossoctl#1899). It periodically
+# probes the gateway and, on a recoverable outage, runs scripts/k8s/mesh-recover.sh --fix with
+# cooldown / max-restart safety and loud Events. OFF by default; only renders on non-OpenShift
+# (the ambient/ztunnel cert-expiry failure mode is Kind/dev-specific — see the issue). The durable
+# fix is upstream (istio/ztunnel#1679); this is a stop-gap remediator.
+meshSelfHeal:
+  enabled: false
+  # Cron schedule for the probe+remediate tick.
+  schedule: "*/5 * * * *"
+  # Stock image with bash + kubectl + curl (no custom image built for this).
+  image: "registry.k8s.io/kubectl:v1.31.0"
+  # In-cluster gateway URL the CronJob probes (the Istio-generated Service for Gateway "http").
+  gatewayUrl: "http://http-istio.rossoctl-system.svc.cluster.local:80"
+  # Host header to probe; empty ⇒ mesh-recover.sh auto-discovers it from HTTPRoutes.
+  probeHost: ""
+  # Also check/restart the SPIRE agent (separate failure domain; off by default).
+  includeSpire: false
+  # Safety gating (enforced by the wrapper via a small state ConfigMap):
+  cooldownSeconds: 900    # minimum gap between restart attempts
+  maxRestarts: 5          # cap on restarts within the rolling window; then Events only
+  windowSeconds: 3600     # rolling window for the restart cap
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
