@@ -18,6 +18,7 @@ from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 
 from app.core.config import settings
 from app.services.acp_bridge import ACPBridge
+from app.utils.naming import K8S_NAME_PATTERN
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/acp", tags=["acp"])
@@ -29,7 +30,7 @@ JSON_RPC_METHOD_NOT_FOUND = -32601
 JSON_RPC_INTERNAL_ERROR = -32603
 JSON_RPC_PARSE_ERROR = -32700
 
-_K8S_NAME = re.compile(r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$")
+_K8S_NAME = re.compile(K8S_NAME_PATTERN)
 
 
 @router.websocket("/ws/{namespace}/{agent_name}")

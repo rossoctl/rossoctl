@@ -15,7 +15,7 @@ router by ``agents.py`` -- see the ordering note there.
 import logging
 from typing import Any, Dict, List
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from kubernetes.client import ApiException
 
 from app.core.auth import ROLE_OPERATOR, ROLE_VIEWER, require_roles
@@ -45,6 +45,7 @@ from app.services.shipwright import (
     get_latest_buildrun,
 )
 from app.services.shipwright_builds import collect_rossoctl_shipwright_builds
+from app.utils.naming import K8S_NAME_MAX_LENGTH, K8S_NAME_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -140,8 +141,8 @@ async def list_agent_shipwright_builds(
     dependencies=[Depends(require_roles(ROLE_VIEWER))],
 )
 async def get_shipwright_build_status(
-    namespace: str,
-    name: str,
+    namespace: str = Path(..., pattern=K8S_NAME_PATTERN, max_length=K8S_NAME_MAX_LENGTH),
+    name: str = Path(..., pattern=K8S_NAME_PATTERN, max_length=K8S_NAME_MAX_LENGTH),
     kube: KubernetesService = Depends(get_kubernetes_service),
 ) -> ShipwrightBuildStatusResponse:
     """Get the Shipwright Build status for an agent.
@@ -189,8 +190,8 @@ async def get_shipwright_build_status(
     dependencies=[Depends(require_roles(ROLE_VIEWER))],
 )
 async def get_shipwright_buildrun_status(
-    namespace: str,
-    name: str,
+    namespace: str = Path(..., pattern=K8S_NAME_PATTERN, max_length=K8S_NAME_MAX_LENGTH),
+    name: str = Path(..., pattern=K8S_NAME_PATTERN, max_length=K8S_NAME_MAX_LENGTH),
     kube: KubernetesService = Depends(get_kubernetes_service),
 ) -> ShipwrightBuildRunStatusResponse:
     """Get the latest Shipwright BuildRun status for an agent build.
@@ -283,8 +284,8 @@ async def get_shipwright_buildrun_status(
     "/{namespace}/{name}/shipwright-buildrun", dependencies=[Depends(require_roles(ROLE_OPERATOR))]
 )
 async def trigger_shipwright_buildrun(
-    namespace: str,
-    name: str,
+    namespace: str = Path(..., pattern=K8S_NAME_PATTERN, max_length=K8S_NAME_MAX_LENGTH),
+    name: str = Path(..., pattern=K8S_NAME_PATTERN, max_length=K8S_NAME_MAX_LENGTH),
     kube: KubernetesService = Depends(get_kubernetes_service),
 ) -> Dict[str, Any]:
     """Trigger a new Shipwright BuildRun for an existing Build.
@@ -348,8 +349,8 @@ async def trigger_shipwright_buildrun(
     dependencies=[Depends(require_roles(ROLE_VIEWER))],
 )
 async def get_shipwright_build_info(
-    namespace: str,
-    name: str,
+    namespace: str = Path(..., pattern=K8S_NAME_PATTERN, max_length=K8S_NAME_MAX_LENGTH),
+    name: str = Path(..., pattern=K8S_NAME_PATTERN, max_length=K8S_NAME_MAX_LENGTH),
     kube: KubernetesService = Depends(get_kubernetes_service),
 ) -> AgentShipwrightBuildInfoResponse:
     """Get full Shipwright Build information including agent config and BuildRun status.

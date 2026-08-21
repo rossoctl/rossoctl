@@ -34,13 +34,14 @@ from app.core.constants import (
 )
 from app.routers.agents_models import OutboundRoute
 from app.services.kubernetes import KubernetesService, get_kubernetes_service
+from app.utils.naming import K8S_NAME_PATTERN
 from app.utils.routes import detect_platform, sanitize_log
 
 logger = logging.getLogger(__name__)
 
 authbridge_router = APIRouter()
 
-_K8S_NAME_RE = re.compile(r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$")
+_K8S_NAME_RE = re.compile(K8S_NAME_PATTERN)
 
 
 def _get_authbridge_runtime_yaml() -> str:
@@ -363,7 +364,7 @@ async def _fetch_authbridge_json(url: str) -> dict:
         return data
 
 
-_K8S_NAME_RE = re.compile(r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$")
+_K8S_NAME_RE = re.compile(K8S_NAME_PATTERN)
 
 
 if settings.rossoctl_feature_flag_authbridge_api:

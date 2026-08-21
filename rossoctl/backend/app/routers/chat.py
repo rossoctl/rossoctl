@@ -23,6 +23,7 @@ from app.core.auth import require_roles, get_required_user, ROLE_VIEWER, ROLE_OP
 from app.core.config import settings
 from app.services.kubernetes import KubernetesService, get_kubernetes_service
 from app.utils.routes import resolve_agent_url, sanitize_log
+from app.utils.naming import K8S_NAME_PATTERN
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -32,7 +33,7 @@ A2A_AGENT_CARD_PATH = "/.well-known/agent-card.json"
 A2A_LEGACY_AGENT_CARD_PATH = "/.well-known/agent.json"
 
 # RFC 1123 label: lowercase alphanumeric, may contain hyphens, 1-63 chars.
-_K8S_NAME_RE = re.compile(r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$")
+_K8S_NAME_RE = re.compile(K8S_NAME_PATTERN)
 
 # Characters permitted in an agent card path (positive allowlist).
 _SAFE_PATH_CHARS = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/-_.")

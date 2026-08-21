@@ -16,7 +16,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from kubernetes.client import ApiException
 
 from app.core.auth import ROLE_OPERATOR, require_roles
@@ -49,6 +49,7 @@ from app.routers.agents_models import (
     MigrateAgentResponse,
 )
 from app.services.kubernetes import KubernetesService, get_kubernetes_service
+from app.utils.naming import K8S_NAME_MAX_LENGTH, K8S_NAME_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -147,8 +148,8 @@ async def list_migratable_agents(
     dependencies=[Depends(require_roles(ROLE_OPERATOR))],
 )
 async def migrate_agent(
-    namespace: str,
-    name: str,
+    namespace: str = Path(..., pattern=K8S_NAME_PATTERN, max_length=K8S_NAME_MAX_LENGTH),
+    name: str = Path(..., pattern=K8S_NAME_PATTERN, max_length=K8S_NAME_MAX_LENGTH),
     request: MigrateAgentRequest = MigrateAgentRequest(),
     kube: KubernetesService = Depends(get_kubernetes_service),
 ) -> MigrateAgentResponse:
