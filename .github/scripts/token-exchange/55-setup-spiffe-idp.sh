@@ -33,7 +33,21 @@ if [[ -z "$TRUST_DOMAIN" ]]; then
   log_warn "Could not read trust domain from operator, using: $TRUST_DOMAIN"
 fi
 
-BUNDLE_ENDPOINT="https://spire-spiffe-oidc-discovery-provider.${SPIRE_NS}.svc.cluster.local/keys"
+# The SPIRE OIDC discovery provider serves the JWKS Keycloak needs to verify SVID
+# signatures. On OCP it fronts TLS via the service-ca (https); on Kind the Service is
+# plain http on :80, so an https bundleEndpoint is unreachable and every SVID auth fails
+# with invalid_client (#2342). Pick the scheme per platform.
+if [[ "$PLATFORM" == "ocp" ]]; then
+  BUNDLE_ENDPOINT="https://spire-spiffe-oidc-discovery-provider.${SPIRE_NS}.svc.cluster.local/keys"
+else
+  BUNDLE_ENDPOINT="http://spire-spiffe-oidc-discovery-provider.${SPIRE_NS}.svc.cluster.local/keys"
+fi
+
+# Keycloak's `spiffe` IdP matches the assertion's `iss` against the IdP `issuer` — and the
+# JWT-SVID's `iss` is the SPIRE OIDC discovery URL (e.g. https://oidc-discovery.<domain>),
+# NOT the trust domain. Setting issuer to the trust domain (spiffe://<domain>) makes KC
+# reject every SVID as invalid_client (#2342). Override with SPIRE_OIDC_ISSUER if needed.
+OIDC_ISSUER="${SPIRE_OIDC_ISSUER:-https://oidc-discovery.${TRUST_DOMAIN}}"
 
 log_info "Realm:           $TX_REALM"
 log_info "IDP Alias:       $IDP_ALIAS"
@@ -107,7 +121,7 @@ IDP_PAYLOAD="{
     \"syncMode\":\"LEGACY\",
     \"allowCreate\":\"true\",
     \"bundleEndpoint\":\"$BUNDLE_ENDPOINT\",
-    \"issuer\":\"spiffe://$TRUST_DOMAIN\",
+    \"issuer\":\"$OIDC_ISSUER\",
     \"trustDomain\":\"spiffe://$TRUST_DOMAIN\",
     \"showInAccountConsole\":\"NEVER\"
   }

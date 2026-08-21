@@ -63,18 +63,28 @@ print('\n'.join(result))
 kubectl patch configmap authbridge-runtime-config -n "$TX_NAMESPACE" --type=merge \
   -p "{\"data\":{\"config.yaml\":$(echo "$UPDATED_YAML" | jq -Rs .)}}"
 
-# --- Fix JWT audience to match Keycloak issuer ---
-log_info "Checking Keycloak issuer for JWT audience"
+# --- Align the SVID audience/issuer with Keycloak's ACTUAL realm issuer ---
+# The JWT-SVID's `aud` (and the AuthBridge inbound issuer) must equal Keycloak's realm
+# issuer, or KC rejects the assertion with "Invalid token audience" (#2342). The operator
+# injects the spiffe-helper config (which mints the SVID audience) from authbridge-config's
+# JWT_AUDIENCE — NOT the spiffe-helper-config ConfigMap — so patch that (and any per-workload
+# copies), then restart the workloads so the SVID is re-minted with the correct audience.
+# Derived from the live realm, so it is correct on Kind (http://…:8080) and OCP (https://…).
+log_info "Aligning SVID audience/issuer with Keycloak realm issuer"
 KC_ISSUER=$(curl -sk "${KC_URL}/realms/${TX_REALM}/.well-known/openid-configuration" 2>/dev/null | jq -r '.issuer // empty')
 if [[ -n "$KC_ISSUER" ]]; then
-  CURRENT_AUD=$(kubectl get configmap spiffe-helper-config -n "$TX_NAMESPACE" -o jsonpath='{.data.helper\.conf}' 2>/dev/null | grep -o 'jwt_audience="[^"]*"' | sed 's/jwt_audience="//' | sed 's/"//')
-  if [[ -n "$CURRENT_AUD" && "$KC_ISSUER" != "$CURRENT_AUD" ]]; then
-    log_info "Updating JWT audience: $CURRENT_AUD -> $KC_ISSUER"
-    HELPER_CONF=$(kubectl get configmap spiffe-helper-config -n "$TX_NAMESPACE" -o jsonpath='{.data.helper\.conf}')
-    UPDATED_CONF=$(echo "$HELPER_CONF" | sed "s|jwt_audience=\"${CURRENT_AUD}\"|jwt_audience=\"${KC_ISSUER}\"|")
-    kubectl patch configmap spiffe-helper-config -n "$TX_NAMESPACE" --type=merge \
-      -p "{\"data\":{\"helper.conf\":$(echo "$UPDATED_CONF" | jq -Rs .)}}"
-  fi
+  log_info "Keycloak realm issuer: $KC_ISSUER"
+  for CM in authbridge-config $(kubectl get cm -n "$TX_NAMESPACE" -o name 2>/dev/null | sed 's|configmap/||' | grep -E '^authbridge-config-'); do
+    kubectl get cm "$CM" -n "$TX_NAMESPACE" >/dev/null 2>&1 || continue
+    kubectl patch configmap "$CM" -n "$TX_NAMESPACE" --type=merge \
+      -p "{\"data\":{\"JWT_AUDIENCE\":\"$KC_ISSUER\",\"ISSUER\":\"$KC_ISSUER\"}}" 2>/dev/null || true
+  done
+  # Restart the workloads so spiffe-helper re-mints the SVID with the aligned audience.
+  kubectl rollout restart deployment -n "$TX_NAMESPACE" 2>/dev/null || true
+  kubectl rollout status deployment -n "$TX_NAMESPACE" --timeout=180s 2>/dev/null || \
+    kubectl wait --for=condition=Available deployment --all -n "$TX_NAMESPACE" --timeout=180s 2>/dev/null || true
+else
+  log_warn "Could not read Keycloak realm issuer — SVID audience may not match (see #2342)"
 fi
 
 # --- Ensure dedicated ServiceAccounts ---

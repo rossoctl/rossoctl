@@ -8,6 +8,8 @@ import pytest
 import requests
 import urllib3
 from kubernetes import client, config
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # E2E tests talk to in-cluster Keycloak over self-signed / internal certs.
 # Disable the noisy InsecureRequestWarning globally for this test suite and
@@ -26,6 +28,22 @@ def _make_http_session() -> requests.Session:
     """
     s = requests.Session()
     s.verify = False  # CodeQL [py/request-without-cert-validation]
+    # Kind reaches Keycloak through a `kubectl port-forward` tunnel that can stall or
+    # drop a connection under load, surfacing as a ReadTimeout/ConnectionError mid-test
+    # (#2342 bug B). Retry transient connect/read errors and 5xx (incl. POST — the token
+    # grant) so a tunnel blip doesn't fail an otherwise-valid request.
+    retry = Retry(
+        total=5,
+        connect=5,
+        read=5,
+        backoff_factor=0.5,
+        status_forcelist=(502, 503, 504),
+        allowed_methods=frozenset(["GET", "POST"]),
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    s.mount("http://", adapter)
+    s.mount("https://", adapter)
     return s
 
 
@@ -142,12 +160,10 @@ def kc_client_secret(kc_admin_token):
 # ---------------------------------------------------------------------------
 
 
-@pytest.fixture(scope="session")
-def agent_credentials(k8s):
-    """Discover agent keycloak credentials from secrets."""
-    secrets = k8s.list_namespaced_secret(TX_NAMESPACE)
+def _read_agent_credentials(k8s):
+    """Read agent/tool client credentials from the operator-managed secrets."""
     creds = {}
-    for s in secrets.items:
+    for s in k8s.list_namespaced_secret(TX_NAMESPACE).items:
         if "rossoctl-keycloak-client-credentials" in s.metadata.name:
             cid = base64.b64decode(s.data.get("client-id.txt", "")).decode()
             csecret = base64.b64decode(s.data.get("client-secret.txt", "")).decode()
@@ -155,6 +171,26 @@ def agent_credentials(k8s):
                 creds["agent"] = {"client_id": cid, "client_secret": csecret}
             elif "tool" in cid.lower():
                 creds["tool"] = {"client_id": cid, "client_secret": csecret}
+    return creds
+
+
+@pytest.fixture(scope="session")
+def agent_credentials(k8s):
+    """Discover agent/tool keycloak client credentials from the operator-managed secrets.
+
+    Skips when the workload clients are registered as ``federated-jwt`` (SPIFFE): those clients
+    authenticate via JWT-SVID and have no client secret (``client-secret.txt`` is empty), so the
+    secret-based ``client_credentials`` grant can't apply — the SPIFFE (JWT-SVID) tests cover
+    those clients instead. This is the correct behavior when SPIFFE is enabled (#2342).
+    """
+    creds = _read_agent_credentials(k8s)
+    if not creds.get("agent", {}).get("client_secret") or not creds.get("tool", {}).get(
+        "client_secret"
+    ):
+        pytest.skip(
+            "workload clients are federated-jwt (SPIFFE) with no client secret; "
+            "secret-based client_credentials not applicable — see #2342"
+        )
     return creds
 
 

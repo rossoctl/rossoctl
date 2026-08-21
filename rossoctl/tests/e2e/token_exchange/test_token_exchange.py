@@ -495,7 +495,7 @@ curl -sk -X POST "${KEYCLOAK_URL}/realms/${TX_REALM}/protocol/openid-connect/tok
                 "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-spiffe",
                 "client_assertion": jwt_svid,
             },
-            timeout=10,
+            timeout=30,
         )
         assert resp.status_code == 200, f"SPIFFE client_credentials failed: {resp.text}"
 
@@ -531,7 +531,7 @@ curl -sk -X POST "${KEYCLOAK_URL}/realms/${TX_REALM}/protocol/openid-connect/tok
                 "requested_token_type": "urn:ietf:params:oauth:token-type:access_token",
                 "audience": TX_CLIENT_ID,
             },
-            timeout=10,
+            timeout=30,
         )
         assert resp.status_code == 200, f"SPIFFE token exchange failed: {resp.text}"
         claims = _decode_jwt(resp.json()["access_token"])
