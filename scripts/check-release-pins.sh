@@ -29,6 +29,7 @@ DEPS_VALUES_FILE="$DEPS_CHARTS_DIR/values.yaml"
 
 JSON_MODE=false
 VERIFY_IMAGES=false
+RENDER=false
 
 usage() {
     cat <<EOF
@@ -39,6 +40,10 @@ Validate that all image tags and chart dependencies are pinned for release.
 Options:
   --json            Output results as JSON (for CI summary consumption)
   --verify-images   Check that pinned GHCR images exist via docker manifest inspect
+  --render          Render the chart (helm template, incl. subcharts) and fail on any
+                    floating image tag (:latest/:main/:master). Catches tags inside
+                    dependency subcharts that the values/template greps cannot see
+                    (rossoctl/rossoctl#2389). Requires helm.
   -h, --help        Show this help message
 EOF
     exit 0
@@ -48,6 +53,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --json)           JSON_MODE=true;     shift ;;
         --verify-images)  VERIFY_IMAGES=true; shift ;;
+        --render)         RENDER=true;        shift ;;
         -h|--help)        usage ;;
         *)                echo "Unknown option: $1"; usage ;;
     esac
@@ -451,6 +457,54 @@ if [[ -f "$DEPS_VALUES_FILE" ]]; then
             else
                 add_ok "charts/rossoctl-deps/values.yaml" \
                     "spiffeIdp.image.tag ($spiffe_tag) consistent with platform"
+            fi
+        fi
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# Check 6c (opt-in, --render): No floating image tags in the RENDERED chart
+#
+# Checks 1-2 only see rossoctl's own values.yaml/templates. They cannot see a
+# floating tag inside a dependency subchart (e.g. operator-chart's AuthBridge
+# images), which is how a :latest shipped invisibly at an earlier rc
+# (rossoctl/rossoctl#2389). Rendering the full chart (subcharts included) and
+# grepping the output for any registry ref ending in :latest/:main/:master
+# closes that gap. Opt-in because it needs helm + fetching OCI dependencies.
+# ---------------------------------------------------------------------------
+
+if [[ "$RENDER" == "true" ]]; then
+    render_label="charts/rossoctl (rendered)"
+    if ! command -v helm >/dev/null 2>&1; then
+        add_error "$render_label" 0 "--render requires helm, which is not installed"
+    else
+        # Build dependencies so subcharts are rendered too. Public OCI, no auth.
+        if ! helm dependency build "$CHARTS_DIR" >/tmp/crp-helm-dep.log 2>&1; then
+            add_error "$render_label" 0 "helm dependency build failed (cannot render subcharts) — see output"
+            cat /tmp/crp-helm-dep.log >&2 || true
+        else
+            # openshift=false avoids the OpenShift-only required-value guards;
+            # image references (incl. subcharts) render regardless.
+            if ! helm template rossoctl "$CHARTS_DIR" --set openshift=false \
+                    > /tmp/crp-render.yaml 2>/tmp/crp-render.err; then
+                add_error "$render_label" 0 "helm template failed — see output"
+                cat /tmp/crp-render.err >&2 || true
+            else
+                # Match a container-registry ref ending in a floating tag, in any
+                # field (image:, or a subchart ConfigMap value like authbridge:).
+                # Excludes version-pinned (:vX.Y.Z) and digest (@sha256:) refs.
+                float_re='(ghcr\.io|quay\.io|docker\.io|registry\.[a-z.]+)[^[:space:]"'\'']*:(latest|main|master)([^0-9A-Za-z._-]|$)'
+                matches=$(grep -nE "$float_re" /tmp/crp-render.yaml || true)
+                if [[ -z "$matches" ]]; then
+                    add_ok "$render_label" "no floating image tags in rendered manifests (subcharts included)"
+                else
+                    while IFS= read -r m; do
+                        [[ -z "$m" ]] && continue
+                        ln="${m%%:*}"
+                        ref=$(printf '%s' "$m" | grep -oE "$float_re" | head -1)
+                        add_error "$render_label" "$ln" "floating image tag in rendered output: ${ref}"
+                    done <<< "$matches"
+                fi
             fi
         fi
     fi
