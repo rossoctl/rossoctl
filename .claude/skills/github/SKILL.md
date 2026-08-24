@@ -11,7 +11,7 @@ flowchart TD
     GH -->|Org-wide weekly| ORGWEEK["github:last-week-org"]:::github
     GH -->|Triage issues| ISSUES["github:issues"]:::github
     GH -->|PR health| PRS["github:prs"]:::github
-    GH -->|Review PR| PRREVIEW["github:pr-review"]:::github
+    GH -->|Review PR| PRREVIEW["github-pr-review"]:::github
     GH -->|Dependabot triage| DEPBOT["github:dependabot"]:::github
 
     ORGWEEK -->|calls per repo| WEEK
@@ -60,7 +60,7 @@ What do you need?
     │   → github:prs
     │
     ├─ Review a specific PR (inline comments, conventions)
-    │   → github:pr-review
+    │   → github-pr-review  (import: /plugin install github-pr-review@rossoctl-agent-skills)
     │
     ├─ Triage Dependabot PRs (categorize, bundle, merge)
     │   → github:dependabot
@@ -77,7 +77,7 @@ What do you need?
 | `github:last-week` | Weekly report: merged PRs, new issues, CI health, priority analysis |
 | `github:last-week-org` | Org-wide weekly report: all rossoctl repos, proportional depth by activity |
 | `github:issues` | Issue triage: stale, blocking, no attention, should-close |
-| `github:pr-review` | Automated PR review: inline comments, conventions, security checks |
+| `github-pr-review` | Automated PR review: inline comments, conventions, security checks. Not bundled here; import via `/plugin install github-pr-review@rossoctl-agent-skills`. |
 | `github:prs` | PR health: passing CI without review, stale, conflicts |
 | `github:dependabot` | Dependabot triage: categorize, bundle, fix CI blockers, approve merges |
 

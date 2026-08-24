@@ -147,7 +147,7 @@ as part of the A2A prompt. The test infrastructure reads skill markdown from
 
 | Skill | Test | Status | How It Works |
 |-------|------|--------|-------------|
-| PR Review | `test_pr_review__adk_agent` | **PASS** | Skill markdown from `github:pr-review` injected into prompt; agent uses `review_pr` tool |
+| PR Review | `test_pr_review__adk_agent` | **PASS** | Skill markdown from `github-pr-review` injected into prompt; agent uses `review_pr` tool. Skill now lives in rossoctl/agent-skills (import via `/plugin install github-pr-review@rossoctl-agent-skills`), not `.claude/skills/`. |
 | RCA | `test_rca__adk_agent` | **PASS** | Skill markdown from `rca:ci` injected; agent analyzes CI logs |
 | Security Review | `test_security_review__adk_agent` | **PASS** | Prompt-based; agent reviews K8s manifests for security issues |
 | Real GitHub PR | `test_review_real_github_pr__adk` | **PASS** | Fetches actual PR #1300 diff via GitHub API, reviews with LLM |

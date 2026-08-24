@@ -5,7 +5,7 @@ draft: true       # excluded from https://www.rossoctl.dev/
 # Skill Execution
 
 > **Test file:** `rossoctl/tests/e2e/openshell/test_07_skill_execution.py`
-> **Tests:** 27 | **Pass:** 18 | **Skip:** 9 (Kind, fresh cluster)
+> **Tests:** 20 | **Pass:** 16 | **Skip:** 4 (Kind, fresh cluster)
 
 ## What This Tests
 
@@ -39,7 +39,6 @@ sequenceDiagram
 
 | Skill | weather_agent | adk_agent | claude_sdk_agent | weather_supervised | os_claude | os_opencode | os_generic |
 |-------|--------------|-----------|-----------------|-------------------|----------|------------|-----------|
-| **PR Review** | ⏭️ no LLM | ✅ | ✅ | ⏭️ no LLM | ⏭️ Anthropic key | ⏭️ /v1/responses | ⏭️ no agent |
 | **RCA** | ⏭️ no LLM | ✅ | ✅ | ⏭️ no LLM | ⏭️ Anthropic key | ⏭️ /v1/responses | ⏭️ no agent |
 | **Security Review** | ⏭️ no LLM | ✅ | ✅ | ⏭️ no LLM | ⏭️ Anthropic key | ⏭️ /v1/responses | ⏭️ no agent |
 | **Code Generation** | — | — | ✅ | — | — | — | — |
@@ -61,7 +60,7 @@ sequenceDiagram
 #### test_skill_files__all__key_skills_exist
 
 - **What:** Key rossoctl skills must exist in the repo
-- **Asserts:** `github:pr-review`, `rca:ci`, `k8s:health`, `test:review` exist
+- **Asserts:** `rca:ci`, `k8s:health`, `test:review`, `k8s:pods` exist (the `github-pr-review` skill migrated to rossoctl/agent-skills — import via `/plugin install github-pr-review@rossoctl-agent-skills`)
 - **Debug points:** Skills directory path, missing skills
 - **Agent coverage:** ALL (repo-level check)
 
@@ -71,59 +70,6 @@ sequenceDiagram
 - **Asserts:** 4+ skill directories found, each has SKILL.md
 - **Debug points:** Skill directory names
 - **Agent coverage:** ALL (repo-level check)
-
-### PR Review Skill
-
-#### test_pr_review__claude_sdk_agent__follows_skill_instructions
-
-- **What:** Claude SDK agent follows pr-review skill instructions
-- **Asserts:** 
-  - Response contains security-related keywords (sql, injection, os.system, command, security)
-  - Response length > 50 chars
-- **Debug points:** Response text, keywords found
-- **Agent coverage:** claude_sdk_agent
-- **Prompt:** Skill instructions (truncated 1000 chars) + CANONICAL_DIFF
-
-#### test_pr_review__adk_agent__follows_skill_instructions
-
-- **What:** ADK agent follows pr-review skill instructions
-- **Asserts:** Response length > 30 chars
-- **Debug points:** Response text
-- **Agent coverage:** adk_agent
-- **Prompt:** Skill instructions (truncated 800 chars) + CANONICAL_DIFF
-
-#### test_pr_review__weather_agent__no_llm
-
-- **What:** Weather agent cannot execute skills — no LLM
-- **Asserts:** N/A (always skips)
-- **Skip reason:** Pure tool-calling agent, no LLM
-
-#### test_pr_review__weather_supervised__no_llm
-
-- **What:** Supervised weather agent cannot execute skills — no LLM
-- **Asserts:** N/A (always skips)
-- **Skip reason:** Supervisor provides isolation, not LLM capabilities
-
-#### test_pr_review__openshell_claude__native_skill_execution
-
-- **What:** Claude Code builtin sandbox executes pr-review skill natively
-- **Asserts:** N/A (always skips)
-- **Skip reason:** Requires Anthropic API key (Phase 2 provider integration)
-- **TODO:** Claude Code reads .claude/skills/ directly from workspace
-
-#### test_pr_review__openshell_opencode__litemaas_provider
-
-- **What:** OpenCode builtin sandbox executes pr-review skill via LiteMaaS
-- **Asserts:** Response length > 20 chars
-- **Skip reason:** LiteLLM /v1/responses API not available (OpenCode blocker)
-- **Agent coverage:** openshell_opencode
-- **How:** Creates sandbox, runs `opencode run -m openai/gpt-4o-mini` with skill+diff
-
-#### test_pr_review__openshell_generic__no_agent
-
-- **What:** Generic sandbox has no agent — cannot execute skills
-- **Asserts:** N/A (always skips)
-- **Skip reason:** No agent runtime in generic sandbox
 
 ### RCA Skill
 
@@ -284,7 +230,7 @@ query = f"SELECT * FROM users WHERE id={user_input}"
 | `adk_agent` | Skill in user prompt | LLM follows instructions via tool calling |
 | `claude_sdk_agent` | Skill in system prompt | Skill injected before user message |
 | `openshell_claude` | Native `.claude/skills/` | Claude Code reads skill directory |
-| `openshell_opencode` | Skill file passed to CLI | `opencode run --skill github:pr-review` |
+| `openshell_opencode` | Skill file passed to CLI | `opencode run --skill k8s:health` |
 
 ## Future Expansion
 

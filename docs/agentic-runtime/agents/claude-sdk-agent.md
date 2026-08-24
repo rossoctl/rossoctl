@@ -96,7 +96,7 @@ into the A2A prompt.
 
 | Skill | Test | Status | How It Works |
 |-------|------|--------|-------------|
-| PR Review | `test_pr_review__claude_sdk_agent` | **PASS** | Skill markdown from `github:pr-review` injected into prompt |
+| PR Review | `test_pr_review__claude_sdk_agent` | **PASS** | Skill markdown from `github-pr-review` injected into prompt. Skill now lives in rossoctl/agent-skills (import via `/plugin install github-pr-review@rossoctl-agent-skills`), not `.claude/skills/`. |
 | RCA | `test_rca__claude_sdk_agent` | **PASS** | Skill markdown from `rca:ci` injected; analyzes CI failure logs |
 | Security Review | `test_security_review__claude_sdk_agent` | **PASS** | Prompt-based K8s manifest security analysis |
 | Real GitHub PR | `test_review_real_github_pr__claude_sdk` | **PASS** | Fetches PR #1300 diff via GitHub API, reviews with LLM |

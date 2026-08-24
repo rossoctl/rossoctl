@@ -310,7 +310,7 @@ if $DEPLOY_AGENTS; then
 
   # Create rossoctl-skills ConfigMap
   run_cmd kubectl create configmap rossoctl-skills -n "$TENANT" \
-    --from-literal=skills.json='{"version":"1.0","source":"rossoctl/.claude/skills/","skills":[{"name":"review","type":"claude-code-skill"},{"name":"rca","type":"claude-code-skill"},{"name":"k8s:health","type":"claude-code-skill"},{"name":"k8s:pods","type":"claude-code-skill"},{"name":"k8s:logs","type":"claude-code-skill"},{"name":"tdd:kind","type":"claude-code-skill"},{"name":"tdd:hypershift","type":"claude-code-skill"},{"name":"github:pr-review","type":"claude-code-skill"},{"name":"security-review","type":"claude-code-skill"}]}' \
+    --from-literal=skills.json='{"version":"1.0","source":"rossoctl/.claude/skills/","skills":[{"name":"review","type":"claude-code-skill"},{"name":"rca","type":"claude-code-skill"},{"name":"k8s:health","type":"claude-code-skill"},{"name":"k8s:pods","type":"claude-code-skill"},{"name":"k8s:logs","type":"claude-code-skill"},{"name":"tdd:kind","type":"claude-code-skill"},{"name":"tdd:hypershift","type":"claude-code-skill"},{"name":"security-review","type":"claude-code-skill"}]}' \
     --dry-run=client -o yaml | kubectl apply -f - 2>&1 | grep -v "^Warning:" || true
 
   # Apply agent manifests and policy ConfigMaps
