@@ -473,7 +473,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Run actionlint
-        uses: reviewdog/action-actionlint@d63ba7532e0942965320cd8d73cbae4c7b3c5283  # v1.73.1
+        uses: reviewdog/action-actionlint@dbe5299849118fd6f099ba563d263d770955a64a  # v1.73.2
         with:
           fail_on_error: true
           # Only report issues on lines changed in the PR (not pre-existing)
@@ -494,17 +494,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@5595ccaf912efad79be6eef63a5619ff05969be3  # v4
+        uses: github/codeql-action/init@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28  # v4
         with:
           languages: python
           # Use security-extended queries for more thorough analysis
           queries: security-extended
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@5595ccaf912efad79be6eef63a5619ff05969be3  # v4
+        uses: github/codeql-action/autobuild@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28  # v4
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3  # v4
+        uses: github/codeql-action/analyze@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28  # v4
         with:
           category: "/language:python"
 
