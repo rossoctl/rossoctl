@@ -1,6 +1,7 @@
 ---
 description: How to deploy your code onto Rossoctl.
 sidebar_label: Import a New Agent
+sidebar_position: 30
 ---
 
 # Importing a New Agent into the Platform from a Code Base

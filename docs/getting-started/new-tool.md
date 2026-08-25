@@ -1,6 +1,7 @@
 ---
 description: How to deploy your code onto Rossoctl.
 sidebar_label: Import a New Tool
+sidebar_position: 40
 ---
 
 ## Importing a New MCP Tool into the Platform

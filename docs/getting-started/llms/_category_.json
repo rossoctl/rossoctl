@@ -1,6 +1,6 @@
 {
   "label": "Configuring LLMs",
-  "position": 20,
+  "position": 50,
   "description": "LLM configuration.",
   "link": {
     "type": "generated-index",

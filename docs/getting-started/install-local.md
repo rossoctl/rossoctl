@@ -2,7 +2,7 @@
 title: Install for laptop
 description: CLI and RossoCortex guide.
 sidebar_label: Install for laptop
-sidebar_position: 2
+sidebar_position: 20
 ---
 
 :::tip

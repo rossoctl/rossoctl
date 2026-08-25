@@ -2,7 +2,7 @@
 title: Install on Kubernetes
 description: Full Rossoctl installation guide.
 sidebar_label: Install (Kubernetes)
-sidebar_position: 1
+sidebar_position: 10
 ---
 
 :::tip
