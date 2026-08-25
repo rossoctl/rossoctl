@@ -143,4 +143,4 @@ Once the build succeeds, Rossoctl automatically:
 
 ### Deployment Issues
 
-See the [Troubleshooting](../users-guides/troubleshooting) section.
+See the [Troubleshooting](../users-guides/troubleshooting.md) section.
