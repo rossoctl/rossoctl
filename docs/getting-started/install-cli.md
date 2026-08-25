@@ -14,7 +14,7 @@ extracts it, and installs the binary at
 ```sh
 curl -fsSL https://raw.githubusercontent.com/rossoctl/rossoctl-cli/main/downloadRossoctl | sh
 PATH=$PATH:$HOME/.config/rossoctl
-# alternately, sudo mv $HOME/.config/rossoctl /usr/local/bin
+# alternately, sudo mv $HOME/.config/rossoctl/rossoctl /usr/local/bin
 ```
 
 ## Quick usage, for shared Rossoctl API servers
