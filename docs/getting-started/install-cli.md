@@ -14,7 +14,8 @@ extracts it, and installs the binary at
 ```sh
 curl -fsSL https://raw.githubusercontent.com/rossoctl/rossoctl-cli/main/downloadRossoctl | sh
 PATH=$PATH:$HOME/.config/rossoctl
-# alternately, sudo mv $HOME/.config/rossoctl/rossoctl /usr/local/bin
+# add the above to your shell profile to make it permanent
+# alternately, `sudo mv $HOME/.config/rossoctl/rossoctl /usr/local/bin`
 ```
 
 ## Quick usage, for shared Rossoctl API servers
@@ -39,7 +40,7 @@ The CLI allows you to work with agents running locally, using AuthBridge, withou
 
 ### Running a command behind an AuthBridge pipeline
 
-Rossoctl can be used to test how an agent runs under an AuthBridge configuration on your laptop.  It provides an in-process implementation of AuthBridge.
+Rossoctl can be used to test how an agent runs under an AuthBridge configuration on your laptop. It provides an in-process implementation of AuthBridge.
 
 ```sh
 rossoctl authbridge exec \
@@ -66,7 +67,7 @@ rossoctl authbridge exec \
    -- claude
 ```
 
-Authbridge's own log output goes to `--logfile` (default `/tmp/authbridge.log`)
+AuthBridge's own log output goes to `--logfile` (default `/tmp/authbridge.log`)
 rather than stderr, so it does not interleave with the hosted command's output.
 The path is printed at startup; pass `--logfile ""` to log to stderr instead.
 
