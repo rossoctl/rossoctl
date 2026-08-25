@@ -105,4 +105,4 @@ The example agents in the [agent-examples repository](https://github.com/rossoct
 
 ### Deployment Issues
 
-See the [Troubleshooting](/docs/users-guides/troubleshooting) section.
+See the [Troubleshooting](../users-guides/troubleshooting) section.
