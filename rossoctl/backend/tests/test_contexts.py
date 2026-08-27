@@ -65,6 +65,29 @@ async def test_list_contexts_proxies_namespace() -> None:
 
 
 @pytest.mark.asyncio
+async def test_list_context_storage_classes_proxies_context_service() -> None:
+    payload = {
+        "items": [
+            {
+                "name": "fast",
+                "default": True,
+                "provisioner": "example.csi.io",
+                "volumeBindingMode": "WaitForFirstConsumer",
+                "reclaimPolicy": "Delete",
+                "allowVolumeExpansion": True,
+            }
+        ]
+    }
+    response = MagicMock()
+    response.json.return_value = payload
+    with patch.object(contexts, "_request", new=AsyncMock(return_value=response)) as request:
+        result = await contexts.list_context_storage_classes()
+
+    assert result == payload
+    request.assert_awaited_once_with("GET", "/v1/storage-classes")
+
+
+@pytest.mark.asyncio
 async def test_context_proxy_requires_service_url() -> None:
     with (
         patch("app.routers.contexts.settings.context_service_url", ""),

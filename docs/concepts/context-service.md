@@ -97,6 +97,17 @@ the CSI driver's implementation details.
 
 ## Create and attach a context
 
+List the storage classes made available by the cluster before selecting one:
+
+```sh
+rossoctl context storage-classes
+```
+
+The command works through the authenticated Rosso API and does not require direct
+Kubernetes access. The result is a constrained set of storage choices rather than
+raw Kubernetes StorageClass objects. Omitting `--storage-class` uses the cluster's
+default storage behavior.
+
 Create a shared GPFS workspace and inspect it:
 
 ```sh

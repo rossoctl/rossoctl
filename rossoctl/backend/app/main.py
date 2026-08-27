@@ -304,6 +304,7 @@ if _skills_modules_loaded:
 
 if _contexts_module_loaded:
     app.include_router(contexts.router, prefix="/api/v1")
+    app.include_router(contexts.storage_classes_router, prefix="/api/v1")
     logger.info("Feature flag CONTEXT_SERVICE enabled — context routes registered")
 
 if _acp_modules_loaded:

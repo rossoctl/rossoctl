@@ -12,6 +12,7 @@ from app.core.auth import ROLE_OPERATOR, ROLE_VIEWER, require_roles
 from app.core.config import settings
 
 router = APIRouter(prefix="/contexts", tags=["contexts"])
+storage_classes_router = APIRouter(prefix="/context-storage-classes", tags=["contexts"])
 
 _KUBERNETES_NAME = re.compile(r"^[a-z0-9](?:[-a-z0-9]*[a-z0-9])?$")
 
@@ -64,6 +65,15 @@ async def _request(method: str, path: str, body: dict | None = None) -> httpx.Re
 @router.post("", dependencies=[Depends(require_roles(ROLE_OPERATOR))])
 async def create_context(request: CreateContextRequest) -> dict:
     response = await _request("POST", "/v1/contexts", request.model_dump(exclude_none=True))
+    return response.json()
+
+
+@storage_classes_router.get(
+    "", dependencies=[Depends(require_roles(ROLE_VIEWER, ROLE_OPERATOR))]
+)
+async def list_context_storage_classes() -> dict:
+    """List storage choices exposed by Context Service."""
+    response = await _request("GET", "/v1/storage-classes")
     return response.json()
 
 
