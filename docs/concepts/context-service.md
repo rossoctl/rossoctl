@@ -1,8 +1,12 @@
-# Context Service
+# Agent Context Infrastructure
 
-Rosso can optionally use [Context Service](https://github.com/rossoctl/context-service)
-to provision named storage resources and attach them to StatefulSet or Sandbox agents.
-Context Service is installed separately from Rosso.
+Agent Context Infrastructure is the layer that provisions, attaches, and manages the durable
+context used by agents. It includes workspaces, memory, knowledge, artifacts, and related runtime
+state; it is distinct from the finite context window sent to an LLM.
+
+Rosso can optionally use [Context Service](https://github.com/rossoctl/context-service) to provide
+this infrastructure. The service provisions named storage resources and attaches them to
+StatefulSet or Sandbox agents. Context Service is installed separately from Rosso.
 
 ## Configure Rosso
 
