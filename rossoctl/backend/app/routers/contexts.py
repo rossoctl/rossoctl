@@ -68,9 +68,7 @@ async def create_context(request: CreateContextRequest) -> dict:
     return response.json()
 
 
-@storage_classes_router.get(
-    "", dependencies=[Depends(require_roles(ROLE_VIEWER, ROLE_OPERATOR))]
-)
+@storage_classes_router.get("", dependencies=[Depends(require_roles(ROLE_VIEWER, ROLE_OPERATOR))])
 async def list_context_storage_classes() -> dict:
     """List storage choices exposed by Context Service."""
     response = await _request("GET", "/v1/storage-classes")
