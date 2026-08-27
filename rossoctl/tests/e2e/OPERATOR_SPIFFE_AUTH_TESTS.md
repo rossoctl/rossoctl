@@ -1,4 +1,4 @@
-# Operator SPIFFE Authentication E2E Tests (Planned)
+# Operator SPIFFE Authentication E2E Tests
 
 ## Context
 
@@ -6,13 +6,28 @@ PR [rossoctl-operator#522](https://github.com/rossoctl/operator/pull/522) remove
 
 ## Current Status
 
-**✅ Implemented in operator:**
-- `fetchJWTSVID()` method in [clientregistration_controller.go](https://github.com/rossoctl/operator/blob/fix/remove-spiffe-helper-use-go-spiffe/operator/internal/controller/clientregistration_controller.go#L618-L635)
-- Unit tests for error handling in [clientregistration_controller_fetchjwtsvid_test.go](https://github.com/rossoctl/operator/blob/fix/remove-spiffe-helper-use-go-spiffe/operator/internal/controller/clientregistration_controller_fetchjwtsvid_test.go)
+**✅ Fully Implemented and Tested:**
+- `fetchJWTSVID()` method uses `workloadapi.Client.FetchJWTSVID()` to get JWT-SVID from SPIRE
+- `getKeycloakIssuer()` method queries `/.well-known/openid-configuration` to get authoritative issuer URL
+- Unit tests for error handling in [clientregistration_controller_fetchjwtsvid_test.go](https://github.com/rossoctl/operator/blob/feat/spiffe-sdk-jwt-clean/operator/internal/controller/clientregistration_controller_fetchjwtsvid_test.go)
 - Operator initializes with SPIFFE socket when `--use-spiffe-auth=true` flag is set
+- ClientRegistrationReconciler watches Deployments/StatefulSets directly (no separate CRD needed)
 
-**⚠️ Blocked:**
-E2E testing cannot be completed until the ClientRegistration CRD is added to the operator chart. Currently the CRD doesn't exist, so the `fetchJWTSVID()` code never executes.
+**✅ E2E Verification Complete (2026-08-27):**
+- Operator successfully fetches JWT-SVID from SPIRE using go-spiffe SDK
+- Operator authenticates to Keycloak using JWT-SVID (no "Invalid token audience" errors)
+- Operator registers clients with SPIFFE IDs as client-id
+- Operator creates Secrets: `rossoctl-keycloak-client-credentials-*`
+- Multiple successful reconciliations verified in Kind cluster with SPIFFE auth enabled
+- Agent-to-tool communication works (MCP protocol, service discovery)
+
+**Key Fix Applied:**
+The critical fix was querying Keycloak's OIDC discovery endpoint to get the correct JWT-SVID audience. In Kubernetes deployments:
+- `authbridge-config.KEYCLOAK_URL` = in-cluster service URL (e.g., `http://keycloak-service.keycloak.svc:8080`)
+- Keycloak's issuer = public URL (e.g., `http://keycloak.localtest.me:8080/realms/rossoctl`)
+- JWT-SVID audience must match the issuer URL, not the service URL
+
+See commit `afce861` in PR #522 for implementation details.
 
 ## Required Tests (Once CRD is Available)
 
