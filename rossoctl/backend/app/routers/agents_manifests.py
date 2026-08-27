@@ -940,10 +940,12 @@ async def _resolve_context_mounts(
             status_code=400,
             detail="context attachments require a statefulset or sandbox workload",
         )
-    if not settings.context_service_url.strip():
-        raise HTTPException(status_code=400, detail="Context Service integration is disabled")
+    from app.routers.contexts import (  # pylint: disable=import-outside-toplevel
+        require_context_service,
+        resolve_context,
+    )
 
-    from app.routers.contexts import resolve_context  # pylint: disable=import-outside-toplevel
+    require_context_service()
 
     volumes: List[Dict[str, Any]] = []
     mounts: List[Dict[str, Any]] = []
