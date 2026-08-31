@@ -290,6 +290,9 @@ async def create_agent(
                     auth_bridge_mode=request.authBridgeMode,
                     mtls_mode=request.mtlsMode,
                     tls_bridge_enabled=request.tlsBridgeEnabled,
+                    plugin_preset=request.pluginPreset,
+                    plugins=request.plugins,
+                    on_error=request.onError,
                 )
                 created.append(("AgentRuntime", request.name))
 

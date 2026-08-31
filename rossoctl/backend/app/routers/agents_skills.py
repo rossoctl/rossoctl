@@ -195,6 +195,14 @@ def _build_agent_shipwright_build_manifest(
         resource_config["mtlsMode"] = request.mtlsMode
     if request.tlsBridgeEnabled:
         resource_config["tlsBridgeEnabled"] = True
+    # AuthBridge layer-3 plugin composition, stashed for the finalize step so a
+    # build-from-source agent's pipeline survives the async build round-trip.
+    if request.pluginPreset:
+        resource_config["pluginPreset"] = request.pluginPreset
+    if request.plugins:
+        resource_config["plugins"] = request.plugins
+    if request.onError:
+        resource_config["onError"] = request.onError
     if request.persistentStorage:
         resource_config["persistentStorage"] = request.persistentStorage.model_dump()
     if request.k8sResourceLimits is not None:

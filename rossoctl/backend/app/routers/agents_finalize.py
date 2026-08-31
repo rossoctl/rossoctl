@@ -374,6 +374,22 @@ async def finalize_shipwright_build(
             else bool(stored_config.get("tlsBridgeEnabled"))
         )
 
+        # AuthBridge layer-3 plugin composition (pluginPreset / plugins /
+        # onError). Same store-then-read-back flow as mtlsMode so a
+        # build-from-source agent inherits the plugin pipeline the user picked
+        # at form-submit time (stashed on the BuildRun annotation).
+        final_plugin_preset = (
+            request.pluginPreset
+            if request.pluginPreset is not None
+            else stored_config.get("pluginPreset")
+        )
+        final_plugins = (
+            request.plugins if request.plugins is not None else stored_config.get("plugins")
+        )
+        final_on_error = (
+            request.onError if request.onError is not None else stored_config.get("onError")
+        )
+
         # Persistent storage
         final_persistent_storage = request.persistentStorage
         if final_persistent_storage is None and stored_config.get("persistentStorage"):
@@ -430,6 +446,9 @@ async def finalize_shipwright_build(
             authBridgeMode=final_auth_bridge_mode,
             mtlsMode=final_mtls_mode,
             tlsBridgeEnabled=final_tls_bridge_enabled,
+            pluginPreset=final_plugin_preset,
+            plugins=final_plugins,
+            onError=final_on_error,
             outboundRoutes=final_outbound_routes,
             outboundPortsExclude=final_outbound_ports_exclude,
             inboundPortsExclude=final_inbound_ports_exclude,
@@ -615,6 +634,9 @@ async def finalize_shipwright_build(
                 auth_bridge_mode=final_auth_bridge_mode,
                 mtls_mode=final_mtls_mode,
                 tls_bridge_enabled=final_tls_bridge_enabled,
+                plugin_preset=final_plugin_preset,
+                plugins=final_plugins,
+                on_error=final_on_error,
             )
 
         message = f"Agent '{name}' deployed as {final_workload_type} with image '{output_image}'."
