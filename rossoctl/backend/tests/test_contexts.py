@@ -6,8 +6,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 from fastapi import HTTPException
+from fastapi.testclient import TestClient
 from kubernetes.client import ApiException
 
+from app.main import app
 from app.routers import contexts
 from app.routers.agents import (
     ContextAttachment,
@@ -92,11 +94,24 @@ async def test_context_proxy_requires_service_url() -> None:
     with (
         patch("app.routers.contexts.settings.context_service_url", ""),
         patch("app.routers.contexts.httpx.AsyncClient") as client,
-        pytest.raises(HTTPException, match="integration is disabled"),
+        pytest.raises(HTTPException) as exc_info,
     ):
         await contexts.list_contexts("team1")
 
     client.assert_not_called()
+    assert exc_info.value.status_code == 501
+    assert exc_info.value.detail == contexts.CONTEXT_SERVICE_DISABLED_DETAIL
+    assert contexts.CONTEXT_SERVICE_DOCS_URL in exc_info.value.detail
+
+
+def test_context_route_returns_actionable_error_when_service_is_disabled() -> None:
+    """A current server should return a useful 501, not look like an old 404 server."""
+    with patch("app.routers.contexts.settings.context_service_url", ""):
+        response = TestClient(app).get("/api/v1/contexts/team1")
+
+    assert response.status_code == 501
+    assert response.json()["detail"] == contexts.CONTEXT_SERVICE_DISABLED_DETAIL
+    assert contexts.CONTEXT_SERVICE_DOCS_URL in response.json()["detail"]
 
 
 @pytest.mark.asyncio
@@ -124,8 +139,11 @@ async def test_context_paths_reject_invalid_kubernetes_names(
 @pytest.mark.asyncio
 async def test_context_attachments_require_service_url() -> None:
     with patch("app.routers.agents.settings.context_service_url", ""):
-        with pytest.raises(HTTPException, match="disabled"):
+        with pytest.raises(HTTPException) as exc_info:
             await _resolve_context_mounts("team1", [ContextAttachment(name="research")], "sandbox")
+
+    assert exc_info.value.status_code == 501
+    assert exc_info.value.detail == contexts.CONTEXT_SERVICE_DISABLED_DETAIL
 
 
 @pytest.mark.asyncio

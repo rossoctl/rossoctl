@@ -15,6 +15,14 @@ router = APIRouter(prefix="/contexts", tags=["contexts"])
 storage_classes_router = APIRouter(prefix="/context-storage-classes", tags=["contexts"])
 
 _KUBERNETES_NAME = re.compile(r"^[a-z0-9](?:[-a-z0-9]*[a-z0-9])?$")
+CONTEXT_SERVICE_DOCS_URL = (
+    "https://github.com/rossoctl/rossoctl/blob/main/docs/concepts/context-service.md"
+)
+CONTEXT_SERVICE_DISABLED_DETAIL = (
+    "Context Service is not enabled on this Rosso installation. "
+    "Ask a cluster administrator to configure it; setup instructions: "
+    f"{CONTEXT_SERVICE_DOCS_URL}"
+)
 
 
 class ContextStorage(BaseModel):
@@ -45,9 +53,14 @@ def _path_segment(value: str, field: str, max_length: int = 63) -> str:
     return quote(value, safe="")
 
 
-async def _request(method: str, path: str, body: dict | None = None) -> httpx.Response:
+def require_context_service() -> None:
+    """Fail with an actionable response when the optional integration is disabled."""
     if not settings.context_service_url.strip():
-        raise HTTPException(status_code=400, detail="Context Service integration is disabled")
+        raise HTTPException(status_code=501, detail=CONTEXT_SERVICE_DISABLED_DETAIL)
+
+
+async def _request(method: str, path: str, body: dict | None = None) -> httpx.Response:
+    require_context_service()
     try:
         async with httpx.AsyncClient(timeout=settings.context_service_timeout) as client:
             response = await client.request(method, _url(path), json=body)
