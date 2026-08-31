@@ -16,7 +16,7 @@ This demo illustrates how Rossoctl manages the lifecycle of all required compone
 > **Prerequisites:**
 > Ensure you've completed the Rossoctl platform setup as described in the [Installation](../getting-started/install.md) section, and that you have installed the CLI.
 
-Ensure you are logged in to the CLI
+Ensure you are logged in to the CLI.
 
 If you are using **Kind Kubernetes**:
 
@@ -47,7 +47,7 @@ rossoctl agents import from-image \
   --envVarsURL https://raw.githubusercontent.com/rossoctl/examples/refs/heads/main/a2a/weather_service/.env.ollama
 ```
 
-If you are using an **OpenAI**:
+If you are using an **OpenAI** account:
 
 ```bash
 rossoctl agents import from-image \
@@ -96,6 +96,8 @@ rossoctl agents chat weather-service \
    --with-authorization \
    --message "What is the weather in New York?"
 ```
+
+> **Note** that we override `--address` because this Agent's card advertises an internal-only endpoint.  This address will work with the above steps on Kind.  If you are using a different Kubernetes, consult your documentation or consult the `team1` namespace's HttpRoutes.
 
 The response will include some status messages and an "A2A artifact" containing the natural language response:
 
