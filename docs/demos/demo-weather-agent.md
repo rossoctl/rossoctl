@@ -1,6 +1,7 @@
 ---
 description: Use an LLM and tool to discuss the weather.
 sidebar_label: Run the Weather Agent
+sidebar_position: 20
 ---
 
 ### Weather Agent Demo
