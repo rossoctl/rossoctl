@@ -27,7 +27,7 @@ rossoctl login
 If you are using a **different Rossoctl API server**:
 
 ```bash
-# Use your server name, e.g. https://kagenti-ui.apps.server3.res.ibm.com/api/v1
+# Use your server name, e.g. https://rossoctl-ui.apps.server3.res.ibm.com/api/v1
 rossoctl --server <server> login
 ```
 
@@ -44,7 +44,7 @@ rossoctl agents import from-image \
   --name weather-service \
   --createHttpRoute \
   --containerImage ghcr.io/rossoctl/examples/weather_service:v0.2.0-rc.1 \
-  --envVarsURL https://raw.githubusercontent.com/kagenti/agent-examples/refs/heads/main/a2a/weather_service/.env.ollama
+  --envVarsURL https://raw.githubusercontent.com/rossoctl/examples/refs/heads/main/a2a/weather_service/.env.ollama
 ```
 
 If you are using a **OpenAI**:
@@ -54,7 +54,7 @@ rossoctl agents import from-image \
   --name weather-service \
   --createHttpRoute \
   --containerImage ghcr.io/rossoctl/examples/weather_service:v0.2.0-rc.1 \
-  --envVarsURL https://raw.githubusercontent.com/kagenti/agent-examples/refs/heads/main/a2a/weather_service/.env.openai
+  --envVarsURL https://raw.githubusercontent.com/rossoctl/examples/refs/heads/main/a2a/weather_service/.env.openai
 ```
 
 You will receive a response:
@@ -114,5 +114,5 @@ To delete the agent and tool from this demo,
 
 ```bash
 rossoctl agents delete weather-service
-rossoctl tools delete weather-service
+rossoctl tools delete weather-tool
 ```
