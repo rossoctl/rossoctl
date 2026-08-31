@@ -56,7 +56,7 @@ def _path_segment(value: str, field: str, max_length: int = 63) -> str:
 def require_context_service() -> None:
     """Fail with an actionable response when the optional integration is disabled."""
     if not settings.context_service_url.strip():
-        raise HTTPException(status_code=503, detail=CONTEXT_SERVICE_DISABLED_DETAIL)
+        raise HTTPException(status_code=501, detail=CONTEXT_SERVICE_DISABLED_DETAIL)
 
 
 async def _request(method: str, path: str, body: dict | None = None) -> httpx.Response:
