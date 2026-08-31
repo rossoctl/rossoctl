@@ -47,7 +47,7 @@ rossoctl agents import from-image \
   --envVarsURL https://raw.githubusercontent.com/rossoctl/examples/refs/heads/main/a2a/weather_service/.env.ollama
 ```
 
-If you are using a **OpenAI**:
+If you are using an **OpenAI**:
 
 ```bash
 rossoctl agents import from-image \
@@ -82,7 +82,7 @@ Use `rossoctl tools get weather-tool` to check the deployment status of the tool
 
 #### Chat with the Weather Agent
 
-Before you can chat with the weather agent, you must log into to Rossoctl again.  The second login acquires permission to talk to the agent you deployed:
+Before you can chat with the weather agent, you must log into Rossoctl again.  The second login acquires permission to talk to the agent you deployed:
 
 ```bash
 rossoctl login
@@ -110,7 +110,7 @@ If you encounter any errors, check the [Troubleshooting section](../users-guides
 
 #### Cleanup
 
-To delete the agent and tool from this demo,
+To delete the agent and tool from this demo:
 
 ```bash
 rossoctl agents delete weather-service
