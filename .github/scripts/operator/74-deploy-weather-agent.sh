@@ -176,7 +176,7 @@ log_success "Weather-service deployed via Deployment + Service (operator-indepen
 log_info "Waiting for operator to create client credentials secret..."
 CRED_FOUND=false
 for _ in $(seq 1 24); do
-    CRED_COUNT=$(kubectl get secrets -n team1 -o name 2>/dev/null | grep -c rossoctl-keycloak-client-credentials || echo "0")
+    CRED_COUNT=$(kubectl get secrets -n team1 -o name 2>/dev/null | grep -c rossoctl-keycloak-client-credentials || true)
     if [[ "$CRED_COUNT" -ge 1 ]]; then
         log_success "Found $CRED_COUNT client credentials secret(s) created by operator"
         CRED_FOUND=true
