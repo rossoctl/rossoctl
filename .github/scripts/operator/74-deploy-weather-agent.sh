@@ -174,13 +174,21 @@ log_success "Weather-service deployed via Deployment + Service (operator-indepen
 # Keycloak and creates the Secret.  Wait here to avoid a flaky timeout later.
 # ============================================================================
 log_info "Waiting for operator to create client credentials secret..."
-if ! kubectl -n team1 wait --for=create secret/rossoctl-keycloak-client-credentials --timeout=120s 2>/dev/null; then
+CRED_FOUND=false
+for _ in $(seq 1 24); do
+    CRED_COUNT=$(kubectl get secrets -n team1 -o name 2>/dev/null | grep -c rossoctl-keycloak-client-credentials || echo "0")
+    if [[ "$CRED_COUNT" -ge 1 ]]; then
+        log_success "Found $CRED_COUNT client credentials secret(s) created by operator"
+        CRED_FOUND=true
+        break
+    fi
+    sleep 5
+done
+if [[ "$CRED_FOUND" != "true" ]]; then
     log_warn "Credentials secret not found after 120s — pod may be stuck in ContainerCreating"
     kubectl get pods -n rossoctl-system 2>&1 || true
     kubectl get secrets -n team1 2>&1 || true
     kubectl logs -n rossoctl-system -l app.kubernetes.io/instance=rossoctl --tail=20 2>&1 || true
-else
-    log_success "Client credentials secret created by operator"
 fi
 
 # WORKAROUND: Fix Service targetPort mismatch
