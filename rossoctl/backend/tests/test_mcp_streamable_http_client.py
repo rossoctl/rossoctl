@@ -13,7 +13,6 @@ transport call and tuple-unpacking shape rather than a mocked client.
 
 import socket
 import threading
-import time
 from unittest.mock import patch
 
 import pytest
@@ -29,6 +28,20 @@ def _free_port() -> int:
         return s.getsockname()[1]
 
 
+class _EventServer(uvicorn.Server):
+    """uvicorn.Server that signals a threading.Event once startup() completes,
+    so a hung server fails the fixture immediately instead of via a polling
+    timeout that surfaces as a confusing connection error."""
+
+    def __init__(self, config: uvicorn.Config, started_event: threading.Event) -> None:
+        super().__init__(config)
+        self._started_event = started_event
+
+    async def startup(self, sockets=None) -> None:
+        await super().startup(sockets=sockets)
+        self._started_event.set()
+
+
 @pytest.fixture(scope="module")
 def mcp_server_url():
     """A real streamable-http MCP server exposing one 'echo' tool."""
@@ -41,13 +54,14 @@ def mcp_server_url():
     app = server.streamable_http_app()
     port = _free_port()
     config = uvicorn.Config(app, host="127.0.0.1", port=port, log_level="error")
-    uv_server = uvicorn.Server(config)
+    started_event = threading.Event()
+    uv_server = _EventServer(config, started_event)
     thread = threading.Thread(target=uv_server.run, daemon=True)
     thread.start()
-    for _ in range(50):
-        if uv_server.started:
-            break
-        time.sleep(0.1)
+    if not started_event.wait(timeout=5):
+        uv_server.should_exit = True
+        thread.join(timeout=1)
+        raise RuntimeError("MCP test server did not start within 5s")
     yield f"http://127.0.0.1:{port}"
     uv_server.should_exit = True
     thread.join(timeout=5)
