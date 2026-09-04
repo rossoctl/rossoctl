@@ -1,7 +1,7 @@
 // Copyright 2025 IBM Corp.
 // Licensed under the Apache License, Version 2.0
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   PageSection,
@@ -36,6 +36,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { toolShipwrightService, ToolShipwrightBuildInfo } from '@/services/api';
 import { BuildProgressView, getStatusIcon } from '@/components';
+import { shouldAutoFinalize } from '@/utils/buildFinalize';
 
 // Polling interval in milliseconds
 const POLL_INTERVAL = 5000;
@@ -45,6 +46,10 @@ export const ToolBuildProgressPage: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isAutoFinalizing, setIsAutoFinalizing] = useState(false);
+  // Latch so auto-finalize fires at most once per build; never re-fires after a
+  // finalize error while the phase stays "Succeeded" (issue #2489). Retry is
+  // user-driven via the button.
+  const hasAutoFinalizedRef = useRef(false);
 
   // Query for build info with polling
   const {
@@ -90,13 +95,21 @@ export const ToolBuildProgressPage: React.FC = () => {
     },
   });
 
-  // Auto-finalize when build succeeds
+  // Auto-finalize once when the build succeeds. Gated by hasAutoFinalizedRef so
+  // it never re-fires after a finalize error (issue #2489) -- see the ref decl.
   useEffect(() => {
-    if (buildInfo?.buildRunPhase === 'Succeeded' && !isAutoFinalizing && !finalizeMutation.isPending) {
+    if (
+      shouldAutoFinalize({
+        phase: buildInfo?.buildRunPhase,
+        hasAutoFinalized: hasAutoFinalizedRef.current,
+        isPending: finalizeMutation.isPending,
+      })
+    ) {
+      hasAutoFinalizedRef.current = true;
       setIsAutoFinalizing(true);
       finalizeMutation.mutate();
     }
-  }, [buildInfo?.buildRunPhase, isAutoFinalizing, finalizeMutation]);
+  }, [buildInfo?.buildRunPhase, finalizeMutation]);
 
   const finalizeError = useMemo(
     () => finalizeMutation.isError

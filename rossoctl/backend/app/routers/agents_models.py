@@ -204,6 +204,22 @@ class CreateAgentRequest(BaseModel):
     # Outbound routing rules (authproxy-routes ConfigMap)
     outboundRoutes: Optional[List["OutboundRoute"]] = None
 
+    # AuthBridge layer-3 plugin composition. Maps to
+    # AgentRuntime.Spec.PluginPreset / Plugins / OnError, which the operator
+    # webhook renders into the per-agent authbridge-config-<agent> ConfigMap's
+    # pipeline: block (seeded from the namespace authbridge-runtime-config base
+    # so jwt/token-exchange config survives). When pluginPreset is None the
+    # operator keeps its default 2-plugin pipeline (jwt-validation +
+    # token-exchange), so existing agents are unaffected.
+    #   - pluginPreset: named composition (auth-only / ibac-only / full)
+    #   - plugins: per-plugin policy overrides, tokens "name:policy"
+    #     (policy ∈ enforce|observe|off), e.g. "ibac:observe"
+    #   - onError: chain-default policy applied to selected plugins that have
+    #     no explicit per-plugin override
+    pluginPreset: Optional[Literal["auth-only", "ibac-only", "full"]] = None
+    plugins: Optional[List[str]] = None
+    onError: Optional[Literal["enforce", "observe", "off"]] = None
+
     # Persistent storage (for Sandbox and StatefulSet workloads)
     persistentStorage: Optional[PersistentStorageConfig] = None
 
@@ -399,6 +415,13 @@ class FinalizeShipwrightBuildRequest(BaseModel):
     outboundPortsExclude: Optional[str] = None
     inboundPortsExclude: Optional[str] = None
     defaultOutboundPolicy: Optional[Literal["passthrough", "exchange"]] = None
+    # Mirror CreateAgentRequest AuthBridge layer-3 plugin composition. None →
+    # inherit the value stashed on the BuildRun's rossoctl.io/agent-config
+    # annotation at form-submit time, so a build-from-source agent gets the
+    # same plugin pipeline as a direct-image one.
+    pluginPreset: Optional[Literal["auth-only", "ibac-only", "full"]] = None
+    plugins: Optional[List[str]] = None
+    onError: Optional[Literal["enforce", "observe", "off"]] = None
     persistentStorage: Optional[PersistentStorageConfig] = None
     mcpToolName: Optional[str] = None
     llmPreset: Optional[str] = None
@@ -408,6 +431,12 @@ class FinalizeShipwrightBuildRequest(BaseModel):
     # so a build-from-source agent gets the same resources as a direct-image one.
     k8sResourceLimits: Optional[Dict[str, str]] = None
     k8sResourceRequests: Optional[Dict[str, str]] = None
+    # Mirrors CreateAgentRequest.contexts. Must exist here because
+    # finalize_shipwright_build reads request.contexts unconditionally; without
+    # the field, every Deployment/StatefulSet/Job finalize raised AttributeError
+    # -> 500 before any workload was created (issue #2489). None → inherit the
+    # value stashed on the BuildRun annotation at form-submit time.
+    contexts: Optional[List[ContextAttachment]] = None
 
     @model_validator(mode="after")
     def _check_mtls_compatible_with_mode(self) -> "FinalizeShipwrightBuildRequest":

@@ -18,6 +18,24 @@ Show all service URLs and credentials:
 ```
   .github/scripts/local-setup/show-services.sh
 ```
+{{- if not .Values.secrets.openaiApiKey }}
+
+============================================================================
+  WARNING: secrets.openaiApiKey is NOT set
+============================================================================
+The chart did NOT create/manage the `openai-secret` Secret in the agent
+namespace(s). Agents and tools that call an LLM read their API key from
+`openai-secret` (key: `apikey`) at pod startup and will fail to run until it
+exists. Provision it out-of-band BEFORE deploying workloads, e.g.:
+
+  kubectl -n <agent-namespace> create secret generic openai-secret \
+    --from-literal=apikey="$YOUR_LLM_API_KEY"
+
+Leaving secrets.openaiApiKey empty is the supported way to keep the key out
+of Helm values so that a later `helm upgrade` cannot overwrite an
+operator-managed secret with an empty value.
+============================================================================
+{{- end }}
 
 
 

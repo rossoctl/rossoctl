@@ -178,6 +178,23 @@ def _build_common_labels(
     return labels
 
 
+def _carryover_workload_labels(build_labels: Dict[str, str]) -> Dict[str, str]:
+    """rossoctl.io/* labels to copy from a Shipwright Build onto a raw workload
+    (Deployment/StatefulSet/Job) in the finalize path.
+
+    Excludes rossoctl.io/type: the agent-label-protection
+    ValidatingAdmissionPolicy only lets the rossoctl-operator set that label
+    (via AgentRuntime reconciliation), so copying it onto a raw Deployment is
+    rejected with a 403 (issue #2489). The operator stamps it afterwards from
+    the AgentRuntime CR. Mirrors _build_common_labels, which omits the label
+    for the same reason.
+    """
+    prefix = settings.rossoctl_label_prefix
+    return {
+        k: v for k, v in build_labels.items() if k.startswith(prefix) and k != ROSSOCTL_TYPE_LABEL
+    }
+
+
 def _build_common_annotations(request: "CreateAgentRequest") -> Dict[str, str]:
     """Build pod template annotations for port exclusions and other webhook directives."""
     annotations: Dict[str, str] = {}
@@ -238,6 +255,9 @@ def _build_agentruntime_manifest(
     auth_bridge_mode: Optional[str] = None,
     mtls_mode: Optional[str] = None,
     tls_bridge_enabled: bool = False,
+    plugin_preset: Optional[str] = None,
+    plugins: Optional[List[str]] = None,
+    on_error: Optional[str] = None,
 ) -> dict:
     """Build an AgentRuntime CR manifest for the given workload."""
     kind_map = {
@@ -267,6 +287,16 @@ def _build_agentruntime_manifest(
     # CRD field off envoy-sidecar agents so the validating webhook doesn't reject).
     if tls_bridge_enabled:
         spec["tlsBridgeMode"] = "enabled"
+    # AuthBridge layer-3 plugin composition. Only set when a preset is chosen;
+    # unset → operator keeps its default 2-plugin pipeline (jwt-validation +
+    # token-exchange), so existing agents are unaffected. plugins/onError are
+    # only meaningful alongside a preset (they refine the selected pipeline).
+    if plugin_preset:
+        spec["pluginPreset"] = plugin_preset
+        if plugins:
+            spec["plugins"] = plugins
+        if on_error:
+            spec["onError"] = on_error
     return {
         "apiVersion": f"{CRD_GROUP}/{CRD_VERSION}",
         "kind": "AgentRuntime",
@@ -291,6 +321,9 @@ def _ensure_agentruntime(
     auth_bridge_mode: Optional[str] = None,
     mtls_mode: Optional[str] = None,
     tls_bridge_enabled: bool = False,
+    plugin_preset: Optional[str] = None,
+    plugins: Optional[List[str]] = None,
+    on_error: Optional[str] = None,
 ) -> None:
     """Create an AgentRuntime CR for the workload. Skip if it already exists."""
     manifest = _build_agentruntime_manifest(
@@ -301,6 +334,9 @@ def _ensure_agentruntime(
         auth_bridge_mode,
         mtls_mode,
         tls_bridge_enabled,
+        plugin_preset,
+        plugins,
+        on_error,
     )
     try:
         kube.create_custom_resource(
@@ -921,10 +957,12 @@ async def _resolve_context_mounts(
             status_code=400,
             detail="context attachments require a statefulset or sandbox workload",
         )
-    if not settings.context_service_url.strip():
-        raise HTTPException(status_code=400, detail="Context Service integration is disabled")
+    from app.routers.contexts import (  # pylint: disable=import-outside-toplevel
+        require_context_service,
+        resolve_context,
+    )
 
-    from app.routers.contexts import resolve_context  # pylint: disable=import-outside-toplevel
+    require_context_service()
 
     volumes: List[Dict[str, Any]] = []
     mounts: List[Dict[str, Any]] = []

@@ -139,6 +139,12 @@ class ResourceConfigFromBuild(BaseModel):
     # that read it back via model_dump() during Shipwright finalize.
     k8sResourceLimits: Optional[Dict[str, str]] = None
     k8sResourceRequests: Optional[Dict[str, str]] = None
+    # AuthBridge layer-3 plugin composition stashed at form-submit time. Declared
+    # here for the same reason as k8sResourceLimits above — undeclared annotation
+    # keys are dropped by this model's default extra="ignore".
+    pluginPreset: Optional[str] = None
+    plugins: Optional[List[str]] = None
+    onError: Optional[str] = None
 
 
 class ShipwrightBuildInfoResponse(BaseModel):

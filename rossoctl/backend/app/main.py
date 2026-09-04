@@ -54,12 +54,13 @@ class NoCacheMiddleware:
 from app.core.config import settings  # pylint: disable=wrong-import-position
 from app.routers import (  # pylint: disable=wrong-import-position
     agents,
-    tools,
-    namespaces,
-    config,
     auth,
     chat,
+    config,
+    contexts,
+    namespaces,
     shipwright,
+    tools,
 )
 
 # Conditionally import feature-flagged modules.
@@ -115,17 +116,6 @@ if settings.rossoctl_feature_flag_skills:
     except ImportError:
         logging.getLogger(__name__).warning(
             "SKILLS flag enabled but skills modules not installed — skipping"
-        )
-
-_contexts_module_loaded = False
-if settings.context_service_url.strip():
-    try:
-        from app.routers import contexts  # noqa: E402
-
-        _contexts_module_loaded = True
-    except ImportError:
-        logging.getLogger(__name__).warning(
-            "CONTEXT_SERVICE flag enabled but context module not installed — skipping"
         )
 
 _acp_modules_loaded = False
@@ -275,6 +265,8 @@ app.include_router(tools.router, prefix="/api/v1")
 app.include_router(config.router, prefix="/api/v1")
 app.include_router(chat.router, prefix="/api/v1")
 app.include_router(shipwright.router, prefix="/api/v1")
+app.include_router(contexts.router, prefix="/api/v1")
+app.include_router(contexts.storage_classes_router, prefix="/api/v1")
 
 # Feature-flagged routers (variables are assigned inside try/except blocks above;
 # pylint cannot track that _*_modules_loaded guards their usage).
@@ -301,10 +293,6 @@ if _integrations_modules_loaded:
 if _skills_modules_loaded:
     app.include_router(skills.router, prefix="/api/v1")
     logger.info("Feature flag SKILLS enabled — skills routes registered")
-
-if _contexts_module_loaded:
-    app.include_router(contexts.router, prefix="/api/v1")
-    logger.info("Feature flag CONTEXT_SERVICE enabled — context routes registered")
 
 if _acp_modules_loaded:
     app.include_router(acp.router, prefix="/api/v1")

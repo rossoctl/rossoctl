@@ -1,8 +1,12 @@
-# Context Service
+# Agent Context Infrastructure
 
-Rosso can optionally use [Context Service](https://github.com/rossoctl/context-service)
-to provision named storage resources and attach them to StatefulSet or Sandbox agents.
-Context Service is installed separately from Rosso.
+Agent Context Infrastructure is the layer that provisions, attaches, and manages the durable
+context used by agents. It includes workspaces, memory, knowledge, artifacts, and related runtime
+state; it is distinct from the finite context window sent to an LLM.
+
+Rosso can optionally use [Context Service](https://github.com/rossoctl/context-service) to provide
+this infrastructure. The service provisions named storage resources and attaches them to
+StatefulSet or Sandbox agents. Context Service is installed separately from Rosso.
 
 ## Configure Rosso
 
@@ -96,6 +100,17 @@ Service exposes the Kubernetes storage contract and does not require callers to 
 the CSI driver's implementation details.
 
 ## Create and attach a context
+
+List the storage classes made available by the cluster before selecting one:
+
+```sh
+rossoctl context storage-classes
+```
+
+The command works through the authenticated Rosso API and does not require direct
+Kubernetes access. The result is a constrained set of storage choices rather than
+raw Kubernetes StorageClass objects. Omitting `--storage-class` uses the cluster's
+default storage behavior.
 
 Create a shared GPFS workspace and inspect it:
 

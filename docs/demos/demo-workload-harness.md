@@ -1,6 +1,7 @@
 ---
 description: Run the gsm8k, tau2, and appworld benchmarks against Rossoctl agents.
 sidebar_label: Run Well-Known Benchmarks
+sidebar_position: 40
 ---
 
 ### Run Well-Known Benchmarks Demo

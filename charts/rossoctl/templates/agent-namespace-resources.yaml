@@ -52,6 +52,11 @@ data:
 ---
 {{ end }}
 # 4. OpenAI API Key Secret
+#    Only managed by the chart when secrets.openaiApiKey is set. When left empty the Secret is
+#    expected to be provisioned out-of-band (e.g. `kubectl create secret generic openai-secret
+#    --from-literal=apikey=...`) so that `helm upgrade` does not overwrite an operator-managed
+#    key with an empty value. Mirrors the conditional GitHub secrets above.
+{{- if $.Values.secrets.openaiApiKey }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -63,6 +68,7 @@ type: Opaque
 stringData:
   apikey: {{ $.Values.secrets.openaiApiKey | quote }}
 ---
+{{- end }}
 # 5. Slack Bot Tokens Secret
 apiVersion: v1
 kind: Secret

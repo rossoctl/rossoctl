@@ -1,7 +1,7 @@
 // Copyright 2025 IBM Corp.
 // Licensed under the Apache License, Version 2.0
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   PageSection,
@@ -27,6 +27,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { shipwrightService, ShipwrightBuildInfo } from '@/services/api';
 import { BuildProgressView, getStatusIcon } from '@/components';
+import { shouldAutoFinalize } from '@/utils/buildFinalize';
 
 // Polling interval in milliseconds
 const POLL_INTERVAL = 5000;
@@ -36,6 +37,11 @@ export const BuildProgressPage: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isAutoFinalizing, setIsAutoFinalizing] = useState(false);
+  // Latch so auto-finalize fires at most once per build. On a finalize error
+  // (e.g. the agent-label-protection 403) the phase stays "Succeeded"; without
+  // this the effect would re-fire every poll tick (issue #2489). The user
+  // re-runs finalize via the Retry button, never automatically.
+  const hasAutoFinalizedRef = useRef(false);
 
   // Query for build info with polling
   const {
@@ -78,13 +84,21 @@ export const BuildProgressPage: React.FC = () => {
     },
   });
 
-  // Auto-finalize when build succeeds
+  // Auto-finalize once when the build succeeds. Gated by hasAutoFinalizedRef so
+  // it never re-fires after a finalize error (issue #2489) -- see the ref decl.
   useEffect(() => {
-    if (buildInfo?.buildRunPhase === 'Succeeded' && !isAutoFinalizing && !finalizeMutation.isPending) {
+    if (
+      shouldAutoFinalize({
+        phase: buildInfo?.buildRunPhase,
+        hasAutoFinalized: hasAutoFinalizedRef.current,
+        isPending: finalizeMutation.isPending,
+      })
+    ) {
+      hasAutoFinalizedRef.current = true;
       setIsAutoFinalizing(true);
       finalizeMutation.mutate();
     }
-  }, [buildInfo?.buildRunPhase, isAutoFinalizing, finalizeMutation]);
+  }, [buildInfo?.buildRunPhase, finalizeMutation]);
 
   const finalizeError = useMemo(
     () => finalizeMutation.isError

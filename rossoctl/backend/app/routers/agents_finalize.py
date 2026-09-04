@@ -51,6 +51,7 @@ from app.routers.agents_manifests import (
     _build_sandbox_manifest,
     _build_service_manifest,
     _build_statefulset_manifest,
+    _carryover_workload_labels,
     _create_or_replace_service,
     _ensure_agentruntime,
     _record_contexts,
@@ -374,6 +375,22 @@ async def finalize_shipwright_build(
             else bool(stored_config.get("tlsBridgeEnabled"))
         )
 
+        # AuthBridge layer-3 plugin composition (pluginPreset / plugins /
+        # onError). Same store-then-read-back flow as mtlsMode so a
+        # build-from-source agent inherits the plugin pipeline the user picked
+        # at form-submit time (stashed on the BuildRun annotation).
+        final_plugin_preset = (
+            request.pluginPreset
+            if request.pluginPreset is not None
+            else stored_config.get("pluginPreset")
+        )
+        final_plugins = (
+            request.plugins if request.plugins is not None else stored_config.get("plugins")
+        )
+        final_on_error = (
+            request.onError if request.onError is not None else stored_config.get("onError")
+        )
+
         # Persistent storage
         final_persistent_storage = request.persistentStorage
         if final_persistent_storage is None and stored_config.get("persistentStorage"):
@@ -430,6 +447,9 @@ async def finalize_shipwright_build(
             authBridgeMode=final_auth_bridge_mode,
             mtlsMode=final_mtls_mode,
             tlsBridgeEnabled=final_tls_bridge_enabled,
+            pluginPreset=final_plugin_preset,
+            plugins=final_plugins,
+            onError=final_on_error,
             outboundRoutes=final_outbound_routes,
             outboundPortsExclude=final_outbound_ports_exclude,
             inboundPortsExclude=final_inbound_ports_exclude,
@@ -501,14 +521,14 @@ async def finalize_shipwright_build(
                 ext_skill_paths=build_ext_skill_paths,
             )
             _record_contexts(workload_manifest, resolved_contexts)
-            # Add additional labels from Build
-            workload_manifest["metadata"]["labels"].update(
-                {k: v for k, v in build_labels.items() if k.startswith("rossoctl.io/")}
-            )
+            # Carry forward build-time rossoctl.io/* labels, minus rossoctl.io/type
+            # (the operator sets that via the AgentRuntime CR below; a raw
+            # Deployment carrying it is rejected by the agent-label-protection
+            # policy -- issue #2489).
+            carryover_labels = _carryover_workload_labels(build_labels)
+            workload_manifest["metadata"]["labels"].update(carryover_labels)
             # Also update pod template labels
-            workload_manifest["spec"]["template"]["metadata"]["labels"].update(
-                {k: v for k, v in build_labels.items() if k.startswith("rossoctl.io/")}
-            )
+            workload_manifest["spec"]["template"]["metadata"]["labels"].update(carryover_labels)
             kube.create_deployment(namespace=namespace, body=workload_manifest)
             logger.info(
                 f"Created Deployment '{name}' with image '{container_image}' in namespace '{namespace}'"
@@ -525,14 +545,12 @@ async def finalize_shipwright_build(
                 ext_skill_paths=build_ext_skill_paths,
             )
             _record_contexts(workload_manifest, resolved_contexts)
-            # Add additional labels from Build
-            workload_manifest["metadata"]["labels"].update(
-                {k: v for k, v in build_labels.items() if k.startswith("rossoctl.io/")}
-            )
+            # Carry forward build-time rossoctl.io/* labels, minus rossoctl.io/type
+            # (see the Deployment branch above -- issue #2489).
+            carryover_labels = _carryover_workload_labels(build_labels)
+            workload_manifest["metadata"]["labels"].update(carryover_labels)
             # Also update pod template labels
-            workload_manifest["spec"]["template"]["metadata"]["labels"].update(
-                {k: v for k, v in build_labels.items() if k.startswith("rossoctl.io/")}
-            )
+            workload_manifest["spec"]["template"]["metadata"]["labels"].update(carryover_labels)
             kube.create_statefulset(namespace=namespace, body=workload_manifest)
             logger.info(
                 f"Created StatefulSet '{name}' with image '{container_image}' in namespace '{namespace}'"
@@ -549,14 +567,14 @@ async def finalize_shipwright_build(
                 ext_skill_paths=build_ext_skill_paths,
             )
             _record_contexts(workload_manifest, resolved_contexts)
-            # Add additional labels from Build
-            workload_manifest["metadata"]["labels"].update(
-                {k: v for k, v in build_labels.items() if k.startswith("rossoctl.io/")}
-            )
+            # Carry forward build-time rossoctl.io/* labels, minus rossoctl.io/type.
+            # A Job isn't matched by the agent-label-protection policy (deployments
+            # /statefulsets only), but we keep the same rule for consistency and to
+            # avoid stamping a label the operator owns -- issue #2489.
+            carryover_labels = _carryover_workload_labels(build_labels)
+            workload_manifest["metadata"]["labels"].update(carryover_labels)
             # Also update pod template labels
-            workload_manifest["spec"]["template"]["metadata"]["labels"].update(
-                {k: v for k, v in build_labels.items() if k.startswith("rossoctl.io/")}
-            )
+            workload_manifest["spec"]["template"]["metadata"]["labels"].update(carryover_labels)
             kube.create_job(namespace=namespace, body=workload_manifest)
             logger.info(
                 f"Created Job '{name}' with image '{container_image}' in namespace '{namespace}'"
@@ -615,6 +633,9 @@ async def finalize_shipwright_build(
                 auth_bridge_mode=final_auth_bridge_mode,
                 mtls_mode=final_mtls_mode,
                 tls_bridge_enabled=final_tls_bridge_enabled,
+                plugin_preset=final_plugin_preset,
+                plugins=final_plugins,
+                on_error=final_on_error,
             )
 
         message = f"Agent '{name}' deployed as {final_workload_type} with image '{output_image}'."
