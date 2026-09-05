@@ -25,7 +25,7 @@ RUN sed -i -r 's/^\ \ "version": (.*)/  "version": "'${RELEASE_TAG}'",/' package
 RUN npm run build
 
 # Stage 2: Serve with nginx
-FROM nginx:1.31-alpine@sha256:db35bfc6b2951e7f8a72db5db120288c127ffaeeb4a6d4b95a26fead017d5913
+FROM nginx:1.31-alpine@sha256:72ba65eb42c10344912a84ff42408db7d34f2feb642204570ab8fc5ffd29f1d3
 
 # Copy nginx configuration (server block only; mounted at conf.d/default.conf).
 # Force world-readable perms: the container runs as non-root UID 1001 (see below),
