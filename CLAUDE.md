@@ -58,7 +58,7 @@ Skills in `.claude/skills/` provide guided workflows:
 | Testing | `tdd:hypershift`, `testing:kubectl-debugging`, `k8s:live-debugging` |
 | Git | `git:worktree` |
 
-See [docs/concepts/skills.md](docs/concepts/skills.md) for the skill index and [docs/developer/README.md](docs/developer/README.md) for Claude Code workflows.
+See [docs/concepts/skills.md](docs/workloads/skills.md) for the skill index and [docs/developer/README.md](docs/_internal/developer/README.md) for Claude Code workflows.
 
 ## HyperShift Cluster Access
 
@@ -277,10 +277,10 @@ The work is the developer's; Claude Code assists. This applies to:
 
 ## Documentation
 
-- [Installation Guide](docs/getting-started/install.md)
-- [Components](docs/concepts/components.md)
-- [AI Ops / Claude Code](docs/developer/README.md)
-- [Demos](docs/demos/README.md)
+- [Installation Guide](docs/operate/install-kubernetes.md)
+- [Components](docs/overview/architecture.md)
+- [AI Ops / Claude Code](docs/_internal/developer/README.md)
+- [Demos](docs/resources/demos.md)
 - [AuthBridge Demos](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/README.md) — Zero-trust agent demos (weather agent, github issue, webhook, multi-target) in cortex
-- [Skills and Patterns](docs/concepts/skills.md)
-- [SVG Diagram Style Guide](docs/svg-diagram-style-guide.md) — palette and structure conventions for hand-authored diagrams in `docs/concepts/`; read before creating or editing one
+- [Skills and Patterns](docs/workloads/skills.md)
+- [SVG Diagram Style Guide](docs/_internal/svg-diagram-style-guide.md) — palette and structure conventions for the hand-authored diagrams in `docs/images/`; read before creating or editing one

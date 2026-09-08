@@ -1,6 +1,11 @@
-**DEPRECATED; the version in [docs/Users Guides](docs/_internal/PERSONAS_AND_ROLES.md) will replace this file**
+---
+draft: true       # excluded from https://www.rossoctl.dev/
+description: Are you an Agent Developer, MCP Gateway Operator, or deployer?
+sidebar_label: Personas and Roles
+---
 
-# Rossoctl Project Personas and Roles Documentation
+
+# Rossoctl Project Personas and Roles
 
 This document outlines the core personas that the Rossoctl platform serves across its repository ecosystem.
 
@@ -16,7 +21,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Description**: Developers who create AI agents using various frameworks.
 
-**Primary Repository**: [agent-examples](https://github.com/rossoctl/examples)
+**Primary Repository**: [rossoctl/examples](https://github.com/rossoctl/examples)
 
 **Frameworks Supported**:
 
@@ -35,8 +40,8 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Getting Started**:
 
-1. Review instructions in [new-agent](docs/workloads/deploy-an-agent.md) documentation
-2. Clone [agent-examples](https://github.com/rossoctl/examples) repository
+1. Review instructions in [new-agent](../workloads/deploy-an-agent.md) documentation
+2. Clone [rossoctl/examples](https://github.com/rossoctl/examples) repository
 3. Explore framework-specific examples (`a2a/slack_researcher`, `a2a/weather_service`)
 4. Use sample Dockerfiles and configurations as templates
 5. Access Rossoctl UI and navigate to "Import New Agent"
@@ -48,7 +53,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Description**: Developers who create Model Context Protocol (MCP) tools that agents can interact with.
 
-**Primary Repository**: [agent-examples](https://github.com/rossoctl/examples)
+**Primary Repository**: [rossoctl/examples](https://github.com/rossoctl/examples)
 
 **Tool Categories**:
 
@@ -66,7 +71,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Getting Started**:
 
-1. Study MCP tool examples in [agent-examples](https://github.com/rossoctl/examples) (`mcp/slack_tool`, `mcp/weather_tool`)
+1. Study MCP tool examples in [rossoctl/examples](https://github.com/rossoctl/examples) (`mcp/slack_tool`, `mcp/weather_tool`)
 2. Implement your tool following MCP protocol standards
 3. Create appropriate Dockerfile and configuration files
 4. Access "Import New Tool" in Rossoctl UI
@@ -111,7 +116,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Description**: Go developers who build and maintain Kubernetes operators for the Rossoctl ecosystem.
 
-**Primary Repository**: [rossoctl-operator](https://github.com/rossoctl/operator)
+**Primary Repository**: [rossoctl/operator](https://github.com/rossoctl/operator)
 
 **Key Responsibilities**:
 
@@ -136,7 +141,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Getting Started**:
 
-1. Clone [rossoctl-operator](https://github.com/rossoctl/operator) repository
+1. Clone [rossoctl/operator](https://github.com/rossoctl/operator) repository
 2. Set up Go development environment
 3. Study existing CRDs and controller implementations
 4. Develop custom operators using controller-runtime
@@ -292,7 +297,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 ### 2.3 Security and Identity Specialist
 
 **Description**: Administrators responsible for implementing and maintaining the zero-trust security model and identity management.
-Review Identity Patterns in [identity documentation](docs/security/authbridge.md) for more information.
+Review Identity Patterns in [identity documentation](../security/authbridge.md) for more information.
 
 **Key Responsibilities**:
 

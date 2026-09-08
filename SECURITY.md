@@ -59,5 +59,5 @@ This project implements several security controls:
 ## Security-Related Configuration
 
 For deployment security configuration, see:
-- [Installation Guide](docs/getting-started/install.md) - Installation and security setup
+- [Installation Guide](docs/operate/install-kubernetes.md) - Installation and security setup
 - [deployments/envs/](deployments/envs/) - Environment-specific configurations

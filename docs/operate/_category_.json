@@ -1,0 +1,9 @@
+{
+  "label": "Deploy and operate",
+  "position": 7,
+  "link": {
+    "type": "generated-index",
+    "title": "Deploy and operate",
+    "description": "Install Rossoctl on your target, see what it is doing, and fix it when it breaks."
+  }
+}

@@ -1,9 +1,9 @@
 {
   "label": "Concepts",
   "position": 3,
-  "description": "Understand Rossoctl's platform and security model.",
   "link": {
     "type": "generated-index",
-    "description": "Understand Rossoctl's platform and security model."
+    "title": "Concepts",
+    "description": "How agents, tools, the Cortex intercept, identity, and the control plane fit together."
   }
 }

@@ -1,9 +1,10 @@
 {
   "label": "Overview",
   "position": 1,
-  "description": "What is Rossoctl, and how to get started.",
+  "collapsed": false,
   "link": {
     "type": "generated-index",
-    "description": "What is Rossoctl, and how to get started."
+    "title": "Overview",
+    "description": "What Rossoctl is, what it guarantees today, and which path through the docs is yours."
   }
 }

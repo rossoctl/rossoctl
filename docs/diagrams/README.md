@@ -154,9 +154,9 @@ echo "🎉 All diagrams generated successfully!"
 ## Integration with Documentation
 
 These diagrams are referenced in the main documentation:
-- **[Identity Guide](../concepts/identity-guide.md)** - Complete authentication guide with embedded diagrams
+- **[Identity Guide](../security/authbridge.md)** - Complete authentication guide with embedded diagrams
 - **[Token Exchange Examples](../../rossoctl/examples/identity/token_exchange.md)** - Detailed implementation examples
 
 ## Related Documentation
 - **[Personas and Roles](../../PERSONAS_AND_ROLES.md)** - Developer, operator, and end user personas
-- **[Rossoctl Identity PDF](../2025-10.Rossoctl-Identity.pdf)** - High-level architectural concepts
+- **[Rossoctl Identity PDF](../_internal/2025-10.Rossoctl-Identity.pdf)** - High-level architectural concepts

@@ -1,0 +1,9 @@
+{
+  "label": "Reference",
+  "position": 8,
+  "link": {
+    "type": "generated-index",
+    "title": "Reference",
+    "description": "Look it up — the CLI, custom resources, install options, and the vocabulary."
+  }
+}

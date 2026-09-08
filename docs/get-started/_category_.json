@@ -1,0 +1,10 @@
+{
+  "label": "Get started",
+  "position": 2,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "title": "Get started",
+    "description": "Two quickstarts — one on your laptop, one on Kubernetes — then your first agent and tool."
+  }
+}
