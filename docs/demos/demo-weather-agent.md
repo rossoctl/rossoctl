@@ -40,7 +40,7 @@ To deploy the Weather Agent:
   - Click `Import`
 4. Click **Build & Deploy Agent** to deploy.
 
-**Note:** The `.env.ollama` variable set specifies `gpt-oss:latest` as the default model. To download the model, run `ollama pull gpt-oss:latest`, and ensure an Ollama server is running in a separate terminal via `ollama serve`. The `.env.openai` set uses your OpenAI API key from the `openaiApiKey` value you configured in `deployments/envs/.secret_values.yaml` during [installation](../overview/5-quickstart.md); no local model is needed.
+**Note:** The `.env.ollama` variable set specifies `llama3.2:3b-instruct-fp16` as the default model. To download the model, run `ollama pull llama3.2:3b-instruct-fp16`, and ensure an Ollama server is running in a separate terminal via `ollama serve`. The `.env.openai` set uses your OpenAI API key from the `openaiApiKey` value you configured in `deployments/envs/.secret_values.yaml` during [installation](../overview/5-quickstart.md); no local model is needed.
 
 ---
 
