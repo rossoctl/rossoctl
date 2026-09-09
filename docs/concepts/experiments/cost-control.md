@@ -24,7 +24,7 @@ curl -fsSL https://raw.githubusercontent.com/rossoctl/cortex/main/authbridge/ins
   | sh -s -- --claude-code
 ```
 
-Then run `abctl` in one terminal and your agent in a second terminal. Each model call, tool call and
+Then run `abctl observe` in one terminal and your agent in a second terminal. Each model call, tool call and
 agent message appears as it happens. See [Quickstart on a laptop](../../get-started/laptop.md).
 
 In a cluster, the same data goes to your trace store. See

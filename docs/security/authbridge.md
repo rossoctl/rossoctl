@@ -113,7 +113,7 @@ rossoctl authbridge exec --config ./authbridge.yaml -- claude "explain this repo
 ```
 
 See [Quickstart on a laptop](../get-started/laptop.md) and
-[Install the CLI](../get-started/cli.md).
+[Install the cluster CLI](../get-started/cli.md).
 
 ## The Keycloak endpoints
 

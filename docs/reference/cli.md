@@ -8,7 +8,7 @@ sidebar_position: 2
 The `rossoctl` command uses the Rossoctl interface. It also runs a local RossoCortex proxy, with no
 cluster.
 
-To install the program, see [Install the CLI](../get-started/cli.md).
+To install the program, see [Install the cluster CLI](../get-started/cli.md).
 
 ```bash
 rossoctl --help

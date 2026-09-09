@@ -1,11 +1,15 @@
 ---
-title: Install the CLI
-description: Install rossoctl and run the first commands.
+title: Install the cluster CLI
+sidebar_label: Install the cluster CLI
+description: Install rossoctl, the CLI for a cluster, and run the first commands.
 sidebar_position: 7
 ---
 
-The `rossoctl` command does the tasks that the console does. It also runs a local RossoCortex proxy
-around any command.
+The `rossoctl` command does the tasks that the console does, for a cluster. It also runs a local
+RossoCortex proxy around any command.
+
+`rossoctl` is not `abctl`. `abctl` is the viewer for RossoCortex on your computer, and
+[Quickstart on a laptop](laptop.md) installs it. The two programs are separate.
 
 For each command and each option, see the [CLI reference](../reference/cli.md).
 

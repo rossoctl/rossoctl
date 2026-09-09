@@ -39,7 +39,7 @@ release. The command therefore does not run unreleased code. To select a differe
 Open two terminals. In the first terminal, run the viewer:
 
 ```bash
-abctl
+abctl observe
 ```
 
 In the second terminal, run your agent:
@@ -78,7 +78,7 @@ The Rossoctl CLI can set these variables for you, and remove them when the comma
 rossoctl authbridge exec --config ./authbridge.yaml -- claude "explain this repo"
 ```
 
-See [Install the CLI](cli.md).
+See [Install the cluster CLI](cli.md).
 
 ## Next
 

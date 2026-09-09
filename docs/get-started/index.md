@@ -41,7 +41,7 @@ Do these steps in order:
    model.
 2. [Deploy your first agent](first-agent.md).
 3. [Connect your first tool](first-tool.md).
-4. [Install the CLI](cli.md), if you prefer a terminal to the web console.
+4. [Install the cluster CLI](cli.md), if you prefer a terminal to the web console.
 
 ## Next
 

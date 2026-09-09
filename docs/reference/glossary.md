@@ -12,7 +12,8 @@ and how two agents exchange a message or a task. An agent must use A2A to run on
 
 ## abctl
 
-The RossoCortex viewer. It shows the traffic that RossoCortex reads on your computer. See
+The RossoCortex program for your computer. The `abctl observe` command shows the traffic that
+RossoCortex reads. It is not `rossoctl`, which is the CLI for a cluster. See
 [Quickstart on a laptop](../get-started/laptop.md).
 
 ## Agent

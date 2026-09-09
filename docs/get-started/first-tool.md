@@ -83,4 +83,4 @@ registry and the image tag. See [Deploy a tool](../workloads/deploy-a-tool.md).
 ## Next
 
 - [MCP Gateway](../concepts/experiments/mcp-gateway.md) registers each tool one time.
-- [Install the CLI](cli.md) does these tasks from a terminal.
+- [Install the cluster CLI](cli.md) does these tasks from a terminal.
