@@ -1,42 +1,45 @@
 ---
 title: Authentication modes
-description: Choose between provisioned client secrets and SPIFFE authentication.
+description: Select between client secrets and SPIFFE authentication.
 sidebar_position: 4
 ---
 
-Rossoctl supports two ways for the operator and your workloads to authenticate to Keycloak. Both are
-configured automatically at install time; this page explains which you have and why you might change.
+Rossoctl has two modes for the authentication of the operator and your workloads to Keycloak. The
+installer configures both modes automatically. This page explains which mode you have, and why you can
+change it.
 
-| | Client secrets (default) | SPIFFE authentication (recommended) |
+| | Client secrets, the default | SPIFFE authentication, recommended |
 | --- | --- | --- |
-| Operator authenticates with | Keycloak admin credentials | Its own SPIFFE identity |
-| Workloads authenticate with | A provisioned OAuth2 client secret | Their own SPIFFE identity |
-| Requires | nothing extra | SPIRE — `--with-spire` |
-| Credentials stored in the cluster | Yes, one Secret per workload | None |
+| The operator authenticates with | Administrator credentials for Keycloak | Its own SPIFFE identity |
+| A workload authenticates with | An OAuth2 client secret | Its own SPIFFE identity |
+| Requirements | None | SPIRE, from the `--with-spire` option |
+| Credentials in the cluster | One Secret for each workload | None |
 
-The two are independent. You can run the operator on SPIFFE while workloads still use client secrets,
-or the reverse.
+The two modes are independent. The operator can use SPIFFE authentication while the workloads use client
+secrets, or the reverse.
 
 ## Client secrets
 
-The default, and it works on any install.
+This mode is the default, and it operates on any installation.
 
-The operator uses admin credentials to register a Keycloak client for each workload, and each workload
-gets a provisioned OAuth2 client secret stored as a Kubernetes Secret in its namespace.
+The operator uses administrator credentials to register a Keycloak client for each agent and each tool.
+Each workload receives an OAuth2 client secret. Kubernetes holds that secret in a Secret in the
+namespace of the workload.
 
-### How it works
+### How the mode operates
 
-1. At install, a Helm job reads admin credentials from the `keycloak-initial-admin` Secret and creates
-   a `rossoctl-keycloak-client-secret` in each agent namespace.
-2. When the operator's client-registration controller sees a new workload, it reads
-   `keycloak-initial-admin` and registers an OAuth2 client in Keycloak.
-3. The operator writes the generated `client_id` and `client_secret` into a
-   `rossoctl-keycloak-client-credentials-*` Secret in the workload's namespace.
-4. AuthBridge reads those files and uses them for outbound token exchange.
+1. At installation time, a Helm job reads the administrator credentials from the
+   `keycloak-initial-admin` Secret. The job creates a `rossoctl-keycloak-client-secret` Secret in each
+   agent namespace.
+2. When the operator finds a new workload, it reads `keycloak-initial-admin` and registers an OAuth2
+   client in Keycloak.
+3. The operator writes the new `client_id` and `client_secret` values to a
+   `rossoctl-keycloak-client-credentials-*` Secret in the namespace of the workload.
+4. AuthBridge reads those files and uses them for the token exchange.
 
-Nothing to set up. Per-workload Secrets are created on demand.
+You configure nothing. The operator creates a Secret for each workload when you deploy the workload.
 
-### Point the operator at a different admin Secret
+### To use a different administrator Secret
 
 ```yaml
 keycloak:
@@ -45,15 +48,15 @@ keycloak:
   adminPasswordKey: password
 ```
 
-### After rotating admin credentials
+### After you change the administrator credentials
 
-The operator caches them. Restart it so it re-reads the Secret:
+The operator holds the credentials in memory. Restart the operator so that it reads the Secret again:
 
 ```bash
 kubectl rollout restart deployment/rossoctl-controller-manager -n rossoctl-system
 ```
 
-Confirm it is authenticating:
+Confirm that the operator authenticates:
 
 ```bash
 POD=$(kubectl get pod -n rossoctl-system -l control-plane=controller-manager \
@@ -63,55 +66,56 @@ kubectl logs -n rossoctl-system "$POD" -c manager | grep -i "keycloak\|auth" | t
 
 ## SPIFFE authentication
 
-Recommended wherever you have SPIRE. No credential is provisioned, stored, or rotated by hand — there is
-nothing to leak.
+Use this mode when you have SPIRE. Rossoctl creates no credential, holds no credential and renews no
+credential. There is therefore nothing that can leak.
 
-### How it works
+### How the mode operates
 
-SPIRE issues each workload a short-lived JWT SVID containing its SPIFFE identity. The workload presents
-that to Keycloak as a client assertion ([RFC 7523](https://tools.ietf.org/html/rfc7523)) and gets an
-access token back.
+SPIRE gives each workload a short-lived JWT document that contains the SPIFFE identity of the workload.
+The workload presents that document to Keycloak as a client assertion, as
+[RFC 7523](https://tools.ietf.org/html/rfc7523) describes. Keycloak returns an access token.
 
-At install, a Helm job (`operator-client-bootstrap`) runs once with admin credentials to configure
-Keycloak:
+At installation time, a Helm job with the name `operator-client-bootstrap` runs one time. It uses
+administrator credentials to configure Keycloak in three steps:
 
-1. Creates a SPIFFE identity provider backed by SPIRE's OIDC discovery endpoint.
-2. Creates a Keycloak client for the operator with `clientAuthenticatorType: federated-jwt` and the
-   operator's SPIFFE ID as its subject.
-3. Grants it `manage-clients` — scoped, not full admin.
+1. It creates a SPIFFE identity provider in Keycloak. The provider uses the discovery endpoint of SPIRE.
+2. It creates a Keycloak client for the operator. The client uses the `federated-jwt` authenticator, and
+   the subject is the SPIFFE identity of the operator.
+3. It gives the client the `manage-clients` role. This role is limited. It is not the administrator role.
 
-After that the operator authenticates on every reconcile:
+The operator then authenticates on each cycle:
 
 ```
 Operator pod
-├─ spiffe-helper sidecar ──► SPIRE workload API
-│     writes JWT SVID to /opt/jwt_svid.token, rotating it
-└─ manager
-      reads the JWT SVID ──► exchanges it with Keycloak ──► access token ──► Admin API
+├─ spiffe-helper container ──► SPIRE
+│     writes the JWT document to /opt/jwt_svid.token, and renews it
+└─ manager container
+      reads the JWT document ──► exchanges it with Keycloak ──► access token
 ```
 
-### The audience must be the public URL
+### The audience must be the public address
 
-This is the one thing that catches people.
+This requirement is the most common cause of a failure.
 
-The JWT SVID's `aud` claim must equal Keycloak's realm issuer URL, which is always
-`keycloak.publicUrl/realms/<realm>`. It is derived from your Helm values automatically.
+The `aud` claim of the JWT document must be exactly the issuer address of the Keycloak realm. That
+address is always `keycloak.publicUrl/realms/<realm>`. Rossoctl calculates it from your Helm values.
 
-It has to be the **external, public URL** — not the in-cluster service address. Keycloak's issuer is
-configured with the external URL and the check is a plain string comparison, so an in-cluster address
-fails even though it reaches the same server.
+The address must be the **external, public** address. It must not be the internal address of the
+service. Keycloak has the public address in its issuer configuration, and the check is a comparison of
+two strings. The internal address reaches the same server and still fails the check.
 
-If SPIFFE authentication fails with an audience or issuer mismatch, check `keycloak.publicUrl` first.
+If SPIFFE authentication fails with an audience error or an issuer error, examine the
+`keycloak.publicUrl` value first.
 
-## Which should you use
+## Which mode to select
 
-Use **SPIFFE** if you installed with `--with-spire`. It removes provisioned credentials entirely, which
-is the stronger posture and less to operate.
+Select **SPIFFE authentication** if you installed SPIRE with the `--with-spire` option. This mode
+removes each stored credential. It is the stronger mode and there is less to operate.
 
-Use **client secrets** if you are not running SPIRE, or you are evaluating and want the smallest
-install.
+Select **client secrets** if you do not run SPIRE, or if you evaluate Rossoctl and want the smallest
+installation.
 
-## Related
+## Related pages
 
-- [Workload identity](workload-identity.md) — verifying SPIRE.
-- [AuthBridge](authbridge.md) — what uses these tokens.
+- [Workload identity](workload-identity.md)
+- [AuthBridge](authbridge.md)

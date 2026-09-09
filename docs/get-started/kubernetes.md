@@ -1,33 +1,36 @@
 ---
-title: "Quickstart: Kubernetes"
+title: Quickstart on Kubernetes
 sidebar_label: Quickstart — Kubernetes
 description: Install Rossoctl on a local Kind cluster and open the console.
 sidebar_position: 3
 ---
 
-This installs Rossoctl on a local [Kind](https://kind.sigs.k8s.io) cluster with the console and a
-sample agent and tool. It takes about twenty minutes, most of it pulling images.
+This procedure installs Rossoctl on a local [Kind](https://kind.sigs.k8s.io) cluster. The installation
+includes the web console and a sample agent and tool. It needs approximately 20 minutes. Most of that
+time is for the download of the container images.
 
-For every install option, other targets, and production settings, see
+For each installation option and each other target, see
 [Install on Kubernetes](../operate/install-kubernetes.md).
 
-## What you need
+## Before you start
 
 | Tool | Version |
 | --- | --- |
-| Container runtime — Podman, Docker Desktop, or Rancher Desktop | 18 GiB RAM, 6 CPUs |
+| A container runtime: Podman, Docker Desktop or Rancher Desktop | 18 GiB of memory, 6 CPUs |
 | kubectl | 1.32.1 or later |
 | Helm | 3.18.0 or later, below 4 |
-| Kind | any recent release |
+| Kind | Any recent release |
 | git | 2.48.0 or later |
 
 :::warning Give the runtime 6 CPUs
-Kind runs the whole platform on one node, and that node's limits come from your container runtime.
-Platform pods alone can request close to 4 cores. With 4 CPUs the install usually succeeds but
-building agents from source fails, with build pods stuck `Pending` on `Insufficient cpu`.
+Kind runs the complete platform on one node. The limits of that node come from your container runtime.
+The platform pods alone can request almost 4 CPUs.
+
+With 4 CPUs the installation usually completes. A build from source then fails, and the build pod stays
+in the `Pending` state with the message `Insufficient cpu`.
 :::
 
-On a new Mac:
+On a new Mac, install the tools with these commands:
 
 ```bash
 brew install git kind kubectl helm@3 ollama
@@ -36,10 +39,10 @@ podman machine init --rootful --memory 18432 --cpus 6
 podman machine start
 ```
 
-`--rootful` is required: Kind's rootless provider needs the systemd property `Delegate=yes`, which
-a fresh Podman machine does not set, so cluster creation fails without it.
+The `--rootful` option is necessary. The rootless provider of Kind needs the systemd property
+`Delegate=yes`. A new Podman machine does not set that property, so the creation of the cluster fails.
 
-## Install
+## Step 1: install the platform
 
 ```bash
 git clone https://github.com/rossoctl/rossoctl.git
@@ -51,64 +54,67 @@ git checkout v0.7.0
 scripts/kind/setup-rossoctl.sh --with-ui --with-examples
 ```
 
-This creates the Kind cluster and installs the core platform — cert-manager, the Gateway API
-controller, Keycloak, the operator, and the webhook — plus the console, the backend, and the
-weather agent and tool samples.
+This command creates the Kind cluster. It then installs the core platform, which is cert-manager, the
+Gateway API controller, Keycloak, the operator and the webhook. It also installs the console, the
+backend, and the weather agent and tool samples.
 
-Add more as you need it. `--with-spire` for SPIFFE identity, `--with-builds` to build agents from
-source, `--with-all` for everything. See [Install options](../reference/install-options.md).
+Add more components when you need them. Use `--with-spire` for SPIFFE identity, and `--with-builds` to
+build an agent from source. Use `--with-all` for every component. See
+[Install options](../reference/install-options.md).
 
-:::tip Slow image pulls
-Add `--preload-images` to pull third-party images on the host first and side-load them into the
-node. This avoids Docker Hub rate limits.
+:::tip If the image downloads are slow
+Add the `--preload-images` option. The script then downloads the images to your computer first, and
+copies them into the node. This method avoids the rate limits of Docker Hub.
 :::
 
-## Open the console
+## Step 2: open the console
 
-Print the service URLs and credentials:
+Print the addresses and the credentials:
 
 ```bash
 ./.github/scripts/local-setup/show-services.sh
 ```
 
-Then:
+Then open the console:
 
 ```bash
 open http://rossoctl-ui.localtest.me:8080
 ```
 
-Log in with the credentials from `show-services.sh`.
+Sign in with the credentials from `show-services.sh`.
 
-From the console you can import and deploy agents, deploy MCP tools, chat with an agent, and view
-traces and network traffic.
+In the console you can import and deploy an agent, deploy a tool, send a message to an agent, and read
+the traces and the network data.
 
-## Check that it worked
+## Step 3: confirm the installation
 
 ```bash
 kubectl get deployments --all-namespaces
 ```
 
-Everything should reach `Available`. If you used `--with-spire`, also check:
+Each deployment must reach the `Available` state.
+
+If you used the `--with-spire` option, confirm the identity services also:
 
 ```bash
 kubectl get daemonsets -n zero-trust-workload-identity-manager
 curl http://spire-oidc.localtest.me:8080/keys
 ```
 
-If a deployment is stuck or the console shows a blank page, see
+If a deployment does not start, or the console shows an empty page, see
 [Troubleshooting](../operate/troubleshooting.md).
 
-## Clean up
+## Remove the installation
 
 ```bash
-# Remove Rossoctl, keep the cluster
+# Remove Rossoctl. Keep the cluster.
 scripts/kind/cleanup-rossoctl.sh
 
-# Remove Rossoctl and destroy the cluster
+# Remove Rossoctl and delete the cluster.
 scripts/kind/cleanup-rossoctl.sh --destroy-cluster
 ```
 
 ## Next
 
-1. [Configure a model](configure-a-model.md) — agents need one before they can do anything.
+1. [Configure a model](configure-a-model.md). An agent cannot answer a question without a model.
 2. [Deploy your first agent](first-agent.md).

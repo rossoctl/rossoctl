@@ -1,9 +1,5 @@
 {
-  "label": "Build agents and tools",
-  "position": 4,
-  "link": {
-    "type": "generated-index",
-    "title": "Build agents and tools",
-    "description": "Get your own agents and MCP tools onto the platform, and connect them to each other."
-  }
+  "label": "Agents and tools",
+  "position": 3,
+  "link": { "type": "doc", "id": "workloads/index" }
 }

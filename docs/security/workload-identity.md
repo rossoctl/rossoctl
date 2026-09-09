@@ -1,22 +1,23 @@
 ---
 title: Workload identity
-description: How SPIFFE identities are issued, what they look like, and how to verify them.
+description: How SPIRE issues an identity, and how to confirm that it operates.
 sidebar_position: 2
 ---
 
-Every Rossoctl workload gets an identity from [SPIRE](https://spiffe.io/docs/latest/spire-about/) that
-it can prove cryptographically. This is the root of the security model: access decisions start from a
-verified identity, not from a credential a workload was handed.
+Each Rossoctl workload receives an identity from [SPIRE](https://spiffe.io/docs/latest/spire-about/).
+The workload can prove that identity with cryptography. This identity is the basis of the security
+model. Each access decision starts from a proven identity, and not from a credential that someone gave
+to the workload.
 
-Install SPIRE with `--with-spire` (or `--with-all`).
+Install SPIRE with the `--with-spire` option, or with `--with-all`.
 
-## The identity format
+## The form of an identity
 
 ```
 spiffe://{trust-domain}/ns/{namespace}/sa/{service-account}
 ```
 
-Examples:
+These are examples:
 
 ```
 spiffe://localtest.me/ns/team/sa/weather-tool
@@ -24,20 +25,21 @@ spiffe://localtest.me/ns/team/sa/slack-researcher
 spiffe://apps.cluster.example.com/ns/gateway-system/sa/mcp-gateway
 ```
 
-The trust domain is set at install time with `--domain` (default `localtest.me` on Kind). Namespace and
-service account come from the pod.
+You set the trust domain at installation time with the `--domain` option. On Kind the default value is
+`localtest.me`. The namespace and the service account come from the pod.
 
-This matters: the identity is derived from **what the workload is**, attested by the node, rather than
-from something the workload claims. A pod cannot present another pod's identity, and there is no
-credential to steal, because the identity is re-issued continuously.
+The identity comes from **what the workload is**, and the node attests it. It does not come from a value
+that the workload asserts. A pod therefore cannot present the identity of a different pod. There is also
+no credential to steal, because SPIRE issues the identity again continuously.
 
-## SVIDs
+## The identity documents
 
-SPIRE issues identity documents — SVIDs — in two formats, and both rotate automatically.
+SPIRE issues an identity document in two formats. It renews both formats automatically.
 
-**X.509 SVID** — a certificate, used for mTLS between workloads.
+An **X.509 document** is a certificate. Workloads use it for mTLS.
 
-**JWT SVID** — a signed token, used to authenticate to HTTP APIs such as Keycloak:
+A **JWT document** is a signed token. A workload uses it to authenticate to an HTTP interface such as
+Keycloak:
 
 ```json
 {
@@ -49,73 +51,75 @@ SPIRE issues identity documents — SVIDs — in two formats, and both rotate au
 }
 ```
 
-A `spiffe-helper` sidecar, injected alongside your workload, fetches these from the SPIRE workload API
-and writes them to disk, refreshing them before they expire. Your agent does not manage them.
+A helper program next to your workload reads both documents from SPIRE and writes them to a file. It
+replaces each document before the document expires. Your agent does not manage them.
 
-## Verify SPIRE is working
+## Confirm that SPIRE operates
 
-The DaemonSets should be present and ready:
+The DaemonSets must be present and ready:
 
 ```bash
 kubectl get daemonsets -n zero-trust-workload-identity-manager
 ```
 
-If `Current` or `Ready` is `0`, nothing else in this section will work. See
+If the `Current` column or the `Ready` column shows `0`, no other feature in this section operates. See
 [Troubleshooting](../operate/troubleshooting.md).
 
-The OIDC discovery endpoint should return signing keys:
+The discovery endpoint must return the signing keys:
 
 ```bash
 curl http://spire-oidc.localtest.me:8080/keys
 ```
 
-This endpoint is what lets Keycloak validate a workload's JWT SVID. If it is empty or unreachable,
-SPIFFE authentication cannot work.
+Keycloak uses this endpoint to validate the JWT document of a workload. If the endpoint is empty or does
+not respond, SPIFFE authentication cannot operate.
 
-A workload should have received its documents:
+A workload must have received its documents:
 
 ```bash
 kubectl exec -n team deployment/slack-researcher \
   --container authbridge-proxy -- ls -la /opt/
 ```
 
-You should see `svid.pem`, `svid_key.pem`, `svid_bundle.pem`, and `jwt_svid.token`.
+You must see the files `svid.pem`, `svid_key.pem`, `svid_bundle.pem` and `jwt_svid.token`.
 
-Tornjak gives you a browsable view of registered workloads:
+Tornjak gives a browser interface for the registered workloads:
 
 ```bash
 open http://spire-tornjak-ui.localtest.me:8080/
 ```
 
-## How identity becomes access
+## How an identity becomes access
 
-A SPIFFE identity says who a workload is. It does not by itself say what the workload may do — that
-comes from Keycloak.
+A SPIFFE identity says which workload sent a request. It does not say what the workload can do. The
+permissions come from Keycloak.
 
-Each workload is registered as a Keycloak client using its SPIFFE ID as the client identifier. The
-operator does this automatically when it sees a new workload. From then on the workload can present its
-JWT SVID to Keycloak and get an access token, without ever holding a client secret.
+The operator registers each workload as a Keycloak client, and uses the SPIFFE identity of the workload
+as the identifier of the client. The operator does this automatically when it finds a new workload. The
+workload can then present its JWT document to Keycloak and receive an access token. It never holds a
+client secret.
 
-See [Authentication modes](authentication-modes.md) for how that exchange is configured, and
-[Identity and trust](../concepts/identity.md) for the full delegation chain.
+See [Authentication modes](authentication-modes.md) for the configuration of this exchange, and
+[Identity and trust](../concepts/core/identity.md) for the complete chain of delegation.
 
-## Certificates and host suspend
+## Certificates and a suspended computer
 
-SVIDs are short-lived by design. If you suspend a laptop running a Kind cluster for longer than the
-SVID lifetime, the Istio ambient data plane keeps serving expired certificates and does not re-fetch.
-Everything returns `503` while all pods look healthy.
+The identity documents are short-lived by design. A document can expire while a computer is suspended. The Istio ambient data plane then continues
+to present the expired certificate. It does not read a new one. Each address then returns the status 503, and each pod appears
+correct.
 
-Recovery:
+To recover:
 
 ```bash
 scripts/k8s/mesh-recover.sh --fix
 ```
 
-Run without `--fix` to diagnose without changing anything. Details and the upstream issue are in
-[Troubleshooting](../operate/troubleshooting.md#mesh-wide-503-after-host-suspend).
+To examine the state without a change, run the script without the `--fix` option. For the details and
+the upstream defect, see
+[Troubleshooting](../operate/troubleshooting.md#a-cluster-returns-503-after-you-suspend-the-computer).
 
-## Related
+## Related pages
 
-- [Authentication modes](authentication-modes.md) — client secrets versus SPIFFE.
-- [AuthBridge](authbridge.md) — the plugins that use these identities.
-- [SPIFFE concepts](https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/) — the upstream standard.
+- [Authentication modes](authentication-modes.md)
+- [AuthBridge](authbridge.md)
+- [SPIFFE concepts](https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/)

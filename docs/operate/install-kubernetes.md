@@ -1,25 +1,25 @@
 ---
 title: Install on Kubernetes
-description: Full install on a Kind cluster, with every option.
+description: A complete installation on a Kind cluster, with each option.
 sidebar_position: 2
 ---
 
-`scripts/kind/setup-rossoctl.sh` creates a Kind cluster and installs Rossoctl. Core components always
-install; everything else is a `--with-*` flag.
+The `scripts/kind/setup-rossoctl.sh` script creates a Kind cluster and installs Rossoctl. It always
+installs the core components. Each other component has a `--with-*` option.
 
-For the short path, see [Quickstart: Kubernetes](../get-started/kubernetes.md).
+For the short procedure, see [Quickstart on Kubernetes](../get-started/kubernetes.md).
 
-## Prerequisites
+## Requirements
 
-| Tool | Version | For |
+| Tool | Version | Function |
 | --- | --- | --- |
-| kubectl | ≥ 1.32.1 | Kubernetes CLI |
-| [Helm](https://helm.sh/docs/intro/install/) | ≥ 3.18.0, < 4 | Charts |
-| git | ≥ 2.48.0 | Cloning |
-| [Kind](https://kind.sigs.k8s.io) | any recent | The cluster |
-| Container runtime | 18 GiB RAM, 6 CPUs | Podman, Docker Desktop, or Rancher Desktop |
-| [Ollama](https://ollama.com/download) | ≥ 0.11.0 | Local inference, optional |
-| GitHub token | — | Only for private repositories or registries. Scopes: `repo`, `read:packages` |
+| kubectl | 1.32.1 or later | The Kubernetes interface |
+| [Helm](https://helm.sh/docs/intro/install/) | 3.18.0 or later, below 4 | The charts |
+| git | 2.48.0 or later | Gets the repository |
+| [Kind](https://kind.sigs.k8s.io) | Any recent release | The cluster |
+| A container runtime | 18 GiB of memory, 6 CPUs | Podman, Docker Desktop or Rancher Desktop |
+| [Ollama](https://ollama.com/download) | 0.11.0 or later | A local model. It is optional. |
+| A GitHub token | — | For a private repository or a private registry only. It needs the `repo` and `read:packages` permissions. |
 
 ### On a new Mac
 
@@ -34,12 +34,13 @@ podman machine init --rootful --memory 18432 --cpus 6
 podman machine start
 ```
 
-`--rootful` is required. Kind's rootless provider needs the systemd property `Delegate=yes`, which a
-fresh Podman machine does not configure, so cluster creation fails without it.
+The `--rootful` option is necessary. The rootless provider of Kind needs the systemd property
+`Delegate=yes`. A new Podman machine does not set that property, so the creation of the cluster fails.
 
-### Resizing an existing Podman machine
+### To change the size of a Podman machine
 
-Changing CPUs is not enough on its own — the Kind node caches the old limit, so recreate the cluster:
+A change to the number of CPUs is not sufficient. The Kind node holds the previous limit. You must
+create the cluster again:
 
 ```bash
 podman machine stop
@@ -50,13 +51,16 @@ kind delete cluster --name rossoctl
 scripts/kind/setup-rossoctl.sh --with-istio --with-spire --with-ui --with-backend
 ```
 
-### If you are stuck on 4 CPUs
+### If you have 4 CPUs only
 
-- Skip what you do not need — leave off `--with-mlflow`, `--with-kuadrant`, `--with-kiali`.
-- Deploy agents with **Deploy from image** rather than **Build from source**.
-- Or scale down non-essential deployments before triggering a build.
+Do one of these actions:
 
-## Install
+- Omit the components that you do not need. Do not use `--with-mlflow`, `--with-kuadrant` or
+  `--with-kiali`.
+- Deploy each agent with **Deploy from image** and not with **Build from source**.
+- Reduce the number of replicas of the components that you do not need, before you start a build.
+
+## Install the platform
 
 ```bash
 git clone https://github.com/rossoctl/rossoctl.git
@@ -64,71 +68,71 @@ cd rossoctl
 git checkout v0.7.0
 ```
 
-Everything:
+For each component:
 
 ```bash
 scripts/kind/setup-rossoctl.sh --with-all
 ```
 
-Or only what you need:
+For selected components:
 
 ```bash
-# Console and backend
+# The console and the backend
 scripts/kind/setup-rossoctl.sh --with-ui
 
-# Ambient mesh and the console
+# The ambient mesh and the console
 scripts/kind/setup-rossoctl.sh --with-istio --with-ui
 
-# Mesh, SPIFFE identity, and source builds
+# The mesh, SPIFFE identity, and builds from source
 scripts/kind/setup-rossoctl.sh --with-istio --with-spire --with-builds
 ```
 
-### Core, always installed
+### The core components
 
-cert-manager, Gateway API CRDs, the Istio Gateway controller (`istio-base` and `istiod`), Keycloak, the
-Rossoctl operator, and the webhook.
+The script always installs cert-manager, the Gateway API resources, the Istio gateway controller,
+Keycloak, the operator and the webhook.
 
-:::warning Two Istio layers — do not confuse them
-The **Istio Gateway controller** is core and always installed. It implements the
-`gatewayClassName: istio` Gateway fronting all `*.localtest.me:8080` ingress — the console, Keycloak,
-and agents — so it cannot be skipped.
+:::warning The two Istio layers are different
+The **Istio gateway controller** is a core component. The script always installs it. It serves each
+address on `*.localtest.me:8080`, which includes the console, Keycloak and the agents. You cannot omit
+it.
 
-`--with-istio` is a **different** layer: the ambient mesh, adding mTLS and waypoints. It is optional. You
-do not need it for the AuthBridge weather demo, which enforces auth through its own injected sidecar
-rather than the mesh.
+`--with-istio` installs a **different** layer, which is the ambient mesh. That layer adds mTLS and
+waypoints, and it is optional. You do not need it for the AuthBridge weather demonstration, because that
+demonstration uses its own sidecar and not the mesh.
 :::
 
-### Optional components
+### The optional components
 
-See [Install options](../reference/install-options.md) for the full flag reference. In brief:
-
-| Flag | Adds |
+| Option | What it adds |
 | --- | --- |
-| `--with-istio` | Istio ambient mesh — mTLS, waypoints |
-| `--with-spire` | SPIRE and SPIFFE identity provider setup |
-| `--with-ui` | Console, and the backend automatically |
-| `--with-mcp-gateway` | MCP Gateway |
-| `--with-builds` | Tekton and Shipwright, for source builds |
-| `--with-otel` | OpenTelemetry collector |
-| `--with-mlflow` | MLflow trace backend, plus OTel and ambient mesh |
-| `--with-kiali` | Kiali and Prometheus, plus ambient mesh |
-| `--with-skills` | Skills feature, plus an in-cluster skillberry store |
-| `--with-examples` | Weather agent and tool samples |
-| `--with-all` | All of the above |
+| `--with-istio` | The Istio ambient mesh: mTLS and waypoints |
+| `--with-spire` | SPIRE and the SPIFFE identity provider |
+| `--with-ui` | The console. It enables the backend also. |
+| `--with-mcp-gateway` | The MCP Gateway |
+| `--with-builds` | Tekton and Shipwright, for a build from source |
+| `--with-otel` | The OpenTelemetry collector |
+| `--with-mlflow` | MLflow. It enables the collector and the ambient mesh also. |
+| `--with-kiali` | Kiali and Prometheus. It enables the ambient mesh also. |
+| `--with-skills` | The skills feature and a skill store in the cluster |
+| `--with-examples` | The weather agent and the weather tool |
+| `--with-all` | Each option above |
+
+For each option and each other flag, see [Install options](../reference/install-options.md).
 
 ## Secrets
 
 ```bash
 cp charts/rossoctl/.secrets_template.yaml charts/rossoctl/.secrets.yaml
-# edit .secrets.yaml
+# Add your values to .secrets.yaml
 scripts/kind/setup-rossoctl.sh --with-all --secrets-file charts/rossoctl/.secrets.yaml
 ```
 
-If you do not pass `--secrets-file`, the installer picks up `charts/rossoctl/.secrets.yaml`
-automatically when it exists.
+If you omit the `--secrets-file` option, the script uses `charts/rossoctl/.secrets.yaml` when that file
+exists.
 
-To change a value later — a rotated `githubToken`, say — delete the derived Secret in every namespace it
-was copied to, then re-run the installer:
+To change a value later, for example a new `githubToken` value, delete the Secret in each namespace that
+received it, and then run the installer again:
 
 ```bash
 kubectl get secret --all-namespaces
@@ -136,32 +140,33 @@ kubectl -n team1 delete secret github-token-secret
 scripts/kind/setup-rossoctl.sh
 ```
 
-## Faster and more reliable image pulls
+## Faster and more reliable image downloads
 
 ```bash
 scripts/kind/setup-rossoctl.sh --with-all --preload-images
 ```
 
-This pulls third-party images on the host and side-loads them into the Kind node, avoiding Docker Hub
-anonymous-pull rate limits. The list is in
-[`scripts/kind/preload-images.txt`](https://github.com/rossoctl/rossoctl/blob/main/scripts/kind/preload-images.txt)
-— one image per line. It covers `docker.io` only; `ghcr.io` and `quay.io` are not rate-limited.
+The script downloads the images to your computer and then copies them into the Kind node. This method
+avoids the rate limits of Docker Hub. The list of images is in
+[`scripts/kind/preload-images.txt`](https://github.com/rossoctl/rossoctl/blob/main/scripts/kind/preload-images.txt),
+with one image on each line. The list contains `docker.io` images only, because `ghcr.io` and `quay.io`
+have no rate limit.
 
-## Reuse an existing cluster
+## Use a cluster that exists
 
 ```bash
 scripts/kind/setup-rossoctl.sh --skip-cluster --with-all
 ```
 
-For clusters that are not Kind, see [Install with Helm](install-helm.md).
+For a cluster that Kind did not create, see [Install with Helm](install-helm.md).
 
-## Verify
+## Confirm the installation
 
 ```bash
 kubectl get deployments --all-namespaces
 ```
 
-With `--with-spire`:
+With the `--with-spire` option:
 
 ```bash
 kubectl get daemonsets -n zero-trust-workload-identity-manager
@@ -169,30 +174,30 @@ curl http://spire-oidc.localtest.me:8080/keys
 open http://spire-tornjak-ui.localtest.me:8080/
 ```
 
-Keycloak:
+For Keycloak:
 
 ```bash
 open http://keycloak.localtest.me:8080/
 ```
 
-All URLs and credentials:
+For each address and each credential:
 
 ```bash
 ./.github/scripts/local-setup/show-services.sh
 ```
 
-## Uninstall
+## Remove the installation
 
 ```bash
-# Remove Rossoctl, keep the cluster
+# Remove Rossoctl. Keep the cluster.
 scripts/kind/cleanup-rossoctl.sh
 
-# Remove Rossoctl and destroy the cluster
+# Remove Rossoctl and delete the cluster.
 scripts/kind/cleanup-rossoctl.sh --destroy-cluster
 ```
 
 ## Next
 
-- [Authentication modes](../security/authentication-modes.md) — choose client secrets or SPIFFE.
-- [Observability](observability.md).
-- [Troubleshooting](troubleshooting.md).
+- [Authentication modes](../security/authentication-modes.md) to select client secrets or SPIFFE.
+- [Observability](observability.md)
+- [Troubleshooting](troubleshooting.md)

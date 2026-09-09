@@ -1,9 +1,5 @@
 {
-  "label": "Security and identity",
-  "position": 5,
-  "link": {
-    "type": "generated-index",
-    "title": "Security and identity",
-    "description": "Workload identity, authentication, and delegation — the guarantees that let agents run near your systems."
-  }
+  "label": "Security",
+  "position": 4,
+  "link": { "type": "doc", "id": "security/index" }
 }

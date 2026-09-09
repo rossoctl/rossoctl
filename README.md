@@ -97,7 +97,7 @@ From the UI you can:
 - Test agents interactively
 - Monitor traces and network traffic
 
-To learn how to deploy agents and MCP tools, follow the **[Weather Agent Demo](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/weather-agent/demo-ui.md)** — the recommended getting-started tutorial that walks you through deploying an agent and tool via the UI and chatting with it end-to-end. For more demos, see the [full demo list](./docs/resources/demos.md).
+To learn how to deploy agents and MCP tools, follow the **[Weather Agent Demo](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/weather-agent/demo-ui.md)** — the recommended getting-started tutorial that walks you through deploying an agent and tool via the UI and chatting with it end-to-end. For more demos, see the [full demo list](./docs/resources.md).
 
 ## Documentation
 
@@ -107,16 +107,15 @@ Full documentation is at [rossoctl.dev/docs](https://rossoctl.dev/docs/).
 |-------|------|
 | **Get started on your laptop** | [Quickstart — laptop](./docs/get-started/laptop.md) (no Kubernetes) |
 | **Get started on Kubernetes** | [Quickstart — Kubernetes](./docs/get-started/kubernetes.md) |
-| **What is ready to depend on** | [Capabilities and maturity](./docs/overview/capabilities.md) |
-| **Architecture** | [Architecture at a glance](./docs/overview/architecture.md) |
+| **What is ready, what is an experiment** | [Concepts](./docs/concepts/index.md) |
+| **Architecture** | [Architecture](./docs/concepts/core/architecture.md) |
 | **Bring your own agent** | [Bring your own agent](./docs/workloads/bring-your-own-agent.md) |
 | **Deploy agents and tools** | [Deploy an agent](./docs/workloads/deploy-an-agent.md) · [Deploy a tool](./docs/workloads/deploy-a-tool.md) |
-| **Skills** | [Skills](./docs/workloads/skills.md) |
+| **Skills** | [Skills](./docs/concepts/experiments/skills.md) |
 | **Identity, security, and AuthBridge** | [Security overview](./docs/security/index.md) · [AuthBridge](./docs/security/authbridge.md) |
-| **Guardrails and cost** | [Guardrails and efficiency](./docs/guardrails/index.md) |
-| **Install and operate** | [Deploy and operate](./docs/operate/index.md) |
+| **Install and operate** | [Install and operate](./docs/operate/index.md) |
 | **CLI, CRDs, glossary** | [Reference](./docs/reference/index.md) |
-| **Demos and examples** | [Demos](./docs/resources/demos.md) |
+| **Demos and examples** | [Resources](./docs/resources.md) |
 | **Troubleshooting** | [Troubleshooting](./docs/operate/troubleshooting.md) |
 | **Developer guide** | [Developer's Guide](./docs/_internal/dev-guide.md) |
 

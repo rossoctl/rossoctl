@@ -1,23 +1,30 @@
 ---
-title: Build agents and tools
+title: Agents and tools
 sidebar_label: Overview
-description: How to get your own workloads onto Rossoctl.
+description: Put your own agents and tools on the platform.
 sidebar_position: 1
 ---
 
-You have working agent code. These pages get it onto the platform and connected to tools.
+This section is for a developer who has agent code and wants to run it on Rossoctl.
 
-Start with [Bring your own agent](bring-your-own-agent.md) — it is short, and it tells you whether
-your agent needs changes before anything else here applies.
+Read [Bring your own agent](bring-your-own-agent.md) first. It is short, and it tells you whether your
+agent needs a change before the other pages apply.
 
 | Page | Use it when |
 | --- | --- |
-| [Bring your own agent](bring-your-own-agent.md) | You are adapting existing agent code. |
-| [Deploy an agent](deploy-an-agent.md) | You want every deployment option — sources, builds, environment, secrets. |
-| [Deploy a tool](deploy-a-tool.md) | You are packaging an MCP tool. |
-| [MCP Gateway](mcp-gateway.md) | Several agents need to share several tools. |
-| [Skills](skills.md) | You want agents to draw on reusable, governed capabilities. |
-| [Agent context](agent-context.md) | Agents need durable workspaces, memory, or knowledge. |
+| [Bring your own agent](bring-your-own-agent.md) | You adapt existing agent code. |
+| [Deploy an agent](deploy-an-agent.md) | You need each deployment option: sources, builds, variables and secrets. |
+| [Deploy a tool](deploy-a-tool.md) | You package an MCP tool. |
 
 If you have not deployed anything yet, do [Deploy your first agent](../get-started/first-agent.md)
-first. It is the same mechanics with a known-good sample.
+first. That page uses the same steps with a sample that is known to operate.
+
+## Related experiments
+
+Three experimental features extend an agent. Each one is optional.
+
+| Feature | What it adds |
+| --- | --- |
+| [MCP Gateway](../concepts/experiments/mcp-gateway.md) | One address for all tools. |
+| [Skills](../concepts/experiments/skills.md) | Reusable instructions that the cluster holds. |
+| [Agent context](../concepts/experiments/agent-context.md) | Durable storage for files and memory. |

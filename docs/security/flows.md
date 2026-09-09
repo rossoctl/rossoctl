@@ -1,22 +1,22 @@
 ---
 title: Authentication flows
-description: Sequence diagrams for every stage of authentication and delegation.
+description: A diagram for each stage of authentication and delegation.
 sidebar_position: 5
 ---
 
-These are the six flows that make up authentication and delegation in Rossoctl, from a user logging in
-to an agent reaching an external API on that user's behalf.
+This page contains the six flows of authentication and delegation. The first flow starts when a user
+signs in. The last flow ends when a tool calls an external service for that user.
 
-Diagram sources are in
-[`docs/diagrams/`](https://github.com/rossoctl/rossoctl/tree/main/docs/diagrams) as Mermaid files, with
-PNG and SVG renders alongside for slides.
+The source of each diagram is in
+[`docs/diagrams/`](https://github.com/rossoctl/rossoctl/tree/main/docs/diagrams) as a Mermaid file. A PNG
+file and an SVG file are also present, for a presentation.
 
-## 1. User authentication
+## 1. The user signs in
 
-A user logs in to the console. Keycloak runs the OIDC authorization-code flow and issues an access
+The user signs in to the console. Keycloak uses the OIDC authorization code flow and issues an access
 token.
 
-![User authentication flow](../diagrams/images/png/01-user-authentication-flow.png)
+![The user authentication flow](../diagrams/images/png/01-user-authentication-flow.png)
 
 ```
 POST /realms/rossoctl/protocol/openid-connect/token
@@ -38,7 +38,7 @@ grant_type=authorization_code
 }
 ```
 
-The user's token carries their roles:
+The token of the user contains the roles of the user:
 
 ```json
 {
@@ -50,20 +50,19 @@ The user's token carries their roles:
 }
 ```
 
-## 2. Client registration
+## 2. The operator registers the workload
 
-Before a workload can obtain tokens it must exist as a Keycloak client. The operator's
-client-registration controller handles this — see
-[AuthBridge](authbridge.md#client-registration). There is no user-facing step.
+A workload cannot get a token until it exists as a Keycloak client. The operator does this registration.
+See [AuthBridge](authbridge.md#client-registration). There is no step for you.
 
-![Client registration flow](../diagrams/images/png/03-rossoctl-client-registreation-final.png)
+![The client registration flow](../diagrams/images/png/03-rossoctl-client-registreation-final.png)
 
-## 3. Agent token exchange
+## 3. The agent exchanges the token
 
-The agent needs to call a tool as the user. Its sidecar exchanges the user's token for one scoped to
-that tool, authenticating the exchange with the agent's own SPIFFE JWT.
+The agent must call a tool as the user. The sidecar exchanges the token of the user for a token that is
+valid only for that tool. The sidecar authenticates this request with the SPIFFE identity of the agent.
 
-![Agent token exchange flow](../diagrams/images/png/04-agent-token-exchange-flow.png)
+![The token exchange flow](../diagrams/images/png/04-agent-token-exchange-flow.png)
 
 ```
 POST /realms/rossoctl/protocol/openid-connect/token
@@ -86,7 +85,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 }
 ```
 
-The exchanged token names the user as subject and the agent as actor:
+The new token names the user as the subject and the agent as the actor:
 
 ```json
 {
@@ -98,18 +97,18 @@ The exchanged token names the user as subject and the agent as actor:
 }
 ```
 
-Note the lifetime: 300 seconds against the user token's 600. Delegated tokens are shorter-lived than
-what they came from.
+Note the lifetime. The new token is valid for 300 seconds. The token of the user is valid for 600
+seconds. A token for delegation therefore has a shorter life than its source.
 
-## 4. Internal tool access
+## 4. The agent calls the tool
 
-The agent calls the tool with the exchanged token. The tool's sidecar validates it and confirms the
-audience is itself.
+The agent sends the new token to the tool. The sidecar of the tool validates the token and confirms that
+the audience names the tool.
 
-![Internal tool access with a delegated token](../diagrams/images/png/05-tool-access-delegated-token-flow.png)
+![The tool access flow](../diagrams/images/png/05-tool-access-delegated-token-flow.png)
 
-A tool can also check the user's permissions itself, from the token's scopes — useful when one tool
-exposes operations at different privilege levels:
+A tool can also examine the permissions of the user. This method is useful when one tool has operations
+at different permission levels:
 
 ```python
 def validate_request(request):
@@ -130,11 +129,11 @@ def validate_request(request):
     raise AuthorizationError("Insufficient permissions")
 ```
 
-## 5. Through the MCP Gateway
+## 5. The request passes through the MCP Gateway
 
-When tools are reached through the MCP Gateway, the gateway sits in the path.
+When an agent reaches a tool through the MCP Gateway, the gateway is on the path.
 
-![MCP Gateway authentication flow](../diagrams/images/png/06-mcp-gateway-authentication-flow.png)
+![The MCP Gateway authentication flow](../diagrams/images/png/06-mcp-gateway-authentication-flow.png)
 
 ```
 POST /mcp
@@ -146,26 +145,27 @@ Content-Type: application/json
 ```
 
 :::warning
-Most authentication and authorization in the gateway is **not yet implemented**. Keep per-workload
-enforcement enabled — do not treat the gateway as your boundary. See
-[MCP Gateway](../workloads/mcp-gateway.md).
+Most authentication in the gateway is **not implemented**. Keep the enforcement in each sidecar active.
+Do not use the gateway as your security boundary. See
+[MCP Gateway](../concepts/experiments/mcp-gateway.md).
 :::
 
-## 6. External API access
+## 6. The tool calls an external service
 
-When a tool must call an external API, it needs a real third-party credential — and the agent must not
-hold it. The delegated token is presented to a secret store, which returns the external API key.
+A tool that calls an external service needs a credential for that service. The agent must not hold that
+credential. The tool presents the token for delegation to a secret store, and the store returns the
+credential.
 
-![External API access with a delegated token](../diagrams/images/png/07-tool-with-external-api-flow.png)
+![The external service flow](../diagrams/images/png/07-tool-with-external-api-flow.png)
 
-The agent's authority ends at the tool. The external credential never enters the agent.
+The permissions of the agent end at the tool. The external credential does not enter the agent.
 
-## Standards
+## The standards
 
-| Standard | Used for |
+| Standard | Function |
 | --- | --- |
-| [RFC 8693](https://tools.ietf.org/html/rfc8693) | OAuth2 token exchange — the delegation mechanism. |
-| [RFC 7523](https://tools.ietf.org/html/rfc7523) | JWT client assertions — SPIFFE authentication to Keycloak. |
+| [RFC 8693](https://tools.ietf.org/html/rfc8693) | OAuth2 token exchange. This standard is the mechanism for delegation. |
+| [RFC 7523](https://tools.ietf.org/html/rfc7523) | JWT client assertions. SPIFFE authentication to Keycloak uses this standard. |
 | [RFC 7519](https://tools.ietf.org/html/rfc7519) | JSON Web Tokens. |
 | [SPIFFE](https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/) | Workload identity. |
 | [OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html) | User authentication. |

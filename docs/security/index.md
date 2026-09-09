@@ -1,93 +1,97 @@
 ---
-title: Security overview
+title: Security
 sidebar_label: Overview
 description: What Rossoctl enforces, where it enforces it, and what it does not cover.
 sidebar_position: 1
 ---
 
-Everything in this section is **Ready**: enabled by default, tested end to end, and safe to depend on.
-Optional guardrails at earlier maturity live in [Guardrails and efficiency](../guardrails/index.md).
+Each feature in this section is **Ready**. Rossoctl enables it by default, tests cover it, and you can
+depend on it. The optional controls at an earlier maturity level are in
+[Experiments](../concepts/index.md#experimental-features).
 
-If you are reviewing Rossoctl for approval, read these four pages in order and you will have the whole
-picture:
+If you must approve Rossoctl for use, read these four pages in order:
 
-1. This page — the model.
-2. [Workload identity](workload-identity.md) — where identity comes from.
-3. [AuthBridge](authbridge.md) — what enforces it.
-4. [Authentication flows](flows.md) — the sequence diagrams.
+1. This page, for the model.
+2. [Workload identity](workload-identity.md), for the source of each identity.
+3. [AuthBridge](authbridge.md), for the component that enforces the model.
+4. [Authentication flows](flows.md), for the diagrams.
 
 ## The model
 
-Rossoctl assumes an attacker may already be inside the cluster. Nothing is trusted for being local:
-not another agent, not a tool, not the network between them. Every request is authenticated and
-authorized on its own merits.
+Rossoctl assumes that an attacker can be inside the cluster. It does not trust a component because that
+component is local. It does not trust another agent, a tool, or the network between them. It
+authenticates and authorizes each request separately.
 
 Three commitments follow:
 
-- **Every workload has a provable identity.** Issued by SPIRE, derived from what the workload is,
-  rotated automatically. Not a credential someone handed it.
-- **Agents act by delegation.** An agent calling a tool for you carries your identity and a token
-  scoped to that tool. It never holds the tool's own secrets, and it can never exceed what you and it
-  both hold.
-- **Enforcement sits outside the agent.** It is in the sidecar, so it does not depend on the agent
-  behaving, being well written, or even being code you wrote.
+- **Each workload has an identity that it can prove.** SPIRE issues the identity. The identity comes
+  from what the workload is, and Rossoctl renews it automatically. It is not a credential that someone
+  gave to the workload.
+- **An agent acts by delegation.** An agent that calls a tool for you presents your identity, and a
+  token that is valid only for that tool. It never holds a credential that belongs to the tool, and it
+  never has more permissions than you have.
+- **The enforcement is outside the agent.** It is in the sidecar. It therefore does not depend on the
+  behaviour or the quality of the code of the agent.
 
-## Where enforcement happens
+## Where Rossoctl enforces the model
 
-Each enrolled workload has a Cortex sidecar controlling four points:
+Each workload in the platform has a RossoCortex sidecar that controls four points.
 
-| Point | What is checked |
+| Point | What Rossoctl checks |
 | --- | --- |
-| Inbound request | Caller identity. Token signature, issuer, expiry, audience. |
-| Outbound request | Whether this agent, acting for this user, may reach this target. Token exchanged for the target. |
-| Outbound response | Whether the reply is trying to take over the calling agent. |
-| Inbound response | Whether the reply returns data this user should not see. |
+| Inbound request | The identity of the caller. The signature, the issuer, the expiry time and the audience of the token. |
+| Outbound request | Whether this agent can reach this target for this user. It also exchanges the token for the target. |
+| Outbound response | Whether the reply contains an attempt to control the agent. |
+| Inbound response | Whether the reply contains data that the user must not receive. |
 
-Points 1 and 2 are enforced by default. Points 3 and 4 are where the optional
-[guardrail plugins](../guardrails/index.md) act.
+Rossoctl enforces points 1 and 2 by default. The optional plugins act on points 3 and 4. See
+[Experiments](../concepts/index.md#experimental-features).
 
-See [RossoCortex](../concepts/cortex.md) for the mechanism.
+For the mechanism, see [RossoCortex](../concepts/core/cortex.md).
 
-## The pieces
+## The components
 
-| Component | Role |
+| Component | Function |
 | --- | --- |
-| **SPIFFE / SPIRE** | Issues and rotates workload identity. |
-| **Keycloak** | Authenticates users, holds roles, issues and exchanges tokens. |
-| **Cortex sidecar** | Validates inbound tokens, exchanges outbound ones, runs plugins. |
-| **Rossoctl operator** | Registers OAuth clients, injects sidecars, verifies agent cards. |
-| **Istio ambient mesh** | mTLS between workloads. Optional — `--with-istio`. |
-| **Kubernetes RBAC and NetworkPolicy** | Cluster-level authorization and isolation. |
+| **SPIFFE and SPIRE** | Issues and renews the identity of each workload. |
+| **Keycloak** | Authenticates users, holds the roles, issues tokens and exchanges tokens. |
+| **The RossoCortex sidecar** | Validates each token that arrives, exchanges each token that leaves, and runs the plugins. |
+| **The operator** | Registers the OAuth clients, injects the sidecars and validates the agent cards. |
+| **The Istio ambient mesh** | Adds mTLS between the workloads. It is optional: `--with-istio`. |
+| **Kubernetes RBAC and network policies** | Controls access at the level of the cluster. |
 
-## What this stops
+## What the model prevents
 
 | Attack | Why it fails |
 | --- | --- |
-| An unauthenticated caller reaches an agent | Inbound validation rejects it with a 401. |
-| A stolen agent token is replayed at another tool | The audience names one tool. Others reject it. |
-| A compromised agent reaches a tool the user cannot use | Keycloak will not issue a scope the user does not hold. |
-| A workload impersonates another to obtain credentials | SPIFFE identity is attested by the node, not asserted by the workload. |
-| A tampered agent card claims false capabilities | JWS signature verification against SPIRE's trust bundle, and optional identity binding. |
-| A leaked long-lived credential is used later | There are none to leak in SPIFFE mode; SVIDs are short-lived and rotated. |
+| An unauthenticated caller sends a request to an agent | The sidecar rejects the request with the status 401. |
+| An attacker replays a token from an agent at a different tool | The audience of the token names one tool. A different tool rejects it. |
+| A compromised agent tries to reach a tool that the user cannot use | Keycloak does not issue a scope that the user does not have. |
+| A workload presents the identity of a different workload | The node attests the SPIFFE identity. A workload cannot assert an identity. |
+| An agent card declares capabilities that the agent does not have | Rossoctl validates the signature against the trust bundle of SPIRE, and can also check the identity binding. |
+| An attacker uses a long-lived credential that leaked | In SPIFFE mode there is no long-lived credential. The identity documents are short-lived. |
 
-## What this does not stop
+## What the model does not prevent
 
-Be clear about the boundary.
+You must know the limits of the model.
 
-- **A correctly authenticated request the user never asked for.** An agent that read a poisoned
-  document produces a perfectly valid request. Authentication cannot tell the difference. That is what
-  [intent-based access control](../guardrails/ibac.md) addresses, at beta.
-- **A hallucinated but well-formed tool call.** See [SPARC](../guardrails/sparc.md), at beta.
-- **Traffic that bypasses the sidecar.** An agent that opens a connection outside its proxy is outside
-  the model.
-- **Anything the user is genuinely allowed to do.** Delegation is faithful. If a user may delete
-  production data, an agent acting for that user may too. Scope user roles accordingly.
-- **The MCP Gateway is not an access-control boundary yet.** Most authentication in the gateway is not
-  implemented. Keep per-workload enforcement on.
+- **A correctly authenticated request that the user did not ask for.** An agent that reads a document
+  with a hidden instruction produces a valid request. Authentication cannot detect the difference. See
+  [Intent-based access](../concepts/experiments/intent-based-access.md), which is an alpha feature.
+- **A tool call with an invented argument.** See
+  [Tool call validation](../concepts/experiments/tool-validation.md), which is an alpha feature.
+- **Traffic that avoids the sidecar.** An agent that opens a connection outside its proxy is outside the
+  model.
+- **An action that the user is permitted to do.** The delegation is exact. If a user can delete
+  production data, an agent that acts for that user can also delete it. Give each user the minimum roles
+  that the user needs.
+- **The MCP Gateway is not an access control boundary.** Most authentication in the gateway is not
+  implemented. Keep the enforcement in each sidecar active. See
+  [MCP Gateway](../concepts/experiments/mcp-gateway.md).
 
-## Configure it
+## Configure the model
 
-- [Authentication modes](authentication-modes.md) — client secrets or SPIFFE. Choose SPIFFE if you have
-  SPIRE.
-- [Workload identity](workload-identity.md) — verify SPIRE is working.
-- [AuthBridge](authbridge.md) — what the sidecar does and how to inspect it.
+- [Authentication modes](authentication-modes.md) compares client secrets and SPIFFE. Select SPIFFE if
+  you install SPIRE.
+- [Workload identity](workload-identity.md) shows how to confirm that SPIRE operates.
+- [AuthBridge](authbridge.md) describes the sidecar and how to examine it.

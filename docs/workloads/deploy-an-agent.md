@@ -1,24 +1,25 @@
 ---
 title: Deploy an agent
-description: Every option for getting an agent onto the platform — image, source, environment, builds.
+description: "Each option for a deployment: images, source builds, variables and secrets."
 sidebar_position: 3
 ---
 
-There are three ways to deploy an agent: the console, the CLI, or custom resources. All three end up
-in the same place — a Deployment with an `AgentRuntime` enrolling it.
+There are three ways to deploy an agent: the console, the CLI, and a custom resource. All three produce
+the same result, which is a Deployment and an `AgentRuntime` resource that points to it.
 
-For a first walkthrough, use [Deploy your first agent](../get-started/first-agent.md).
+For a first deployment, use [Deploy your first agent](../get-started/first-agent.md).
 
-## From a container image
+## Deploy from a container image
 
-The fastest path, and the only one that works without `--with-builds`.
+This method is the fastest. It is also the only method that operates without the `--with-builds`
+option.
 
-### Console
+### With the console
 
-**Agents → Import new agent → Deploy from existing image.** Give it the image URI, set the
-environment, and deploy.
+Select **Agents**, then **Import new agent**, then **Deploy from existing image**. Enter the image
+address, set the environment variables, and select **Deploy**.
 
-### CLI
+### With the CLI
 
 ```bash
 rossoctl agents import from-image \
@@ -29,96 +30,97 @@ rossoctl agents import from-image \
 rossoctl agents wait orders --timeout 5m
 ```
 
-Useful flags:
-
-| Flag | What it does |
+| Option | Function |
 | --- | --- |
-| `--imagePullSecret NAME` | Secret for a private registry. |
-| `--envVar KEY=VALUE` | One variable. Repeatable. Values are literal, commas included. |
-| `--envVarsURL URL` | Newline-separated `key=value` fetched from a URL. |
-| `--deployment-type` | `deployment` (default), `statefulset`, or `sandbox`. |
-| `--context NAME:PATH` | Mount an [agent context](agent-context.md). |
-| `--additionalParameterJSON` | Send request fields the CLI has no flag for. A JSON object, or a file containing one. |
+| `--imagePullSecret NAME` | Names a Secret for a private registry. |
+| `--envVar KEY=VALUE` | Sets one variable. You can repeat the option. The value is literal, and can contain a comma. |
+| `--envVarsURL URL` | Reads `key=value` lines from an address. |
+| `--deployment-type` | Selects `deployment`, which is the default, or `statefulset`, or `sandbox`. |
+| `--context NAME:PATH` | Attaches an [agent context](../concepts/experiments/agent-context.md). |
+| `--additionalParameterJSON` | Sends a field that has no option. |
 
-Where both name the same variable, `--envVar` wins over `--envVarsURL` regardless of flag order.
+If `--envVar` and `--envVarsURL` set the same variable, `--envVar` wins. The order of the options does
+not change this result.
 
-## From source
+## Build from source
 
-Rossoctl builds your image with [Shipwright](https://shipwright.io) and deploys the result.
+Rossoctl builds your image with [Shipwright](https://shipwright.io) and then deploys the result.
 
-**Requirements:**
+Requirements:
 
-- `--with-builds` at install time, and 6 CPUs available on the node.
-- The code on GitHub, public or reachable with the token given at install time.
-- The agent in a **subdirectory** containing a `Dockerfile` — not the repository root.
+- The `--with-builds` option at installation time, and 6 available CPUs.
+- The code on GitHub. The repository must be public, or reachable with the token that you gave to the
+  installer.
+- The agent in a **subdirectory** that contains a `Dockerfile`. The agent must not be in the root
+  directory.
 
-In the console, choose **Build from source** and fill in:
+In the console, select **Build from source** and complete these fields:
 
 | Field | Value |
 | --- | --- |
-| Git repository URL | The repository root, not the subdirectory. |
-| Git branch or tag | Defaults to the default branch. Set this for a PR branch. |
-| Source subfolder | The directory holding your `Dockerfile`. |
+| Git repository URL | The root of the repository, not the subdirectory. |
+| Git branch or tag | The default branch, or the branch that you name. |
+| Source subfolder | The directory that contains your `Dockerfile`. |
 
-You are taken to a build progress page showing the phase (Pending → Running → Succeeded or Failed),
-duration, and the configuration that will be applied. On success Rossoctl creates the Deployment and
-Service with the built image, adds an `HTTPRoute` if you enabled external access, and opens the agent
-detail page.
+The console then shows a build progress page. That page gives the phase, which is `Pending`, then
+`Running`, then `Succeeded` or `Failed`. It also gives the duration and the configuration. After a
+successful build, Rossoctl creates the Deployment and the Service, adds an `HTTPRoute` if you enabled
+external access, and opens the page of the agent.
 
-### Build strategy
+### The build strategy
 
-Chosen automatically from the target registry:
+Rossoctl selects the strategy from the target registry.
 
-| Registry | Strategy | Why |
+| Registry | Strategy | Reason |
 | --- | --- | --- |
-| In-cluster (Kind) | `buildah-insecure-push` | The internal registry has no TLS. |
-| External — quay.io, ghcr.io, docker.io | `buildah` | TLS available. |
+| In the cluster, on Kind | `buildah-insecure-push` | The internal registry has no TLS. |
+| External: quay.io, ghcr.io, docker.io | `buildah` | TLS is available. |
 
-Override it under **Build Configuration** if you need to.
+To select a different strategy, use the **Build Configuration** section.
 
-### Advanced build options
+### Other build options
 
 | Option | Default |
 | --- | --- |
-| Dockerfile path | `Dockerfile` in the context directory |
+| Dockerfile path | `Dockerfile`, in the source subfolder |
 | Build timeout | 15 minutes |
-| Build arguments | none — `KEY=value` pairs |
+| Build arguments | None. The format is `KEY=value`. |
 
 ## Environment variables
 
-You can add variables by hand, or import a `.env` file hosted on GitHub. A plain value is what you
-would expect:
+You can add each variable in the form, or import a `.env` file from GitHub. A simple value has this
+form:
 
 ```ini
 MCP_URL=http://weather-tool:8080/mcp
 ```
 
-### Referencing Secrets and ConfigMaps
+### To reference a Secret or a ConfigMap
 
-Do not put secrets in a `.env` file. Instead, give a JSON value and Rossoctl turns it into a
-Kubernetes `valueFrom` reference in the generated manifest.
+Do not put a secret in a `.env` file. Give a JSON value instead. Rossoctl converts the JSON value into a
+Kubernetes `valueFrom` reference.
 
-Full form:
+This example is the complete form:
 
 ```ini
 OPENAI_API_KEY='{"valueFrom": {"secretKeyRef": {"name": "openai-secret", "key": "apikey"}}}'
 ```
 
-Shorthand — a top-level `secretKeyRef` is wrapped in `valueFrom` for you:
+This example is a short form. Rossoctl adds the `valueFrom` level for you:
 
 ```ini
 OPENAI_API_KEY='{"secretKeyRef": {"name": "openai-secret", "key": "apikey"}}'
 ```
 
-ConfigMaps work the same way:
+A ConfigMap uses the same form:
 
 ```ini
 WEATHER_CONFIG='{"configMapKeyRef": {"name": "weather-config", "key": "settings"}}'
 ```
 
-Keep the single quotes. Without them the `.env` parser splits the JSON.
+Keep the single quotation marks. Without them, the parser divides the JSON value.
 
-Create the Secret first, in the namespace where the agent will run:
+Create the Secret first, in the namespace that will run the agent:
 
 ```bash
 kubectl create secret generic openai-secret \
@@ -126,17 +128,17 @@ kubectl create secret generic openai-secret \
   -n team1
 ```
 
-## Deployment types
+## The deployment types
 
 | Type | Use it for |
 | --- | --- |
-| `deployment` | Stateless agents. The default. |
-| `statefulset` | Agents with attached durable storage. |
-| `sandbox` | Stronger isolation. Alpha — see the [caveats](../concepts/control-plane.md#deployment-types). |
+| `deployment` | An agent that keeps no state. This type is the default. |
+| `statefulset` | An agent that has durable storage. |
+| `sandbox` | An agent that needs stronger isolation. See [Sandboxes](../concepts/experiments/sandboxes.md). |
 
-## With custom resources
+## With a custom resource
 
-If you deploy with GitOps, write the Deployment yourself and enrol it:
+If you deploy with GitOps, write the Deployment, and then add this resource:
 
 ```yaml
 apiVersion: agent.rossoctl.dev/v1alpha1
@@ -152,45 +154,47 @@ spec:
     name: orders
 ```
 
-The operator handles the rest. See [Custom resources](../reference/custom-resources.md).
+The operator does the remaining work. See
+[Custom resources](../reference/custom-resources.md).
 
-## Configure Cortex for one agent
+## Change the RossoCortex configuration of one agent
 
-Inspect the inbound and outbound plugin pipelines, in execution order, with each plugin's error policy
-and configuration:
+To read the current inbound and outbound plugin chains, in execution order:
 
 ```bash
 rossoctl agents authbridge get orders
 ```
 
-Replace them:
+To replace them:
 
 ```bash
 rossoctl agents authbridge set orders --policy-file ./authbridge.yaml
 ```
 
-The file is sent verbatim, so comments and key order survive and the server validates it. Add `--wait`
-to poll until the change takes effect.
+The command sends the file without a change, so your comments and your key order remain. The server
+validates the file. Add `--wait` to wait until the change is active.
 
 :::note
-`--wait` compares against the configuration that was in effect before the write, so re-applying an
-identical configuration cannot be confirmed — it times out and exits non-zero.
+The `--wait` option compares the new configuration with the configuration that was active before the
+command. It therefore cannot confirm a configuration that is already active. In that case the command
+reaches its time limit and exits with an error.
 :::
 
-## Test it
+## Send a message to the agent
 
-Open the agent, go to **Details**, and choose **Chat**.
+Select the agent, select **Details**, then select **Chat**.
 
-## Delete it
+## Delete the agent
 
 ```bash
 rossoctl agents delete orders
 ```
 
-This does not delete an attached [agent context](agent-context.md). Delete that separately.
+This command does not delete an
+[agent context](../concepts/experiments/agent-context.md). Delete the context separately.
 
-## Related
+## Related pages
 
-- [Bring your own agent](bring-your-own-agent.md) — the contract your code must meet.
-- [Deploy a tool](deploy-a-tool.md).
-- [Troubleshooting](../operate/troubleshooting.md).
+- [Bring your own agent](bring-your-own-agent.md) gives the requirements for your code.
+- [Deploy a tool](deploy-a-tool.md)
+- [Troubleshooting](../operate/troubleshooting.md)

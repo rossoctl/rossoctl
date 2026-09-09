@@ -1,35 +1,37 @@
 ---
 title: Troubleshooting
-description: Failures people actually hit, and how to recover.
+description: The failures that occur most often, and the recovery for each one.
 sidebar_position: 6
 ---
 
-Grouped by when it happens. If you cannot find your problem, ask in
-[Slack](https://ibm.biz/rossoctl-slack) or open an issue on
+This page groups each failure by the time at which it occurs. If your condition is not here, ask in
+[Slack](https://ibm.biz/rossoctl-slack), or open an issue on
 [rossoctl/rossoctl](https://github.com/rossoctl/rossoctl/issues).
 
-## During installation
+## During the installation
 
-### "exceeded its progress deadline"
+### The installation reports "exceeded its progress deadline"
 
-Usually a slow image pull rather than a real failure. Find what is stuck and re-run the installer:
+The usual cause is a slow image download, and not a defect. Find the deployment that did not start, and
+run the installer again:
 
 ```bash
 kubectl get deployments --all-namespaces
 ```
 
-Use `--preload-images` on the next run to side-load third-party images and avoid Docker Hub rate limits.
+Add the `--preload-images` option to the next installation. The script then downloads the images first,
+which avoids the rate limits of Docker Hub.
 
-### Podman instead of Docker
+### You use Podman and not Docker
 
-The installer expects `docker` on your path.
+The installer needs a `docker` command on your path.
 
 ```bash
 sudo ln -s /opt/podman/bin/podman /usr/local/bin/docker
 brew install docker-credential-helper
 ```
 
-If Keycloak reports insufficient memory, give the machine more:
+If Keycloak reports insufficient memory, give the machine more memory:
 
 ```bash
 podman machine stop
@@ -37,7 +39,7 @@ podman machine set --memory=12288 --cpus=8
 podman machine start
 ```
 
-For a clean start:
+To start again with a new machine:
 
 ```bash
 podman machine rm -f
@@ -45,64 +47,65 @@ podman machine init --rootful --memory 18432 --cpus 6
 podman machine start
 ```
 
-To reset the cluster but keep the Podman VM:
+To delete the cluster and keep the Podman machine:
 
 ```bash
 kind delete cluster --name rossoctl
 ```
 
-### Build pods stay `Pending` with `Insufficient cpu`
+### A build pod stays in `Pending` with `Insufficient cpu`
 
-Not enough CPU on the node. Platform pods alone can request close to 4 cores.
+The node has insufficient CPU. The platform pods alone can request almost 4 CPUs.
 
-Either give the runtime 6 CPUs and recreate the cluster, or deploy agents from prebuilt images instead
-of building from source. See [sizing](index.md#sizing).
+Give the runtime 6 CPUs and create the cluster again, or deploy each agent from an image and not from
+source. See [Machine size](index.md#machine-size).
 
-### Blank console page on macOS
+### The console shows an empty page on macOS
 
-If **Content & Privacy Restrictions** are on — System Settings → Screen Time → Content & Privacy
-Restrictions — the console can load as a blank page.
+If **Content & Privacy Restrictions** are active, the console can show an empty page. The setting is in
+System Settings, then Screen Time, then Content & Privacy Restrictions.
 
-Turn them off, then restart the console:
+Disable the restrictions, and then restart the console:
 
 ```bash
 kubectl rollout restart -n rossoctl-system deployment rossoctl-ui
 ```
 
-### SPIRE DaemonSets show 0 ready
+### The SPIRE DaemonSets report 0 ready
 
 ```bash
 kubectl get daemonsets -n zero-trust-workload-identity-manager
 ```
 
-Nothing that depends on workload identity will work until these are ready. Check the pods for scheduling
-failures or image pull errors, and confirm the node has capacity.
+No feature that needs a workload identity operates until these DaemonSets are ready. Examine the pods for
+a scheduling failure or an image download failure, and confirm that the node has capacity.
 
-## Deploying agents and tools
+## When you deploy an agent or a tool
 
 ### `Init:ErrImagePull` or `Init:ImagePullBackOff`
 
-Almost always an expired GitHub token:
+In almost all cases, your GitHub token is expired:
 
 ```
 failed to authorize: failed to fetch oauth token: unexpected status from GET request to
 https://ghcr.io/token?scope=repository%3Arossoctl%2F...: 403 Forbidden
 ```
 
-Check your [personal access token](https://github.com/settings/personal-access-tokens/). It needs
-`repo`, `write:packages`, and `read:packages`.
+Examine your [personal access token](https://github.com/settings/personal-access-tokens/). It needs the
+`repo`, `write:packages` and `read:packages` permissions.
 
-A 403 from `ghcr.io` while installing Helm charts is usually stale cached credentials:
+A 403 status from `ghcr.io` during the installation of a chart is usually a stored credential that is no
+longer valid:
 
 ```bash
 docker logout ghcr.io
 docker login ghcr.io -u <your-github-username>
 ```
 
-### Changing a value in `.secrets.yaml`
+### You must change a value in `.secrets.yaml`
 
-The installer copies secrets into namespaces, so editing the file is not enough. Delete the derived
-Secret everywhere it landed, then re-run the installer:
+The installer copies each secret into the namespaces. A change to the file is therefore not sufficient.
+Delete the Secret in each namespace that received it, and then run the installer again:
 
 ```bash
 kubectl get secret --all-namespaces
@@ -110,51 +113,52 @@ kubectl -n team1 delete secret github-token-secret
 scripts/kind/setup-rossoctl.sh
 ```
 
-## At runtime
+## During operation
 
-### Agent chat fails with a 503
+### The chat page reports the status 503
 
-The console shows:
+The console shows this message:
 
 ```
 An unexpected error occurred during A2A chat streaming: HTTP Error 503:
 Network communication error: peer closed connection without sending complete message body
 ```
 
-and the agent log shows a `ConnectionResetError` or a `ProtocolError`.
+The log of the agent shows a `ConnectionResetError` message or a `ProtocolError` message.
 
-The agent cannot reach its model. If it is configured for Ollama, `ollama serve` is almost certainly not
-running:
+The agent cannot reach its model. If the agent uses Ollama, the `ollama serve` command is almost certainly
+not active:
 
 ```bash
 OLLAMA_HOST=0.0.0.0 ollama serve
 ```
 
-If you are not using Ollama, check the agent's model configuration:
+If the agent does not use Ollama, examine the model configuration of the agent:
 
 ```bash
 kubectl exec -n team1 <agent-pod> -- env | grep LLM_
 ```
 
-### A service stops responding through the gateway
+### A service stops responding
 
-Happens to Keycloak and the console. Restart the data plane:
+This condition occurs with Keycloak and with the console. Restart the data plane:
 
 ```bash
 kubectl rollout restart daemonset -n istio-system ztunnel
 kubectl rollout restart -n rossoctl-system deployment http-istio
 ```
 
-### Mesh-wide 503 after host suspend
+### A cluster returns 503 after you suspend the computer
 
-**Symptom.** Every `*.localtest.me:8080` route returns `503` with `upstream connect error ... connection
-termination`, while all pods are `Running`, the gateway is `1/1`, and `HTTPRoute` and `Gateway` report
-`Accepted`.
+**The condition.** Each address on `*.localtest.me:8080` returns the status 503 with the message
+`upstream connect error ... connection termination`. Each pod is in the `Running` state, the gateway
+reports `1/1`, and the `HTTPRoute` and `Gateway` resources report `Accepted`.
 
-**Cause.** You suspended the host for longer than the SPIRE credential lifetime. The Istio ambient data
-plane — ztunnel and waypoints — keeps serving expired mTLS certificates and never re-fetches.
+**The cause.** You suspended the computer for longer than the lifetime of a SPIRE identity document. The
+Istio ambient data plane, which is ztunnel and the waypoints, continues to present expired certificates.
+It does not read new certificates.
 
-**Diagnose:**
+**To confirm the cause:**
 
 ```bash
 kubectl logs -n istio-system -l app=ztunnel --tail=100 \
@@ -164,30 +168,31 @@ kubectl logs -n spire-system -l app.kubernetes.io/name=agent --tail=100 \
   | grep -iE "reattest|service account token has expired"
 ```
 
-**Recover:**
+**To recover:**
 
 ```bash
 scripts/k8s/mesh-recover.sh --fix
 ```
 
-Without `--fix` the script detects and prints the commands without acting.
+Without the `--fix` option, the script reports the condition and prints the commands. It makes no change.
 
-**Catch it earlier.** Run the script in detect mode periodically — it exits `4` when the
-soonest-expiring ztunnel SVID is within `CERT_WARN_SECONDS` (default 6 hours) of expiry. This needs
-`kubectl` exec access and `jq`. On Kind you can also enable the `meshSelfHeal` feature flag, which
-installs a CronJob to do the restart automatically.
+**To detect the condition before an outage,** run the script without the `--fix` option at a regular
+interval. It exits with the code 4 when the first identity document expires in less than
+`CERT_WARN_SECONDS`, which is 6 hours by default. The script needs `kubectl` access and `jq`. On Kind you
+can also enable the `meshSelfHeal` feature flag, which adds a CronJob that does the restart.
 
-**Expect this on dev clusters.** Suspending longer than the SVID lifetime requires a data-plane restart
-or a cluster recreate. The root cause is upstream:
+**Expect this condition on a development cluster.** After a long suspension, you must restart the
+data plane or create a new cluster. The cause is an upstream defect:
 [istio/ztunnel#1679](https://github.com/istio/ztunnel/issues/1679).
 
-### Keycloak connection errors to Postgres
+### Keycloak reports a connection error to its database
 
-Appears after the cluster has run for a day or more. The root cause is not fully understood — see
-[rossoctl#115](https://github.com/rossoctl/rossoctl/issues/115) for the investigation.
+This condition occurs after the cluster runs for one day or longer. The cause is not completely
+understood. For the investigation, see
+[rossoctl#115](https://github.com/rossoctl/rossoctl/issues/115).
 
-There is no reliable way to restart Postgres and Keycloak in place. The only dependable fix is to
-reinstall Keycloak:
+There is no reliable method to restart the database and Keycloak. The only reliable method is a new
+installation of Keycloak:
 
 ```bash
 helm uninstall keycloak -n keycloak
@@ -198,17 +203,18 @@ kubectl rollout restart -n rossoctl-system deployment http-istio
 kubectl rollout restart -n rossoctl-system deployment rossoctl-ui
 ```
 
-Deployed agents may need restarting afterwards to pick up their Keycloak client again.
+You must then restart each agent, so that each agent gets its Keycloak client again.
 
-### The operator cannot authenticate to Keycloak after a credential rotation
+### The operator cannot authenticate to Keycloak
 
-The operator caches admin credentials. Restart it:
+This condition occurs after you change the administrator credentials. The operator holds the credentials
+in memory. Restart it:
 
 ```bash
 kubectl rollout restart deployment/rossoctl-controller-manager -n rossoctl-system
 ```
 
-Confirm:
+To confirm the result:
 
 ```bash
 POD=$(kubectl get pod -n rossoctl-system -l control-plane=controller-manager \
@@ -216,49 +222,49 @@ POD=$(kubectl get pod -n rossoctl-system -l control-plane=controller-manager \
 kubectl logs -n rossoctl-system "$POD" -c manager | grep -i "keycloak\|auth" | tail -5
 ```
 
-### SPIFFE authentication fails with an audience or issuer mismatch
+### SPIFFE authentication reports an audience error or an issuer error
 
-The JWT SVID's `aud` must exactly equal `keycloak.publicUrl/realms/<realm>`, and it must be the
-**external** URL — Keycloak's issuer is configured with the public URL and the check is a string
-comparison. An in-cluster service address reaches the same server and still fails.
+The `aud` claim of the identity document must be exactly `keycloak.publicUrl/realms/<realm>`. It must be
+the **external** address. Keycloak has the public address in its issuer configuration, and the check is a
+comparison of two strings. The internal address of the service reaches the same server and still fails.
 
-Check `keycloak.publicUrl` in your Helm values. See
-[Authentication modes](../security/authentication-modes.md#the-audience-must-be-the-public-url).
+Examine the `keycloak.publicUrl` value in your Helm values. See
+[Authentication modes](../security/authentication-modes.md#the-audience-must-be-the-public-address).
 
-### Skills do not appear in the console
+### The Skills entry does not appear in the console
 
-The feature flag is not set. Enable it without redeploying:
+The feature flag is not set. Enable it without a new installation:
 
 ```bash
 helm upgrade rossoctl charts/rossoctl -n rossoctl-system \
   --reuse-values --set featureFlags.skills=true
 ```
 
-Then confirm the backend registered its routes:
+Then confirm that the backend registered the routes:
 
 ```bash
 kubectl logs -n rossoctl-system -l app.kubernetes.io/name=rossoctl-backend \
   | grep "skills routes registered"
 ```
 
-## Useful commands
+## Commands for diagnosis
 
 ```bash
-# What is broken, everywhere
+# Each pod that is not correct, in each namespace
 kubectl get pods --all-namespaces | grep -vE "Running|Completed"
 
-# All service URLs and credentials
+# Each address and each credential
 ./.github/scripts/local-setup/show-services.sh
 
-# A specific agent's Cortex configuration
+# The RossoCortex configuration of one agent
 rossoctl agents authbridge get <agent>
 
-# An agent's environment, as the pod actually sees it
+# The environment of one pod
 kubectl exec -n <namespace> <pod> -- env | sort
 
-# Cortex sidecar logs
+# The log of the RossoCortex sidecar
 kubectl logs -n <namespace> <pod> -c authbridge-proxy
 
-# Operator logs
+# The log of the operator
 kubectl logs -n rossoctl-system -l control-plane=controller-manager -c manager --tail=100
 ```

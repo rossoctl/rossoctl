@@ -4,23 +4,23 @@ description: Install Rossoctl on an OpenShift cluster.
 sidebar_position: 3
 ---
 
-The recommended path is the OpenShift installer script, which puts SPIRE, cert-manager, Keycloak, the
-operator, the MCP Gateway, and the console in place with one command.
+The recommended method is the OpenShift installation script. One command installs SPIRE, cert-manager,
+Keycloak, the operator, the MCP Gateway and the console.
 
-## Prerequisites
+## Requirements
 
 | Requirement | Version |
 | --- | --- |
 | `oc` | 4.16.0 or later |
-| OpenShift cluster | Admin access. Tested on 4.19; CI runs against 4.20. |
+| An OpenShift cluster | Administrator access. The project tested version 4.19. The test pipeline uses version 4.20. |
 | Helm | 3.18.0 or later, below 4 |
 
 :::warning Remove an existing cert-manager first
-Rossoctl installs its own cert-manager. If your cluster already has one — from the Red Hat OpenShift
-cert-manager Operator, for example — remove it before running the installer.
+Rossoctl installs its own cert-manager. If your cluster already has cert-manager, for example from the
+Red Hat OpenShift cert-manager Operator, remove it before you run the script.
 :::
 
-## Install
+## Install the platform
 
 ```bash
 git clone https://github.com/rossoctl/rossoctl.git
@@ -31,55 +31,56 @@ oc login https://api.your-cluster.example.com:6443 -u kubeadmin -p <password>
 ./scripts/ocp/setup-rossoctl.sh
 ```
 
-Run it from the repository root, after logging in.
+Run the script from the root directory of the repository, and after you sign in.
 
-### Options
+### The options
 
-| Flag | Effect |
+| Option | Function |
 | --- | --- |
-| `--rossoctl-repo PATH\|URL` | Local path or GitHub URL. Defaults to cloning `main` into `~/.cache/rossoctl`. |
-| `--realm REALM` | Keycloak realm. Default `rossoctl`. |
-| `--skip-ovn-patch` | Skip the OVN gateway routing patch. The operator warns at startup if it is missing. |
-| `--skip-mcp-gateway` | Do not install the MCP Gateway. |
-| `--skip-ui` | Do not install the console or backend. |
-| `--skip-mlflow` | Do not install the MLflow integration. |
-| `--operator-image IMG:TAG` | Use a custom operator image. |
-| `--dry-run` | Print the commands without running them. |
+| `--rossoctl-repo PATH\|URL` | A local directory or a GitHub address. The default action is a clone of `main` into `~/.cache/rossoctl`. |
+| `--realm REALM` | The Keycloak realm. The default is `rossoctl`. |
+| `--skip-ovn-patch` | Omits the OVN routing change. The operator gives a warning at start-up if the change is absent. |
+| `--skip-mcp-gateway` | Omits the MCP Gateway. |
+| `--skip-ui` | Omits the console and the backend. |
+| `--skip-mlflow` | Omits MLflow. |
+| `--operator-image IMG:TAG` | Uses a different operator image. |
+| `--dry-run` | Prints each command. It makes no change. |
 
-## Access the console
+## Open the console
 
 ```bash
 echo "https://$(kubectl get route rossoctl-ui -n rossoctl-system \
   -o jsonpath='{.status.ingress[0].host}')"
 ```
 
-With self-signed certificates, accept the certificate in your browser. The MCP Inspector and its proxy
-share one host, so accepting the Inspector's certificate covers the proxy too.
+If the cluster uses a self-signed certificate, accept the certificate in your browser. The MCP Inspector
+and its proxy use one host name, so one action covers both.
 
-Keycloak admin credentials:
+To get the Keycloak administrator credentials:
 
 ```bash
 kubectl get secret keycloak-initial-admin -n keycloak \
   -o go-template='Username: {{.data.username | base64decode}}  Password: {{.data.password | base64decode}}{{"\n"}}'
 ```
 
-## Verify
+## Confirm the installation
 
 ```bash
 kubectl get daemonsets -n zero-trust-workload-identity-manager
 kubectl get deployments -n rossoctl-system
 ```
 
-If SPIRE shows `0` under `Current` or `Ready`, see [Troubleshooting](troubleshooting.md).
+If SPIRE reports `0` in the `Current` column or the `Ready` column, see
+[Troubleshooting](troubleshooting.md).
 
 ## Models
 
-Ollama cannot run on your machine here — agents run in a remote cluster and cannot reach it. Three
-options, easiest last.
+Ollama cannot run on your computer for an OpenShift cluster. The agent is in a remote cluster and cannot
+reach your computer. Select one of these three methods.
 
-### Run Ollama in the cluster
+### Method 1: run Ollama in the cluster
 
-Create a Deployment and Service in `rossoctl-system`:
+Create a Deployment and a Service in the `rossoctl-system` namespace:
 
 ```yaml
 apiVersion: apps/v1
@@ -129,40 +130,42 @@ spec:
       targetPort: 11434
 ```
 
-Apply it with `kubectl apply -n rossoctl-system -f ollama.yaml`, then pull a model into the pod:
+Apply the file with `kubectl apply -n rossoctl-system -f ollama.yaml`. Then get a model:
 
 ```bash
 kubectl exec -n rossoctl-system deploy/ollama -- ollama pull qwen2.5:3b
 ```
 
-Set each agent's `LLM_API_BASE` to:
+Set the `LLM_API_BASE` variable of each agent to this address:
 
 ```
 http://ollama.rossoctl-system.svc.cluster.local:11434/v1
 ```
 
-Sizing, if you go this route:
+Use this table to select the resources:
 
-| Model | RAM | CPUs |
+| Model | Memory | CPUs |
 | --- | --- | --- |
 | 3B, for example `qwen2.5:3b` | 8 Gi | 2 |
 | 8B, for example `granite3.3:8b` | 16 Gi | 4 |
-| 70B or larger | 64+ Gi | 8+, and a GPU |
+| 70B or larger | 64 Gi or more | 8 or more, and a GPU |
 
-For anything beyond testing: request `nvidia.com/gpu` on GPU nodes, replace `emptyDir` with a PVC so
-models survive pod restarts, and use node affinity to place the pod where the memory is.
+For more than a test, do these three actions. Request `nvidia.com/gpu` on a node that has a GPU. Replace
+`emptyDir` with a PersistentVolumeClaim, so the model remains after a restart. Use node affinity to place
+the pod on a node that has sufficient memory.
 
-### Use an external Ollama server
+### Method 2: use an external Ollama server
 
-Run `OLLAMA_HOST=0.0.0.0 ollama serve` on a machine the cluster can reach — a GPU workstation, for
-example — and point `LLM_API_BASE` at `http://<its-address>:11434/v1`.
+Run `OLLAMA_HOST=0.0.0.0 ollama serve` on a computer that the cluster can reach. Then set `LLM_API_BASE`
+to `http://<that-address>:11434/v1`.
 
-### Use a cloud provider
+### Method 3: use a cloud provider
 
-Simplest. See [Configure a model](../get-started/configure-a-model.md#option-b-a-cloud-provider).
+This method is the simplest. See
+[Configure a model](../get-started/configure-a-model.md#option-b-a-cloud-provider).
 
-## Related
+## Related pages
 
-- [Install with Helm](install-helm.md) — chart-level installs, including the OpenShift CA workaround.
-- [Authentication modes](../security/authentication-modes.md).
-- [Troubleshooting](troubleshooting.md).
+- [Install with Helm](install-helm.md) describes the installation of each chart.
+- [Authentication modes](../security/authentication-modes.md)
+- [Troubleshooting](troubleshooting.md)

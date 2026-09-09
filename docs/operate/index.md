@@ -1,51 +1,52 @@
 ---
-title: Deploy and operate
+title: Install and operate
 sidebar_label: Overview
-description: Install targets, observability, and troubleshooting.
+description: Installation targets, observability and diagnosis.
 sidebar_position: 1
 ---
 
-For platform engineers. If you just want a cluster to try things on, use
-[Quickstart: Kubernetes](../get-started/kubernetes.md) — it is shorter and skips the options.
+This section is for a platform engineer. If you want a cluster for an evaluation, use
+[Quickstart on Kubernetes](../get-started/kubernetes.md). That page is shorter and omits the options.
 
-## Install
+## Select an installation target
 
 | Target | Page | Status |
 | --- | --- | --- |
-| Kind — local development, CI | [Install on Kubernetes](install-kubernetes.md) | Ready |
+| Kind, for local development and tests | [Install on Kubernetes](install-kubernetes.md) | Ready |
 | OpenShift | [Install on OpenShift](install-openshift.md) | Ready |
-| Any cluster, via Helm and OCI charts | [Install with Helm](install-helm.md) | Beta |
+| Any cluster, with Helm and OCI charts | [Install with Helm](install-helm.md) | Beta |
 
-Every install variant needs the same decision about identity — see
-[Authentication modes](../security/authentication-modes.md). Pick SPIFFE if you are installing SPIRE.
+Each target needs the same decision about identity. See
+[Authentication modes](../security/authentication-modes.md). Select SPIFFE if you install SPIRE.
 
-## Run
+## Operate the platform
 
-- [Observability](observability.md) — traces, network topology, and per-agent metrics.
-- [Troubleshooting](troubleshooting.md) — the failures people actually hit, and how to recover.
+- [Observability](observability.md) covers the traces, the network diagram and the metrics.
+- [Troubleshooting](troubleshooting.md) covers the failures that occur most often, and the recovery for
+  each one.
 
-## Sizing
+## Machine size
 
-Rossoctl is a lot of moving parts. On a single-node Kind cluster the platform pods alone can request
-close to 4 CPUs before any agent runs.
+Rossoctl has many components. On a Kind cluster with one node, the platform pods alone can request
+almost 4 CPUs before an agent starts.
 
-| Profile | RAM | CPUs | What fits |
+| Profile | Memory | CPUs | What operates |
 | --- | --- | --- | --- |
-| Recommended | 18 GiB | 6 | Istio ambient, SPIRE, console, backend, and building agents from source. |
-| Minimum | 16 GiB | 4 | Core and console. Deploy agents from prebuilt images only. |
-| Below that | — | ≤4 | Often installs. Source builds stay `Pending` on `Insufficient cpu`. |
+| Recommended | 18 GiB | 6 | The ambient mesh, SPIRE, the console, the backend, and a build from source. |
+| Minimum | 16 GiB | 4 | The core platform and the console. You must deploy each agent from an image. |
+| Below the minimum | — | 4 or fewer | The installation usually completes. A build from source stays in the `Pending` state. |
 
-The installer runs a pre-flight check and **warns** below 18 GiB or 6 CPUs. It does not fail, so these
-are recommendations rather than enforced limits.
+The installer examines the machine and gives a **warning** below 18 GiB or 6 CPUs. It does not stop.
+These values are therefore recommendations and not limits.
 
-## Not yet documented
+## Subjects that have no page yet
 
-These matter in production and have no page here yet:
+These subjects are necessary for production use and have no page on this site:
 
-- Upgrades between releases.
-- Scaling and high availability.
-- Multi-tenancy — namespace isolation, quotas, and token budgets across teams.
-- Backup and restore.
+- An upgrade from one release to the next release.
+- High availability, and how to add capacity.
+- More than one team on one cluster: namespace isolation, quotas and token limits.
+- Backup and restoration.
 
-For now, ask in [Slack](https://ibm.biz/rossoctl-slack). If you work out a good answer, a pull request
-against these docs is welcome.
+Ask in [Slack](https://ibm.biz/rossoctl-slack). If you find a correct method, a pull request for these
+documents is welcome.

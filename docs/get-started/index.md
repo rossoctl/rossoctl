@@ -1,43 +1,50 @@
 ---
 title: Get started
-sidebar_label: Overview
-description: Pick a quickstart and get a result in five or twenty minutes.
+sidebar_label: Which path to take
+description: Choose between the laptop quickstart and the Kubernetes quickstart.
 sidebar_position: 1
 ---
 
-There are two ways in. Pick by how much you want to install.
+There are two ways to start. Choose the one that matches your goal.
 
-## Quickstart: your laptop — about 5 minutes
+## Quickstart on a laptop
 
-One binary. No cluster, no Kubernetes, no model API key. You point your existing coding agent at it
-and watch its model calls, tool calls, and agent messages as they happen.
+Time: approximately 5 minutes.
 
-Start with [Quickstart: your laptop](laptop.md).
+You install one program. You do not need a Kubernetes cluster and you do not need a model API key.
+The program shows the model calls, the tool calls and the agent messages that your agent makes.
 
-Choose this if you want to see the idea working before committing to anything, or if what you care
-about is traffic visibility and token cost.
+Choose this path if you want to see how Rossoctl works before you install the full platform. Choose
+it also if you want to reduce the token cost of an agent.
 
-## Quickstart: Kubernetes — about 20 minutes
+Go to [Quickstart on a laptop](laptop.md).
 
-The full platform on a local Kind cluster: the operator, Keycloak, the UI, and a sample agent and
-tool. From here you can deploy your own agents, wire up MCP tools, and turn on identity.
+## Quickstart on Kubernetes
 
-Start with [Quickstart: Kubernetes](kubernetes.md).
+Time: approximately 20 minutes.
 
-Choose this if you want to deploy agents, or if you are evaluating Rossoctl as a platform.
+You install the full platform on a local Kubernetes cluster. The installation includes the operator,
+Keycloak, the web console and a sample agent.
 
-You will need a container runtime with **18 GiB of RAM and 6 CPUs**. Less will often install but
-fails when building agents from source.
+Choose this path if you want to deploy agents, or if you must evaluate Rossoctl as a platform.
 
-## Then
+Your container runtime must have 18 GiB of memory and 6 CPUs. A smaller machine can complete the
+installation, but a build from source then fails.
 
-1. [Configure a model](configure-a-model.md) — point agents at Ollama or a cloud provider.
-2. [Deploy your first agent](first-agent.md) — the sample weather agent, end to end.
-3. [Connect your first MCP tool](first-tool.md) — give the agent something to call.
-4. [Install the CLI](cli.md) — do the same things from a terminal.
+Go to [Quickstart on Kubernetes](kubernetes.md).
 
-## Where to go after that
+## After a quickstart
 
-- Put your own agent on the platform: [Bring your own agent](../workloads/bring-your-own-agent.md).
-- Turn on identity and token exchange: [Security and identity](../security/index.md).
-- Install somewhere other than Kind: [Deploy and operate](../operate/index.md).
+Do these steps in order:
+
+1. [Configure a model](configure-a-model.md). An agent cannot answer a question until you give it a
+   model.
+2. [Deploy your first agent](first-agent.md).
+3. [Connect your first tool](first-tool.md).
+4. [Install the CLI](cli.md), if you prefer a terminal to the web console.
+
+## Next
+
+- To put your own agent on the platform, read [Bring your own agent](../workloads/bring-your-own-agent.md).
+- To enable identity and token exchange, read [Security](../security/index.md).
+- To install on OpenShift or with Helm, read [Install and operate](../operate/index.md).

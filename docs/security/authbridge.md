@@ -1,39 +1,40 @@
 ---
 title: AuthBridge
-description: The identity and access layer of Cortex — inbound validation and outbound token exchange.
+description: The identity and access layer of RossoCortex.
 sidebar_position: 3
 ---
 
-AuthBridge is the identity and access-control part of [RossoCortex](../concepts/cortex.md). It is what
-makes an agent's calls authenticated and correctly scoped without the agent doing anything about it.
+AuthBridge is the identity and access control part of [RossoCortex](../concepts/core/cortex.md). It
+makes each call from an agent authenticated and correctly limited. The agent does no work for this
+result.
 
-Two plugins do the work, and both are on by default:
+Two plugins do the work. Rossoctl enables both by default.
 
-| Plugin | Direction | What it does |
+| Plugin | Direction | Function |
 | --- | --- | --- |
-| `jwt-validation` | Inbound | Validates the caller's JWT — signature via JWKS, issuer, and optionally audience. Returns 401 on failure. |
-| `token-exchange` | Outbound | Exchanges the agent's token for one scoped to the target it is calling, per [RFC 8693](https://tools.ietf.org/html/rfc8693). |
+| `jwt-validation` | Inbound | Validates the token of the caller. It checks the signature, the issuer and, when you configure it, the audience. It returns the status 401 for an invalid token. |
+| `token-exchange` | Outbound | Exchanges the token of the agent for a token that is valid only for the target, as [RFC 8693](https://tools.ietf.org/html/rfc8693) describes. |
 
-## What gets injected
+## What the operator injects
 
-When the operator enrols a workload, the mutating webhook adds three containers to its pod:
+When the operator adds a workload to the platform, a webhook adds three containers to the pod.
 
-| Container | Job |
+| Container | Function |
 | --- | --- |
-| `authbridge-proxy` | Envoy plus a Go extension processor. Runs the inbound and outbound pipelines. |
-| `spiffe-helper` | Keeps the workload's SVIDs fresh on disk. |
-| client registration | Registers the workload with Keycloak on startup. |
+| `authbridge-proxy` | An Envoy proxy and a Go processor. It runs the inbound chain and the outbound chain. |
+| `spiffe-helper` | Keeps the identity documents of the workload current. |
+| Client registration | Registers the workload with Keycloak at start-up. |
 
-Your agent container is untouched.
+The operator does not change your agent container.
 
-## The path a request takes
+## The path of one request
 
-![AuthBridge architecture: the operator registers the workload with Keycloak, the agent obtains a token, and the injected proxy validates it inbound and exchanges it outbound](../images/authbridge-architecture.svg)
+![How the operator, the agent, the proxy and Keycloak interact](../images/authbridge-architecture.svg)
 
 ```
 Operator                    Agent pod                     Keycloak            Target
    │                            │                             │                  │
-   │ 1. enrol + label workload  │                             │                  │
+   │ 1. add workload + label    │                             │                  │
    │ 2. register OAuth client ──┼────────────────────────────► │                  │
    │                            │                             │                  │
    │                   ┌────────┴────────┐  3. get token       │                  │
@@ -50,69 +51,73 @@ Operator                    Agent pod                     Keycloak            Ta
    │                            │                             │  6. validate aud │
 ```
 
-1. The operator reconciles the `AgentRuntime`, labels the workload, and triggers sidecar injection.
+1. The operator reads the `AgentRuntime` resource, adds a label to the workload and starts the injection
+   of the sidecars.
 2. The operator registers the workload as an OAuth client in Keycloak.
-3. The agent obtains a token.
-4. The agent makes a request.
-5. The proxy validates the inbound token — signature, expiry, issuer via JWKS — returning 401 if it is
-   bad, then exchanges the token for one whose audience is the target.
-6. The target validates that the audience is itself.
+3. The agent gets a token.
+4. The agent sends a request.
+5. The proxy validates the token that arrived. It checks the signature, the expiry time and the issuer.
+   It returns the status 401 for an invalid token. It then exchanges the token for a token whose audience
+   is the target.
+6. The target validates that the audience names the target.
 
-Sequence diagrams for each stage are in [Authentication flows](flows.md).
+For the diagram of each stage, see [Authentication flows](flows.md).
 
 ## Client registration
 
-You do not create Keycloak clients. The operator's client-registration controller does it:
+You do not create a Keycloak client. The operator does these four steps:
 
-1. Reconciles `AgentRuntime` resources and labels the target workload `rossoctl.io/type: agent` or
-   `tool`.
-2. Reads Keycloak admin credentials from `keycloak-admin-secret` in the operator's namespace
-   (`rossoctl-system`).
-3. Uses the workload's SPIFFE ID as the client identifier.
-4. Registers the client and writes the credentials into a Secret in the workload's namespace.
+1. It reads each `AgentRuntime` resource and adds the label `rossoctl.io/type: agent` or
+   `rossoctl.io/type: tool` to the workload.
+2. It reads the administrator credentials from the `keycloak-admin-secret` Secret in its own namespace,
+   which is `rossoctl-system`.
+3. It uses the SPIFFE identity of the workload as the identifier of the client.
+4. It registers the client and writes the credentials to a Secret in the namespace of the workload.
 
-Admin credentials stay in the operator's namespace. Agent namespaces never see them. That isolation is
-the point of doing registration centrally.
+The administrator credentials stay in the namespace of the operator. The namespace of an agent never
+holds them. This separation is the reason to do the registration centrally.
 
-In the console, this happens when you tick **Secure with AuthBridge** while deploying. There are no init
-containers to add and nothing to configure.
+In the console, this registration happens when you select **Secure with AuthBridge** during a
+deployment. There is no container to add and no file to configure.
 
-## Inspect an agent's configuration
+## Examine the configuration of one agent
 
-See the live pipelines, in execution order, with each plugin's error policy and configuration:
+To read the active chains, in execution order, with the configuration of each plugin:
 
 ```bash
 rossoctl agents authbridge get orders
 rossoctl agents authbridge get orders --json
 ```
 
-Replace them:
+To replace them:
 
 ```bash
 rossoctl agents authbridge set orders --policy-file ./authbridge.yaml
 ```
 
-The file is sent verbatim as `text/plain`, so comments and key order survive and the server validates
-rather than the CLI. Add `--wait` to poll until the running configuration differs from what it was.
+The command sends the file as `text/plain` and without a change. Your comments and your key order
+therefore remain, and the server validates the file. Add `--wait` to wait until the change is active.
 
 :::note
-`--wait` detects *change*, so re-applying the configuration already in effect cannot be confirmed — it
-times out and exits non-zero. That is expected, not a failure.
+The `--wait` option detects a change. It therefore cannot confirm a configuration that is already
+active. In that case the command reaches its time limit and exits with an error. This result is correct
+behaviour, and not a failure.
 :::
 
-## Run it without Kubernetes
+## Run AuthBridge without Kubernetes
 
-The same binary runs on your machine, which is the fastest way to see the pipeline work:
+The same program runs on your computer. This method is the fastest way to see the chain operate:
 
 ```bash
 rossoctl authbridge exec --config ./authbridge.yaml -- claude "explain this repo"
 ```
 
-See [Quickstart: your laptop](../get-started/laptop.md) and [Install the CLI](../get-started/cli.md).
+See [Quickstart on a laptop](../get-started/laptop.md) and
+[Install the CLI](../get-started/cli.md).
 
-## Keycloak endpoints
+## The Keycloak endpoints
 
-For scripting or debugging against the Kind install:
+Use these addresses for a script or for diagnosis on a Kind installation:
 
 ```
 POST http://keycloak.keycloak.svc.cluster.local:8080/realms/rossoctl/protocol/openid-connect/token
@@ -120,13 +125,12 @@ GET  http://keycloak.keycloak.svc.cluster.local:8080/realms/rossoctl/protocol/op
 POST http://keycloak.keycloak.svc.cluster.local:8080/realms/rossoctl/protocol/openid-connect/token/introspect
 ```
 
-The admin console is at `http://keycloak.localtest.me:8080/admin/rossoctl/console/`. Get credentials
-with `./.github/scripts/local-setup/show-services.sh`.
+The administrator interface is at `http://keycloak.localtest.me:8080/admin/rossoctl/console/`. To get
+the credentials, run `./.github/scripts/local-setup/show-services.sh`.
 
-## Related
+## Related pages
 
-- [Identity and trust](../concepts/identity.md) — why delegation is shaped this way.
-- [Authentication modes](authentication-modes.md) — client secrets versus SPIFFE.
-- [Authentication flows](flows.md) — the diagrams.
-- [Plugin catalog](https://github.com/rossoctl/cortex/blob/main/authbridge/docs/plugin-catalog.md) — every
-  plugin and its configuration.
+- [Identity and trust](../concepts/core/identity.md) explains the reason for this design.
+- [Authentication modes](authentication-modes.md)
+- [Authentication flows](flows.md)
+- [Plugin catalogue](https://github.com/rossoctl/cortex/blob/main/authbridge/docs/plugin-catalog.md)

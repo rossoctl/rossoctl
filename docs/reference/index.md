@@ -1,27 +1,27 @@
 ---
 title: Reference
 sidebar_label: Overview
-description: Where to look things up.
+description: Where to find a command, a field or a term.
 sidebar_position: 1
 ---
 
-| Page | Covers |
+| Page | Contents |
 | --- | --- |
-| [CLI](cli.md) | Every `rossoctl` command and flag. |
-| [Custom resources](custom-resources.md) | `AgentRuntime` and `AgentCard` fields. |
-| [Install options](install-options.md) | Installer flags, supported versions, and namespaces. |
-| [Glossary](glossary.md) | The vocabulary, in one place. |
+| [CLI](cli.md) | Each `rossoctl` command and each option. |
+| [Custom resources](custom-resources.md) | Each field of `AgentRuntime` and `AgentCard`. |
+| [Install options](install-options.md) | Each installer option, the supported versions and the namespaces. |
+| [Glossary](glossary.md) | Each term that these documents use. |
 
-## Elsewhere
+## Reference material in other places
 
-Some reference material lives closer to the code and is not duplicated here:
+Some reference material is beside the code. These documents do not repeat it.
 
-| Looking for | Go to |
+| Subject | Where to find it |
 | --- | --- |
-| Cortex plugin configuration | [Plugin catalog](https://github.com/rossoctl/cortex/blob/main/authbridge/docs/plugin-catalog.md) |
-| Writing a Cortex plugin | [Plugin tutorial](https://github.com/rossoctl/cortex/blob/main/authbridge/docs/plugin-tutorial.md) |
-| Helm chart values | [`charts/rossoctl/values.yaml`](https://github.com/rossoctl/rossoctl/blob/main/charts/rossoctl) |
-| The REST API | The backend's OpenAPI schema. The [CLI reference](cli.md) names the endpoint behind each command. |
-| A2A protocol | [a2a-protocol.org](https://a2a-protocol.org/latest/) |
-| MCP protocol | [modelcontextprotocol.io](https://modelcontextprotocol.io) |
-| Release notes | [GitHub releases](https://github.com/rossoctl/rossoctl/releases) |
+| The configuration of a RossoCortex plugin | [Plugin catalogue](https://github.com/rossoctl/cortex/blob/main/authbridge/docs/plugin-catalog.md) |
+| How to write a plugin | [Plugin tutorial](https://github.com/rossoctl/cortex/blob/main/authbridge/docs/plugin-tutorial.md) |
+| The Helm chart values | [`charts/rossoctl/values.yaml`](https://github.com/rossoctl/rossoctl/blob/main/charts/rossoctl) |
+| The REST interface | The OpenAPI document of the backend. The [CLI reference](cli.md) names the endpoint of each command. |
+| The A2A protocol | [a2a-protocol.org](https://a2a-protocol.org/latest/) |
+| The MCP protocol | [modelcontextprotocol.io](https://modelcontextprotocol.io) |
+| The release notes | [GitHub releases](https://github.com/rossoctl/rossoctl/releases) |

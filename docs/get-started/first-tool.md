@@ -1,82 +1,86 @@
 ---
-title: Connect your first MCP tool
+title: Connect your first tool
 description: Deploy an MCP tool and let an agent call it.
 sidebar_position: 6
 ---
 
-Tools give agents something to do. A Rossoctl tool is a container that speaks
-[MCP](https://modelcontextprotocol.io) on `/mcp`. This deploys one and connects an agent to it.
+A tool gives an agent the ability to do work. A Rossoctl tool is a container that uses the
+[MCP protocol](https://modelcontextprotocol.io) on the `/mcp` endpoint. This procedure deploys a tool
+and connects an agent to it.
 
-## Deploy the tool
+## Step 1: deploy the tool
 
-1. In the console, go to **Tools** and choose **Import new tool**.
-2. Select **Deploy from existing image** and give it an image URI. For the sample:
+1. In the console, select **Tools**, and then select **Import new tool**.
+2. Select **Deploy from existing image**. Enter this image address:
 
    ```
    ghcr.io/rossoctl/examples/weather-tool:latest
    ```
 
-3. Add any environment variables the tool needs — an upstream API key, for example.
-4. Tick **Enable external access to the tool endpoint** if you want to reach it directly.
-5. Choose **Deploy**.
+3. Add the environment variables that the tool needs. An example is a key for an external service.
+4. To reach the tool directly, select **Enable external access to the tool endpoint**.
+5. Select **Deploy**.
 
-Rossoctl creates a Deployment and a Service, and enrols the workload the same way it does an agent.
+Rossoctl creates a Deployment and a Service, and adds the workload to the platform in the same way that
+it adds an agent.
 
-Browse [rossoctl/examples/mcp](https://github.com/rossoctl/examples/tree/main/mcp) for more tools.
+For more tools, see
+[examples/mcp](https://github.com/rossoctl/examples/tree/main/mcp).
 
-## Point an agent at it
+## Step 2: give the address to an agent
 
-Agents find tools through environment variables:
+An agent reads the address of a tool from an environment variable.
 
 | Variable | Use it when |
 | --- | --- |
-| `MCP_URL` | The agent uses one tool, or reaches tools through the MCP Gateway. |
-| `MCP_URLS` | The agent connects directly to several tools. Comma-separated. |
+| `MCP_URL` | The agent uses one tool, or the agent uses the MCP Gateway. |
+| `MCP_URLS` | The agent uses more than one tool directly. Separate the addresses with commas. |
 
-For a tool in the same namespace as the agent:
+For a tool in the same namespace as the agent, use this value:
 
 ```
 MCP_URL=http://weather-tool:8080/mcp
 ```
 
-Set this when you deploy the agent, or patch a running one:
+Set the variable when you deploy the agent. To change an agent that already runs, use this command:
 
 ```bash
 kubectl set env deployment/weather-service -n <namespace> \
   MCP_URL="http://weather-tool:8080/mcp"
 ```
 
-:::note Sandbox agents
-`kubectl set env` does not work on `Sandbox` resources. Edit the `Sandbox` spec instead, then delete
-the pod to force a restart. See [MCP Gateway](../workloads/mcp-gateway.md#sandbox-agents).
+:::note For an agent in a sandbox
+The `kubectl set env` command does not operate on a `Sandbox` resource. You must change the
+specification and then delete the pod. See [Sandboxes](../concepts/experiments/sandboxes.md).
 :::
 
-## Check that the agent can call it
+## Step 3: confirm that the agent can call the tool
 
-Open the agent's **Chat** tab and ask something only the tool can answer. If the agent answers
-correctly, the connection works. If it makes something up or says it has no tools, the URL is wrong
-or the tool is not ready.
+Open the **Chat** tab of the agent. Ask a question that only the tool can answer.
 
-Check the tool is running:
+If the agent gives a correct answer, the connection operates. If the agent invents an answer, or reports
+that it has no tool, the address is wrong or the tool is not ready.
+
+Confirm that the tool runs:
 
 ```bash
 kubectl get pods -n <namespace> -l app=weather-tool
 ```
 
-## Reaching several tools through one URL
+## For many tools and many agents
 
-Wiring each agent to each tool does not scale. The MCP Gateway gives you one endpoint that fronts
-every registered tool, and lets you prefix tool names to avoid collisions.
+One address for each pair of agent and tool does not scale. The MCP Gateway gives each agent one
+address for all tools, and adds a prefix to each tool name to prevent a conflict.
 
-See [MCP Gateway](../workloads/mcp-gateway.md).
+See [MCP Gateway](../concepts/experiments/mcp-gateway.md).
 
-## Build from source instead
+## To build the tool from source instead
 
-The same rules as agents: GitHub, a subdirectory, a `Dockerfile`, and `--with-builds` at install
-time. Tools additionally let you set the target registry and image tag. See
-[Deploy a tool](../workloads/deploy-a-tool.md).
+The requirements are the same as the requirements for an agent: the `--with-builds` option, a GitHub
+repository, and a subdirectory that contains a `Dockerfile`. For a tool you can also select the target
+registry and the image tag. See [Deploy a tool](../workloads/deploy-a-tool.md).
 
 ## Next
 
-- [MCP Gateway](../workloads/mcp-gateway.md) — register tools centrally.
-- [Install the CLI](cli.md) — do all of this from a terminal.
+- [MCP Gateway](../concepts/experiments/mcp-gateway.md) registers each tool one time.
+- [Install the CLI](cli.md) does these tasks from a terminal.

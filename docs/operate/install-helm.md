@@ -1,28 +1,27 @@
 ---
 title: Install with Helm
-description: Install from OCI charts or from the repository, without the setup scripts.
+description: Install from OCI charts or from the repository, without the scripts.
 sidebar_position: 4
 ---
 
-Use this when you are installing onto a cluster the setup scripts do not cover, or you need to control
-each chart yourself.
+Use this method for a cluster that the scripts do not support, or when you must control each chart.
 
 :::info Beta
-Chart-level installs work but are less exercised than the Kind and OpenShift scripts. Expect to do more
-by hand.
+An installation from the charts operates. The project tests it less than it tests the Kind script and the
+OpenShift script. Expect more manual steps.
 :::
 
-Rossoctl is three charts, installed in this order:
+Rossoctl has three charts. Install them in this order.
 
-| Chart | Contains |
+| Chart | Contents |
 | --- | --- |
-| `rossoctl-deps` | SPIRE, cert-manager, Keycloak, and the other dependencies |
+| `rossoctl-deps` | SPIRE, cert-manager, Keycloak and the other dependencies |
 | `mcp-gateway` | The MCP Gateway |
-| `rossoctl` | The operator, webhook, backend, and console |
+| `rossoctl` | The operator, the webhook, the backend and the console |
 
-## Option A: from OCI charts
+## Method A: from the OCI charts
 
-Find the latest release tag:
+Get the most recent release tag:
 
 ```bash
 LATEST_TAG=$(git ls-remote --tags --sort="v:refname" \
@@ -30,11 +29,11 @@ LATEST_TAG=$(git ls-remote --tags --sort="v:refname" \
   | tail -n1 | sed 's|.*refs/tags/v||; s/\^{}//')
 ```
 
-Prepare secrets. Download
+Prepare the secrets. Get
 [`.secrets_template.yaml`](https://github.com/rossoctl/rossoctl/blob/main/charts/rossoctl/.secrets_template.yaml),
-save it as `.secrets.yaml`, and fill in the required values.
+save it as `.secrets.yaml`, and add your values.
 
-Dependencies:
+Install the dependencies:
 
 ```bash
 helm install rossoctl-deps \
@@ -44,7 +43,7 @@ helm install rossoctl-deps \
   --set spire.trustDomain="${DOMAIN}"
 ```
 
-MCP Gateway:
+Install the MCP Gateway:
 
 ```bash
 LATEST_GATEWAY_TAG=$(skopeo list-tags docker://ghcr.io/rossoctl/charts/mcp-gateway | jq -r '.Tags[-1]')
@@ -54,7 +53,7 @@ helm install mcp-gateway oci://ghcr.io/rossoctl/charts/mcp-gateway \
   --version "$LATEST_GATEWAY_TAG"
 ```
 
-Rossoctl:
+Install Rossoctl:
 
 ```bash
 helm upgrade --install rossoctl \
@@ -67,19 +66,20 @@ helm upgrade --install rossoctl \
   --set agentOAuthSecret.useServiceAccountCA=false
 ```
 
-:::note The last three flags are an OpenShift CA workaround
-`useServiceAccountCA=false` and the explicit `spiffePrefix` work around OpenShift's service-account CA
-handling. Keep them on OpenShift. On other clusters, try without them first.
+:::note The last three settings are for OpenShift
+The `useServiceAccountCA=false` settings and the explicit `spiffePrefix` value correct the certificate
+authority behaviour of OpenShift. Keep them on OpenShift. On a different cluster, try the command without
+them first.
 :::
 
-## Option B: from the repository
+## Method B: from the repository
 
 ```bash
 git clone https://github.com/rossoctl/rossoctl.git
 cd rossoctl
 
 cp charts/rossoctl/.secrets_template.yaml charts/rossoctl/.secrets.yaml
-# edit .secrets.yaml
+# Add your values to .secrets.yaml
 
 helm dependency update ./charts/rossoctl-deps/
 helm dependency update ./charts/rossoctl/
@@ -105,9 +105,9 @@ helm upgrade --install rossoctl ./charts/rossoctl/ \
   --set agentOAuthSecret.useServiceAccountCA=false
 ```
 
-## Feature flags
+## The feature flags
 
-Set them at install, or afterwards with `--reuse-values`:
+Set a flag during the installation, or later with the `--reuse-values` option:
 
 ```bash
 helm upgrade rossoctl ./charts/rossoctl/ \
@@ -116,16 +116,17 @@ helm upgrade rossoctl ./charts/rossoctl/ \
   --set featureFlags.externalSkills=true
 ```
 
-See [Skills](../workloads/skills.md) and [Agent context](../workloads/agent-context.md) for what each enables.
+For the function of each flag, see [Skills](../concepts/experiments/skills.md) and
+[Agent context](../concepts/experiments/agent-context.md).
 
-## Verify
+## Confirm the installation
 
 ```bash
 kubectl get deployments -n rossoctl-system
 kubectl get daemonsets -n zero-trust-workload-identity-manager
 ```
 
-## Related
+## Related pages
 
-- [Install options](../reference/install-options.md).
-- [Troubleshooting](troubleshooting.md).
+- [Install options](../reference/install-options.md)
+- [Troubleshooting](troubleshooting.md)

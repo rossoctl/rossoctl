@@ -1,31 +1,32 @@
 ---
 title: Deploy a tool
-description: Package and deploy an MCP tool, and connect agents to it.
+description: Package an MCP tool, deploy it, and connect an agent to it.
 sidebar_position: 4
 ---
 
-An MCP tool gives agents access to an external service, API, or dataset. Deploying one works like
-deploying an agent — the differences are in the ports, the registry options, and how agents find it.
+An MCP tool gives an agent access to an external service, an interface or a set of data. The procedure
+is the procedure for an agent. The differences are the ports, the registry options, and the method that
+an agent uses to find the tool.
 
-## What makes a tool
+## What a tool must be
 
-A container that speaks [MCP](https://modelcontextprotocol.io) over HTTP:
+A tool is a container that uses the [MCP protocol](https://modelcontextprotocol.io) over HTTP:
 
-```
-POST /mcp     # MCP JSON-RPC messages
-```
+| Endpoint | Method | Function |
+| --- | --- | --- |
+| `/mcp` | `POST` | Receives MCP messages |
 
-The default service port is `9090`. Examples in several languages are in
-[rossoctl/examples/mcp](https://github.com/rossoctl/examples/tree/main/mcp).
+The default service port is `9090`. For examples in several languages, see
+[examples/mcp](https://github.com/rossoctl/examples/tree/main/mcp).
 
-## From a container image
+## Deploy from a container image
 
-### Console
+### With the console
 
-**Tools → Import new tool → Deploy from existing image.** Give it the image URI, add any environment
-variables it needs, and deploy.
+Select **Tools**, then **Import new tool**, then **Deploy from existing image**. Enter the image
+address, add the environment variables that the tool needs, and select **Deploy**.
 
-### CLI
+### With the CLI
 
 ```bash
 rossoctl tools import from-image \
@@ -35,8 +36,8 @@ rossoctl tools import from-image \
 rossoctl tools wait weather-mcp
 ```
 
-Set ports with `--ports`, as `name:port:targetPort[:protocol]`. The default is
-`http:9090:9090:TCP`, and a bare number means `http:<port>:<port>:TCP`:
+To set the ports, use the `--ports` option. The format is `name:port:targetPort[:protocol]`. The default
+is `http:9090:9090:TCP`. A number alone means `http:<port>:<port>:TCP`.
 
 ```bash
 rossoctl tools import from-image --name weather-mcp \
@@ -44,55 +45,59 @@ rossoctl tools import from-image --name weather-mcp \
   --ports grpc:9000:9001:TCP,8080
 ```
 
-Every other flag matches [Deploy an agent](deploy-an-agent.md#from-a-container-image).
+Each other option is the option for an agent. See
+[Deploy an agent](deploy-an-agent.md#deploy-from-a-container-image).
 
-## From source
+## Build from source
 
-Same requirements as agents: `--with-builds`, GitHub, and a subdirectory with a `Dockerfile`.
+The requirements are the requirements for an agent: the `--with-builds` option, a GitHub repository, and
+a subdirectory that contains a `Dockerfile`.
 
-Tools additionally let you set where the built image goes:
+For a tool you can also select the destination of the image:
 
-| Field | Meaning |
+| Field | Function |
 | --- | --- |
-| Registry URL | Where to push. `registry.cr-system.svc.cluster.local:5000` for the in-cluster registry, or `quay.io/myorg`. |
-| Registry Secret | The Kubernetes Secret with registry credentials. Required for external registries. |
-| Image tag | Defaults to `v0.0.1`. |
+| Registry URL | Where to send the image. Use `registry.cr-system.svc.cluster.local:5000` for the registry in the cluster, or an address such as `quay.io/myorg`. |
+| Registry Secret | The Kubernetes Secret that holds the registry credentials. It is necessary for an external registry. |
+| Image tag | The default is `v0.0.1`. |
 
-Build strategy is chosen from the registry, as it is for agents.
+Rossoctl selects the build strategy from the registry, in the same way that it does for an agent.
 
-:::note Builds take longer than the default wait
-`rossoctl tools wait` defaults to 60 seconds, which a source build will exceed. Allow more:
+:::note A build needs more time than the default limit
+The `rossoctl tools wait` command has a default limit of 60 seconds. A build from source needs more
+time. Give a longer limit:
 
 ```bash
 rossoctl tools wait weather-mcp --timeout 10m
 ```
 
-A failed build reports `Build Failed` and ends the wait immediately rather than using the whole
-timeout.
+If the build fails, the command reports `Build Failed` and exits at once. It does not wait for the time
+limit.
 :::
 
 ## Connect an agent
 
-Set `MCP_URL` on the agent to the tool's in-cluster address:
+Set `MCP_URL` on the agent to the address of the tool in the cluster:
 
 ```
 MCP_URL=http://weather-tool:8080/mcp
 ```
 
-For several tools directly, use `MCP_URLS` with a comma-separated list. For many tools shared across
-many agents, use the [MCP Gateway](mcp-gateway.md) instead.
+For more than one tool, use `MCP_URLS` with a list that commas separate. For many tools and many
+agents, use the [MCP Gateway](../concepts/experiments/mcp-gateway.md).
 
-Patch a running agent:
+To change an agent that already runs:
 
 ```bash
 kubectl set env deployment/weather-service -n team1 \
   MCP_URL="http://weather-tool:8080/mcp"
 ```
 
-The sample agents in [rossoctl/examples](https://github.com/rossoctl/examples) ship `.env.openai` and
-`.env.ollama` files whose defaults assume the tool is in the **same namespace** as the agent.
+The example agents in [rossoctl/examples](https://github.com/rossoctl/examples) have an `.env.openai`
+file and an `.env.ollama` file. The default values in those files assume that the tool is in the same
+namespace as the agent.
 
-## Inspect a tool
+## Examine a tool
 
 ```bash
 rossoctl tools list
@@ -101,8 +106,8 @@ rossoctl tools get weather-mcp
 rossoctl tools get weather-mcp --json
 ```
 
-In the console, the **MCP Gateway** page can launch the MCP Inspector against a registered tool, which
-is the quickest way to see the tool list a tool actually advertises.
+In the console, the **MCP Gateway** page can start the MCP Inspector for a registered tool. The Inspector
+is the fastest method to read the list of functions that a tool gives.
 
 ## Delete a tool
 
@@ -110,9 +115,10 @@ is the quickest way to see the tool list a tool actually advertises.
 rossoctl tools delete weather-mcp
 ```
 
-Agents pointing at it will start failing their tool calls. Update their `MCP_URL` first.
+An agent that has the address of that tool then fails each tool call. Change the `MCP_URL` value of each
+such agent first.
 
-## Related
+## Related pages
 
-- [MCP Gateway](mcp-gateway.md) — one endpoint for many tools.
-- [Agents and tools](../concepts/agents-and-tools.md) — the two protocols.
+- [MCP Gateway](../concepts/experiments/mcp-gateway.md) gives one address for all tools.
+- [Agents and tools](../concepts/core/agents-and-tools.md) describes the two protocols.

@@ -1,52 +1,58 @@
 ---
-title: "Quickstart: your laptop"
+title: Quickstart on a laptop
 sidebar_label: Quickstart — laptop
-description: Run Cortex as a single binary and watch what your coding agent sends.
+description: Run RossoCortex as one program and see the traffic of your agent.
 sidebar_position: 2
 ---
 
-Cortex is the Rossoctl data plane. It runs as one binary on macOS or Linux, sits in your agent's
-request path, and shows you the model calls, tool calls, and agent-to-agent messages as they
-happen. No Kubernetes.
+RossoCortex is the data plane of Rossoctl. It runs as one program on macOS or Linux. It is a proxy on the request path of your agent. It shows each model call, each tool call and each
+agent message as it happens. You do not need Kubernetes.
 
-This takes about five minutes.
+This procedure needs approximately 5 minutes.
 
-## What you need
+## Before you start
 
-- macOS or Linux, amd64 or arm64.
-- A coding agent. The installer sets up [Claude Code](https://claude.com/claude-code) for you;
-  any agent works, see [Other agents](#other-agents).
+You need:
 
-## Install
+- macOS or Linux, on amd64 or arm64.
+- An agent. The installer configures [Claude Code](https://claude.com/claude-code) for you. Any agent
+  operates. See [Other agents](#other-agents).
+
+## Step 1: install the program
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rossoctl/cortex/main/authbridge/install.sh \
   | sh -s -- --claude-code
 ```
 
-The script asks before it changes your Claude Code settings, then runs Cortex as a background
-service that survives crashes and logins.
+The script asks for your permission before it changes the settings of Claude Code. It then runs
+RossoCortex as a background service. The service restarts after a failure and after you sign in again.
 
 :::note
-The URL points at `main`, but the script re-runs the copy from the newest release, so
-`curl | sh` does not execute unreleased code. Pass `--ref` to override that.
+The address of the script is on the `main` branch. The script then runs the copy from the most recent
+release. The command therefore does not run unreleased code. To select a different version, use the
+`--ref` option.
 :::
 
-## Watch the traffic
+## Step 2: watch the traffic
 
-Open two terminals.
+Open two terminals. In the first terminal, run the viewer:
 
 ```bash
 abctl
 ```
 
+In the second terminal, run your agent:
+
 ```bash
 claude
 ```
 
-Use Claude as usual — there are no environment variables to set. Its calls stream into `abctl`.
+Use Claude Code in the normal way. There is no environment variable to set. The calls of the agent
+appear in `abctl`.
 
-Cortex only reads this traffic. Nothing is rewritten unless you turn on a plugin that does so.
+RossoCortex reads this traffic. It does not change the traffic until you enable a plugin that changes
+it.
 
 ## Manage the service
 
@@ -58,15 +64,15 @@ abctl service start
 
 ## Other agents
 
-Any agent works. Point it at the proxy and trust the local CA:
+Any agent operates with RossoCortex. Configure the agent with two values:
 
-- Proxy: `localhost:47600`
-- CA certificate: `~/.cortex/ca/ca.crt`
+- The proxy address: `localhost:47600`
+- The certificate authority file: `~/.cortex/ca/ca.crt`
 
-Most tools read `HTTP_PROXY` and `HTTPS_PROXY`, plus one of `NODE_EXTRA_CA_CERTS`,
-`REQUESTS_CA_BUNDLE`, or `SSL_CERT_FILE` for the CA.
+Most programs read the `HTTP_PROXY` and `HTTPS_PROXY` variables. For the certificate, a program reads
+`NODE_EXTRA_CA_CERTS`, `REQUESTS_CA_BUNDLE` or `SSL_CERT_FILE`.
 
-If you would rather not set those yourself, the Rossoctl CLI does it for you and cleans up on exit:
+The Rossoctl CLI can set these variables for you, and remove them when the command ends:
 
 ```bash
 rossoctl authbridge exec --config ./authbridge.yaml -- claude "explain this repo"
@@ -76,9 +82,9 @@ See [Install the CLI](cli.md).
 
 ## Next
 
-- [Reduce token cost](../guardrails/token-cost.md) — strip tool definitions your agent never calls,
-  and cap spend per session.
-- [Context compaction](../guardrails/context-compaction.md) — shrink large tool output before it
-  reaches the model.
-- [RossoCortex](../concepts/cortex.md) — how the pipeline you just installed works.
-- [Quickstart: Kubernetes](kubernetes.md) — when you want deployment, discovery, and the UI.
+- To reduce the token cost of your agent, read
+  [Cost control](../concepts/experiments/cost-control.md).
+- To make large tool output smaller, read
+  [Context compaction](../concepts/experiments/context-compaction.md).
+- To understand the program that you installed, read [RossoCortex](../concepts/core/cortex.md).
+- To get deployment, discovery and the web console, read [Quickstart on Kubernetes](kubernetes.md).

@@ -63,7 +63,7 @@ Value is established in layers, escalating with tier:
    or carries a one-line justification for why it is worthwhile opportunistic work.
 3. **Working demo + example (mandatory, Tier 1+):** a runnable demonstration of the
    feature delivering its value: a demo script, an example agent/tool, or a
-   documented reproducible walkthrough (e.g. under `docs/resources/` or `examples/`). It
+   documented reproducible walkthrough (e.g. under `docs/resources.md` or `examples/`). It
    **must run in the required baseline environment** (local Kind + laptop), which
    ties this pillar to Pillar 4. For Tier 2, the demo covers the primary
    end-to-end use-case, not just a happy-path snippet.
