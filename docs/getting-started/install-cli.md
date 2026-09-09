@@ -1,7 +1,7 @@
 ---
-title: Install the CLI
+title: Install the cluster CLI
 description: Test agents and administer with a command line
-sidebar_label: Install the CLI
+sidebar_label: Install the cluster CLI
 sidebar_position: 60
 ---
 
