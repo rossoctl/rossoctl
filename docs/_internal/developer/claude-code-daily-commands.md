@@ -130,5 +130,5 @@ All skills organized by how often you'll use them.
 ## Related Documentation
 
 - [Claude Code Development Guide](./claude-code.md) - Setup, TDD/RCA workflows, safety
-- [Skills Index](../../.claude/skills/README.md) - Complete skill tree
-- [Script Reference](../../.github/scripts/local-setup/README.md) - Deployment scripts
+- [Skills Index](../../../.claude/skills/README.md) - Complete skill tree
+- [Script Reference](../../../.github/scripts/local-setup/README.md) - Deployment scripts

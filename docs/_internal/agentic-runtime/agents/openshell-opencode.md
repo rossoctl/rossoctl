@@ -149,7 +149,7 @@ Same as openshell-claude — all supervisor protection layers active in the base
 ## 9. Skill Execution
 
 OpenCode uses OpenAI-compatible APIs and can route through LiteLLM. The
-`run_opencode_in_sandbox()` helper in [`conftest.py`](../../../rossoctl/tests/e2e/openshell/conftest.py)
+`run_opencode_in_sandbox()` helper in [`conftest.py`](../../../../rossoctl/tests/e2e/openshell/conftest.py)
 creates a Sandbox CR, injects `OPENAI_API_KEY` from the `litellm-virtual-keys`
 secret, and runs `opencode run` via `kubectl exec`.
 

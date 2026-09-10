@@ -5,7 +5,7 @@ draft: true       # excluded from https://www.rossoctl.dev/
 # Use Cases
 
 Scenarios that define the Rossoctl vision across verticals. Each maps to a
-persona from [PERSONAS_AND_ROLES.md](../PERSONAS_AND_ROLES.md). Detailed
+persona from [PERSONAS_AND_ROLES.md](../../PERSONAS_AND_ROLES.md). Detailed
 drill-downs are linked where they exist.
 
 For the taxonomy of agent operational models these scenarios target (read-only

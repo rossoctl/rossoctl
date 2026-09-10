@@ -12,7 +12,7 @@ This directory contains comprehensive development guides for working with Rossoc
 |-------------|----------|-------|
 | **Kind** | Local development, quick iteration, no cloud resources | [kind.md](./kind.md) |
 | **HyperShift** | Create OpenShift clusters on AWS, CI testing, cloud-native features | [hypershift.md](./hypershift.md) |
-| **OpenShift** | Standard RHOCP clusters, persistent environments | Under construction - see [Installation Guide](../getting-started/install.md) |
+| **OpenShift** | Standard RHOCP clusters, persistent environments | Under construction - see [Installation Guide](../../operate/install-kubernetes.md) |
 | **Claude Code** | AI-assisted development with TDD, RCA, and debugging skills | [claude-code.md](./claude-code.md) |
 | **Daily Commands** | Quick reference for daily/weekly Claude Code skills | [claude-code-daily-commands.md](./claude-code-daily-commands.md) |
 
@@ -24,7 +24,7 @@ Do you have an OpenShift cluster?
 │
 └─ Yes → Do you need to create the cluster?
          ├─ Yes → Use [HyperShift](./hypershift.md) (hosted control plane on AWS)
-         └─ No → See [Installation Guide](../getting-started/install.md) (OpenShift dev guide under construction)
+         └─ No → See [Installation Guide](../../operate/install-kubernetes.md) (OpenShift dev guide under construction)
 ```
 
 ## Environment Comparison
@@ -94,8 +94,8 @@ docs/developer/
 
 ## Related Documentation
 
-- [Installation Guide](../getting-started/install.md) - Comprehensive installation options
+- [Installation Guide](../../operate/install-kubernetes.md) - Comprehensive installation options
 - [Developer Guide](../dev-guide.md) - Git workflow, UI development
-- [Components](../concepts/components.md) - Architecture and component details
-- [Local Setup Scripts](../../.github/scripts/local-setup/README.md) - Script reference and quick commands (primary developer flow reference)
-- [Claude Code Skills](../../.claude/skills/README.md) - Skill index and workflow diagrams
+- [Components](../../concepts/core/architecture.md) - Architecture and component details
+- [Local Setup Scripts](../../../.github/scripts/local-setup/README.md) - Script reference and quick commands (primary developer flow reference)
+- [Claude Code Skills](../../../.claude/skills/README.md) - Skill index and workflow diagrams

@@ -37,8 +37,8 @@ Create `FEATURE_ACCEPTANCE.md` at the repo root with exactly this content:
 # Feature Acceptance Standard
 
 This document defines what makes a new feature good enough to be accepted into a
-Rossoctl release. It complements — and does not replace — [CONTRIBUTING.md](../../../CONTRIBUTING.md)
-(how to contribute) and [GOVERNANCE.md](../../../GOVERNANCE.md) (who decides). It defines
+Rossoctl release. It complements — and does not replace — [CONTRIBUTING.md](../../../../CONTRIBUTING.md)
+(how to contribute) and [GOVERNANCE.md](../../../../GOVERNANCE.md) (who decides). It defines
 only *what makes a feature acceptable*.
 
 Maintainers apply this standard at review time. It is authoritative: a maintainer
@@ -78,7 +78,7 @@ any point.
   `rossoctl/backend/app/core/config.py` and is exposed via
   `GET /api/v1/config/features`.
 - DCO sign-off on every commit (`git commit -s`).
-- Reviewed and approved per [GOVERNANCE.md](../../../GOVERNANCE.md).
+- Reviewed and approved per [GOVERNANCE.md](../../../../GOVERNANCE.md).
 
 ### Pillar 2 — Documentation *(all tiers; scope scales with tier)*
 
@@ -172,7 +172,7 @@ Immediately after that line, add a blank line and this paragraph:
 
 ```markdown
 Before a feature is accepted into a release it must meet the project's
-[Feature Acceptance Standard](../../../FEATURE_ACCEPTANCE.md) — a tiered bar covering code
+[Feature Acceptance Standard](../../../../FEATURE_ACCEPTANCE.md) — a tiered bar covering code
 quality, documentation, demonstrated value, and environment portability. The pull
 request template walks you through the applicable checklist.
 ```
@@ -222,7 +222,7 @@ Closes #
 
 ## Checklist
 
-Complete the items for your tier. See [FEATURE_ACCEPTANCE.md](../../../FEATURE_ACCEPTANCE.md).
+Complete the items for your tier. See [FEATURE_ACCEPTANCE.md](../../../../FEATURE_ACCEPTANCE.md).
 
 ### Pillar 1 — Code quality (all tiers)
 

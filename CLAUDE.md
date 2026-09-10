@@ -58,7 +58,7 @@ Skills in `.claude/skills/` provide guided workflows:
 | Testing | `tdd:hypershift`, `testing:kubectl-debugging`, `k8s:live-debugging` |
 | Git | `git:worktree` |
 
-See [docs/concepts/skills.md](docs/concepts/experiments/skills.md) for the skill index and [docs/developer/README.md](docs/_internal/developer/README.md) for Claude Code workflows.
+See [docs/concepts/experiments/skills.md](docs/concepts/experiments/skills.md) for the skill index and [docs/_internal/developer/README.md](docs/_internal/developer/README.md) for Claude Code workflows.
 
 ## HyperShift Cluster Access
 

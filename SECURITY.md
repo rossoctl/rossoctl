@@ -9,7 +9,7 @@ please report it responsibly.
 
 1. **Do NOT create public GitHub issues** for security vulnerabilities
 2. **GitHub Security Advisories (preferred)**: Report vulnerabilities privately via
-   [GitHub Security Advisories](../../security/advisories/new)
+   [GitHub Security Advisories](https://github.com/rossoctl/rossoctl/security/advisories/new)
 3. **Email**: Send reports to **rossoctl-maintainers@googlegroups.com**
 4. **Include**: A clear description of the vulnerability, steps to reproduce,
    affected versions, and potential impact

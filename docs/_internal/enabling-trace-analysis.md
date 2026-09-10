@@ -11,7 +11,7 @@ the rossoctl chart renders the Deployment/Service/Route automatically — no
 separate install is required.
 
 Like all Rossoctl features, it is gated behind a feature flag that is **off by
-default** (see the Feature Flags section of [CLAUDE.md](../CLAUDE.md)).
+default** (see the Feature Flags section of [CLAUDE.md](../../CLAUDE.md)).
 
 ## Build prerequisite: docker buildx
 

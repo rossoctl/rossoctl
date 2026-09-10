@@ -286,6 +286,6 @@ flowchart TD
 
 ## Related Documentation
 
-- [Skills README](../../.claude/skills/README.md) — complete skill tree and workflow diagrams
+- [Skills README](../../../.claude/skills/README.md) — complete skill tree and workflow diagrams
 - [AI Ops](../ai-ops/README.md) — broader Claude Code workflows
-- [CLAUDE.md](../../CLAUDE.md) — repository-level instructions
+- [CLAUDE.md](../../../CLAUDE.md) — repository-level instructions

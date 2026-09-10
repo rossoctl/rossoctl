@@ -13,7 +13,7 @@ This guide covers development workflows for multiple personas in the Rossoctl ec
 - **Extensions Developers** → Custom operators and platform extensions
 - **MCP Gateway Operators** → Protocol routing and Envoy configuration
 
-**👥 [Review Complete Personas Documentation](../PERSONAS_AND_ROLES.md#1-developer-personas)** to identify your primary role.
+**👥 [Review Complete Personas Documentation](../../PERSONAS_AND_ROLES.md#1-developer-personas)** to identify your primary role.
 
 ## Working with Git
 
@@ -54,7 +54,7 @@ pre-commit install --hook-type pre-commit --hook-type commit-msg
 The `pre-commit` hooks run linters and formatters before each commit. The
 `commit-msg` hook automatically rewrites AI `Co-authored-by` trailers to
 `Assisted-By` so that AI tools don't inflate GitHub contributor stats (see
-[Commit Attribution Policy](../CLAUDE.md#commit-attribution-policy)).
+[Commit Attribution Policy](../../CLAUDE.md#commit-attribution-policy)).
 
 To run the pre-commit hooks against all files manually:
 ```sh
@@ -79,7 +79,7 @@ functionality without a flag will be asked to add one.
    conditional import pattern.
 4. Enable via environment variable: `ROSSOCTL_FEATURE_FLAG_<NAME>=true`.
 
-See [CLAUDE.md — Feature Flags](../CLAUDE.md#feature-flags-required) for the
+See [CLAUDE.md — Feature Flags](../../CLAUDE.md#feature-flags-required) for the
 full policy and current flag inventory.
 
 ### Making a PR
@@ -630,7 +630,7 @@ The repository includes GitHub Actions workflows for automated HyperShift testin
 
 For platform administrators deploying new management clusters, see:
 
-- [Terraform Management Cluster Guide](../terraform/README.md) - Complete deployment workflow
+- [Terraform Management Cluster Guide](../../terraform/README.md) - Complete deployment workflow
 - [Architecture Overview](../ARCHITECTURE-4.21.md) - Dual cluster strategy and design decisions
 - [Quick Start Guide](../QUICKSTART-4.21.md) - Step-by-step deployment (90 minutes)
 
@@ -674,7 +674,7 @@ Each cluster gets isolated AWS resources and namespace on the management cluster
 
 - [HyperShift Documentation](https://hypershift-docs.netlify.app/) - Official HyperShift docs
 - [MCE Documentation](https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.10/html/multicluster_engine/multicluster_engine_overview) - MultiCluster Engine overview
-- [Credential Setup Script](../.github/scripts/hypershift/setup-hypershift-ci-credentials.sh) - Detailed script documentation
+- [Credential Setup Script](../../.github/scripts/hypershift/setup-hypershift-ci-credentials.sh) - Detailed script documentation
 - [Cleanup Test Results](../CLEANUP-TEST-RESULTS.md) - Known cleanup issues and workarounds
 
 

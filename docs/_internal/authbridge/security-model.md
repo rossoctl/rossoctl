@@ -192,5 +192,5 @@ cannot forge credentials (only the proxy has the workload identity to exchange t
 - [Identity in Agentic Platforms: Enabling Secure Least-Privilege Access](https://medium.com/rossoctl-the-agentic-platform/identity-in-agentic-platforms-enabling-secure-least-privilege-access-996527f1c983)
 - [Security in and around MCP, Part 2: MCP in Deployment](https://medium.com/rossoctl-the-agentic-platform/security-in-and-around-mcp-part-2-mcp-in-deployment-65bdd0ba9dc6)
 - [Security in and around MCP, Part 3: MCP Server Identity](https://medium.com/rossoctl-the-agentic-platform/security-in-and-around-mcp-part-3-mcp-server-identity-10d6768d96c1)
-- [Rossoctl Identity Guide](../concepts/identity-guide.md)
+- [Rossoctl Identity Guide](../../security/index.md)
 - [AuthBridge Architecture](https://github.com/rossoctl/cortex/blob/main/authbridge/README.md)

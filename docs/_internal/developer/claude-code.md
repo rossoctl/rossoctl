@@ -640,5 +640,5 @@ Without `--max-iterations` or `--completion-promise`, the loop runs indefinitely
 
 - [Kind Development Guide](./kind.md) - Local development with Kind
 - [HyperShift Development Guide](./hypershift.md) - OpenShift on AWS
-- [Script Reference](../../.github/scripts/local-setup/README.md) - All deployment and testing scripts
-- [Skills Index](../../.claude/skills/README.md) - Complete skill tree and workflow diagrams
+- [Script Reference](../../../.github/scripts/local-setup/README.md) - All deployment and testing scripts
+- [Skills Index](../../../.claude/skills/README.md) - Complete skill tree and workflow diagrams

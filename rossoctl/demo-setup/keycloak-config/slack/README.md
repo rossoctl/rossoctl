@@ -1,6 +1,6 @@
 # Keycloak Configuration for Authorized Slack Research Agent Demo
 
-This script configures Keycloak for the [Authorized Slack Research Agent Demo](../../../../docs/demos/demo-slack-research-agent.md), where logging into Rossoctl with accounts of different permissions affects the results those accounts recieve.
+This script configures Keycloak for the [Authorized Slack Research Agent Demo](../../../../docs/resources.md), where logging into Rossoctl with accounts of different permissions affects the results those accounts recieve.
 
 This script performs the following steps:
 1) Create the `slack-partial-access` client scope

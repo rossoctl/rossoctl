@@ -4,7 +4,7 @@ draft: true       # excluded from https://www.rossoctl.dev/
 
 # Developing a Rossoctl Application
 
-This guide explains how to build applications that integrate with the Rossoctl platform, using the [app-demo example](../rossoctl/examples/app-demo/) as a reference implementation.
+This guide explains how to build applications that integrate with the Rossoctl platform, using the [app-demo example](../../rossoctl/examples/app-demo/) as a reference implementation.
 
 ## Architecture Overview
 
@@ -40,7 +40,7 @@ Browser  ──OIDC──>  Keycloak (client: your-app)
 - Simplifies the frontend by providing a single API endpoint
 - Handles response transformation (e.g., streaming to JSON conversion)
 
-**Example implementation:** See [`rossoctl/examples/app-demo/backend/`](../rossoctl/examples/app-demo/backend/)
+**Example implementation:** See [`rossoctl/examples/app-demo/backend/`](../../rossoctl/examples/app-demo/backend/)
 
 The app-demo backend is a FastAPI service that:
 - Proxies `/api/v1/namespaces` → Rossoctl Backend
@@ -59,7 +59,7 @@ The app-demo backend is a FastAPI service that:
 - Serves the Rossoctl Dashboard UI
 - Manages feature flags, integrations, and platform configuration
 
-**Location:** Deployed as part of the Rossoctl platform (see [`charts/rossoctl/templates/ui.yaml`](../charts/rossoctl/templates/ui.yaml))
+**Location:** Deployed as part of the Rossoctl platform (see [`charts/rossoctl/templates/ui.yaml`](../../charts/rossoctl/templates/ui.yaml))
 
 ## Why Two Backends?
 
@@ -158,13 +158,13 @@ This approach gives you the best balance of:
 
 To build your own Rossoctl application:
 
-1. **Review the app-demo example:** [`rossoctl/examples/app-demo/`](../rossoctl/examples/app-demo/)
+1. **Review the app-demo example:** [`rossoctl/examples/app-demo/`](../../rossoctl/examples/app-demo/)
 2. **Set up authentication:** Register your OAuth client with Keycloak
 3. **Implement your BFF:** Use the app-demo backend as a template
 4. **Build your frontend:** Connect to your BFF, which proxies to Rossoctl Backend
 5. **Deploy:** Use Kubernetes manifests similar to the app-demo
 
-For detailed implementation guidance, see the [app-demo README](../rossoctl/examples/app-demo/README.md).
+For detailed implementation guidance, see the [app-demo README](../../rossoctl/examples/app-demo/README.md).
 
 ## API Reference
 
@@ -204,11 +204,11 @@ async def list_agents(request: Request, namespace: str = ""):
         return JSONResponse(content=resp.json(), status_code=resp.status_code)
 ```
 
-For a complete implementation with streaming support, error handling, and authentication, see the [app-demo backend](../rossoctl/examples/app-demo/backend/).
+For a complete implementation with streaming support, error handling, and authentication, see the [app-demo backend](../../rossoctl/examples/app-demo/backend/).
 
 ## Next Steps
 
-- **Explore the app-demo:** [`rossoctl/examples/app-demo/`](../rossoctl/examples/app-demo/)
+- **Explore the app-demo:** [`rossoctl/examples/app-demo/`](../../rossoctl/examples/app-demo/)
 - **Learn about authentication:** [Identity Guide](../security/authbridge.md)
 - **Deploy your first agent:** [New Agent Guide](../workloads/deploy-an-agent.md)
 - **Understand the platform:** [Technical Details](../overview/architecture.md)

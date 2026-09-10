@@ -119,7 +119,7 @@ Replaces current lines 478–616. Anatomy:
 | Line 16 (TOC) | `- [Identity & Auth Bridge](#identity--auth-bridge)` | `- [Cortex](#cortex)` |
 | Line 188 (comment in AgentRuntime YAML) | `# ... triggers AuthBridge sidecar injection automatically.` | Reword to drop the retired name and the mechanism detail: `# ... enrolls the workload with Cortex automatically.` |
 | Lines 478–616 (section) | "Identity & Auth Bridge" section | Replaced with the Cortex structure above |
-| Line 724 (Related Documentation) | `- [Identity, Security, and Auth Bridge](../../concepts/identity-guide.md)` | `- [Cortex Identity Guide](../../concepts/identity-guide.md)` |
+| Line 724 (Related Documentation) | `- [Identity, Security, and Auth Bridge](../../../concepts/core/identity.md)` | `- [Cortex Identity Guide](../../../concepts/core/identity.md)` |
 
 ### Diagrams
 
