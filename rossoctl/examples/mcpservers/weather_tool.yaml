@@ -1,3 +1,13 @@
+# ServiceAccount for weather-tool
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: weather-tool
+  namespace: team1
+  labels:
+    app.kubernetes.io/name: weather-tool
+    app.kubernetes.io/managed-by: example
+---
 # Deployment for weather-tool MCP server
 # Tools are deployed as standard Kubernetes Deployments + Services
 apiVersion: apps/v1
@@ -27,6 +37,7 @@ spec:
         rossoctl.io/framework: Python
         app.kubernetes.io/name: weather-tool
     spec:
+      serviceAccountName: weather-tool
       securityContext:
         runAsNonRoot: true
         seccompProfile:

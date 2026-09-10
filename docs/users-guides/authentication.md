@@ -154,6 +154,75 @@ spire:
   enabled: true
 ```
 
+### Configuring per-agent token exchange routes
+
+When SPIFFE authentication is enabled, you can configure **per-agent token exchange routes** to specify which destinations each agent can call and what SPIFFE audiences to request. This implements the principle of least privilege - each agent only requests tokens for the specific services it needs to access.
+
+#### Without routes (default behavior)
+
+By default, when `clientAuthType: federated-jwt` is set, all agents use SPIFFE authentication but with `default_policy: passthrough` - no token exchange routes are configured. For testing/development, you can configure Keycloak's Fine-Grained Authorization Policy (FGAP) to allow all-to-all token exchange.
+
+**Note**: The E2E test setup script (`.github/scripts/token-exchange/60-configure-fgap.sh`) configures Keycloak to allow all clients to exchange tokens with all other clients. This is a **test-only shortcut** that violates least privilege and should not be used in production.
+
+#### With routes (production recommended)
+
+For production deployments, configure explicit routes on each agent's `AgentRuntime` CR:
+
+```yaml
+apiVersion: agent.rossoctl.dev/v1alpha1
+kind: AgentRuntime
+metadata:
+  name: weather-service
+  namespace: team1
+spec:
+  type: agent
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: weather-service
+  # Token exchange routes - only effective when namespace uses federated-jwt
+  auth:
+    outbound:
+      # Exact hostname matching
+      - destination:
+          host: "weather-tool-mcp.team1.svc.cluster.local"
+        audiences:
+          - "spiffe://localtest.me/ns/team1/sa/weather-tool"
+      
+      # Regex pattern matching
+      - destination:
+          hostRegex: ".*\\.team1\\.svc\\.cluster\\.local"
+        audiences:
+          - "spiffe://localtest.me/ns/team1/sa/default"
+```
+
+**How it works:**
+
+1. The operator's webhook reads `spec.auth.outbound` from the AgentRuntime CR
+2. Routes are injected into the per-agent AuthBridge ConfigMap at `pipeline.outbound.plugins[token-exchange].config.routes`
+3. When the agent makes outbound requests, AuthBridge matches destinations against route patterns
+4. For matching destinations, AuthBridge performs OAuth2 token exchange, requesting a SPIFFE token with the specified audiences
+5. The token is included in the `Authorization` header to the destination
+
+**Important notes:**
+
+- Routes are **only effective** when the namespace is configured with `clientAuthType: federated-jwt`
+- The authentication mode is **global** (namespace-level), not per-agent
+- Individual agents configure **only their routes**, not their authentication mode
+- Each agent should only request audiences for services it actually needs to call
+
+**SPIFFE ID format:**
+
+SPIFFE IDs follow the pattern: `spiffe://<trust-domain>/ns/<namespace>/sa/<serviceaccount>`
+
+Example:
+- Tool in `team1` namespace with `weather-tool` ServiceAccount
+- SPIFFE ID: `spiffe://localtest.me/ns/team1/sa/weather-tool`
+
+**Complete example:**
+
+See `rossoctl/examples/agents/weather_service_deployment.yaml` for a working example of an agent configured with token exchange routes.
+
 ### Disabling SPIFFE auth (reverting to client secrets)
 
 ```bash
