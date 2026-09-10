@@ -145,7 +145,7 @@ spec:
 
 **Agent Deployment**: Agents are now deployed as standard Kubernetes Deployments + Services
 (the old Component CRD from `rossoctl.operator.dev` has been removed).
-See `docs/plans/migrate-agent-crd-to-workloads.md` for details.
+See `docs/_internal/plans/migrate-agent-crd-to-workloads.md` for details.
 
 **Commands**:
 ```bash

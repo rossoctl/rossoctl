@@ -9,5 +9,5 @@ from the spec alone — no real backend required.
 - `seed.sh` — one-command demo seeding: creates the simulated tool from `openapi.json`
   in a target namespace and waits until it is Ready.
 
-See [docs/new-simulated-tool.md](../../../../docs/new-simulated-tool.md) for the full
+See [docs/new-simulated-tool.md](../../../../docs/_internal/new-simulated-tool.md) for the full
 walkthrough, prerequisites (LLM API key Secret, egress allow-listing), and lifecycle.

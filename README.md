@@ -15,7 +15,7 @@ Rossoctl is a set of platform primitives for agent security, resilience, reliabi
 
 It is open source, framework-neutral, and built on open standards, supporting [A2A](https://a2a-protocol.org/latest/) and [MCP](https://modelcontextprotocol.io).
 
-> **Get started** → [Quickstart](./docs/getting-started/install.md) · Learn more at [rossoctl.dev](https://rossoctl.dev/)
+> **Get started** → [Quickstart](./docs/get-started/kubernetes.md) · Learn more at [rossoctl.dev](https://rossoctl.dev/)
 
 ## The problem
 
@@ -79,7 +79,7 @@ cp charts/rossoctl/.secrets_template.yaml charts/rossoctl/.secrets.yaml
 scripts/kind/setup-rossoctl.sh --with-ui --with-spire --with-agent-sandbox --with-builds
 ```
 
-Use `scripts/kind/setup-rossoctl.sh --help` for all available options. For detailed instructions including OpenShift, refer to the [Installation Guide](./docs/getting-started/install.md).
+Use `scripts/kind/setup-rossoctl.sh --help` for all available options. For detailed instructions including OpenShift, refer to the [Installation Guide](./docs/operate/install-kubernetes.md).
 
 ### Access the UI
 
@@ -97,25 +97,27 @@ From the UI you can:
 - Test agents interactively
 - Monitor traces and network traffic
 
-To learn how to deploy agents and MCP tools, follow the **[Weather Agent Demo](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/weather-agent/demo-ui.md)** — the recommended getting-started tutorial that walks you through deploying an agent and tool via the UI and chatting with it end-to-end. For more demos, see the [full demo list](./docs/demos/README.md).
+To learn how to deploy agents and MCP tools, follow the **[Weather Agent Demo](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/weather-agent/demo-ui.md)** — the recommended getting-started tutorial that walks you through deploying an agent and tool via the UI and chatting with it end-to-end. For more demos, see the [full demo list](./docs/resources.md).
 
 ## Documentation
 
+Full documentation is at [rossoctl.dev/docs](https://rossoctl.dev/docs/).
+
 | Topic | Link |
 |-------|------|
-| **Installation** | [Installation Guide](./docs/getting-started/install.md) (Kind & OpenShift) |
-| **Components** | [Component Details](./docs/concepts/components.md) |
-| **Demos & Tutorials** | [Demo Documentation](./docs/demos/README.md) |
-| **Developing Rossoctl Apps** | [Application Development Guide](./docs/developing-rossoctl-app.md) · [App Demo Example](./rossoctl/examples/app-demo/README.md) |
-| **Import Your Own Agent** | [New Agent Guide](./docs/getting-started/new-agent.md) |
-| **Import Your Own Tool** | [New Tool Guide](./docs/getting-started/new-tool.md) |
-| **Skills Configuration & Usage** | [Skills Guide](./docs/concepts/skills.md) |
-| **Architecture Details** | [Technical Details](./docs/concepts/tech-details.md) |
-| **Identity, Security, and Auth Bridge** | [Identity and Auth Bridge](./docs/concepts/identity-guide.md) |
-| **Fine-Grained Zero-Trust Access Control** | [Access Control](./docs/access-control/README.md) |
-| **Developer Guide** | [Contributing](./docs/dev-guide.md) |
-| **Troubleshooting** | [Troubleshooting Guide](./docs/users-guides/troubleshooting.md) |
-| **Blog Posts** | [Rossoctl Blog](./docs/blogs.md) |
+| **Get started on your laptop** | [Quickstart — laptop](./docs/get-started/laptop.md) (no Kubernetes) |
+| **Get started on Kubernetes** | [Quickstart — Kubernetes](./docs/get-started/kubernetes.md) |
+| **What is ready, what is an experiment** | [Concepts](./docs/concepts/index.md) |
+| **Architecture** | [Architecture](./docs/concepts/core/architecture.md) |
+| **Bring your own agent** | [Bring your own agent](./docs/workloads/bring-your-own-agent.md) |
+| **Deploy agents and tools** | [Deploy an agent](./docs/workloads/deploy-an-agent.md) · [Deploy a tool](./docs/workloads/deploy-a-tool.md) |
+| **Skills** | [Skills](./docs/concepts/experiments/skills.md) |
+| **Identity, security, and AuthBridge** | [Security overview](./docs/security/index.md) · [AuthBridge](./docs/security/authbridge.md) |
+| **Install and operate** | [Install and operate](./docs/operate/index.md) |
+| **CLI, CRDs, glossary** | [Reference](./docs/reference/index.md) |
+| **Demos and examples** | [Resources](./docs/resources.md) |
+| **Troubleshooting** | [Troubleshooting](./docs/operate/troubleshooting.md) |
+| **Developer guide** | [Developer's Guide](./docs/_internal/dev-guide.md) |
 
 ## Supported Protocols
 

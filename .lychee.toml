@@ -28,6 +28,13 @@ exclude_path = [
   "vendor",
   "charts",
   ".claude",
+  # Engineering notes: plans, research, retrospectives, QA matrices and developer
+  # guides. Docusaurus already excludes these from the site through its default
+  # '**/_*/**' rule, so nothing here is published. Excluding them keeps this gate
+  # and the site build in agreement about what is internal, and stops a
+  # reorganisation of this tree from turning the gate red for links that no reader
+  # can reach.
+  "docs/_internal",
 ]
 
 # Accept these HTTP status codes as valid

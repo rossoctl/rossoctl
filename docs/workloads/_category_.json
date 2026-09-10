@@ -1,0 +1,5 @@
+{
+  "label": "Agents and tools",
+  "position": 3,
+  "link": { "type": "doc", "id": "workloads/index" }
+}

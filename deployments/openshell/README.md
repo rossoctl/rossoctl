@@ -143,5 +143,5 @@ KUBECONFIG=~/.kube/config uv run pytest \
 
 ## Architecture
 
-See [docs/agentic-runtime/openshell-integration.md](../../docs/agentic-runtime/openshell-integration.md)
+See [docs/agentic-runtime/openshell-integration.md](../../docs/_internal/agentic-runtime/openshell-integration.md)
 

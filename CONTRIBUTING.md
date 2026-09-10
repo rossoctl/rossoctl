@@ -10,12 +10,12 @@ We can't wait to collaborate with you!
 
 ### Developer's Guide
 
-Please follow our [Developer's Guide](./docs/dev-guide.md) where you can find comprehensive instructions
+Please follow our [Developer's Guide](./docs/_internal/dev-guide.md) where you can find comprehensive instructions
 for common development operations.
 
 ### Prerequisites
 
-Follow [installation](./docs/getting-started/install.md) instructions.
+Follow [installation](./docs/operate/install-kubernetes.md) instructions.
 
 ### Issues
 
@@ -54,7 +54,7 @@ The pull request template has been designed to assist you in communicating this 
 
 Smaller pull requests are typically easier to review and merge than larger ones. If your pull request is big, it is always recommended to collaborate with the maintainers to find the best way to divide it.
 
-See the [making PR](./docs/dev-guide.md#making-a-pr) document for detailed instructions.
+See the [making PR](./docs/_internal/dev-guide.md#making-a-pr) document for detailed instructions.
 
 Before a feature is accepted into a release it must meet the project's
 [Feature Acceptance Standard](./FEATURE_ACCEPTANCE.md), a tiered bar covering code
@@ -63,7 +63,7 @@ request template walks you through the applicable checklist.
 
 ## Releasing
 
-Maintainers: see the [Releasing Guide](./docs/releasing.md) for how to create
+Maintainers: see the [Releasing Guide](./docs/_internal/releasing.md) for how to create
 tags, pre-releases, and stable (GA) releases across the Rossoctl organization.
 
 ## Contributing Documentation

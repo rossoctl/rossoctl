@@ -2,7 +2,7 @@
 
 A standalone demo application that shows how a third-party app integrates with the Rossoctl platform: authenticate via Keycloak, discover deployed agents, and send tasks.
 
-> **📖 For architecture details and development guidance**, see the [Developing a Rossoctl Application Guide](../../../docs/developing-rossoctl-app.md).
+> **📖 For architecture details and development guidance**, see the [Developing a Rossoctl Application Guide](../../../docs/_internal/developing-rossoctl-app.md).
 
 ## Quick Start
 
@@ -354,6 +354,6 @@ This will:
 
 ## Learn More
 
-- **[Developing a Rossoctl Application Guide](../../../docs/developing-rossoctl-app.md)** - Architecture, design patterns, and best practices
-- **[Identity Guide](../../../docs/concepts/identity-guide.md)** - Authentication and authorization details
+- **[Developing a Rossoctl Application Guide](../../../docs/_internal/developing-rossoctl-app.md)** - Architecture, design patterns, and best practices
+- **[Identity Guide](../../../docs/concepts/core/identity.md)** - Authentication and authorization details
 - **[Rossoctl Documentation](../../../README.md)** - Full platform documentation

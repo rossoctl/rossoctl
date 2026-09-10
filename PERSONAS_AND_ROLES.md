@@ -1,4 +1,4 @@
-**DEPRECATED; the version in [docs/Users Guides](docs/users-guides/PERSONAS_AND_ROLES.md) will replace this file**
+**DEPRECATED; the version in [docs/Users Guides](docs/_internal/PERSONAS_AND_ROLES.md) will replace this file**
 
 # Rossoctl Project Personas and Roles Documentation
 
@@ -35,7 +35,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Getting Started**:
 
-1. Review instructions in [new-agent](docs/getting-started/new-agent.md) documentation
+1. Review instructions in [new-agent](docs/workloads/deploy-an-agent.md) documentation
 2. Clone [agent-examples](https://github.com/rossoctl/examples) repository
 3. Explore framework-specific examples (`a2a/slack_researcher`, `a2a/weather_service`)
 4. Use sample Dockerfiles and configurations as templates
@@ -292,7 +292,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 ### 2.3 Security and Identity Specialist
 
 **Description**: Administrators responsible for implementing and maintaining the zero-trust security model and identity management.
-Review Identity Patterns in [identity documentation](docs/concepts/identity-guide.md) for more information.
+Review Identity Patterns in [identity documentation](docs/security/authbridge.md) for more information.
 
 **Key Responsibilities**:
 
