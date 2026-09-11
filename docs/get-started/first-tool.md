@@ -1,7 +1,7 @@
 ---
 title: Connect your first tool
 description: Deploy an MCP tool and let an agent call it.
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 A tool gives an agent the ability to do work. A Rossoctl tool is a container that uses the

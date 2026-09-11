@@ -8,6 +8,8 @@ sidebar_position: 2
 RossoCortex is the data plane of Rossoctl. It runs as one program on macOS or Linux. It is a proxy on the request path of your agent. It shows each model call, each tool call and each
 agent message as it happens. You do not need Kubernetes.
 
+The traffic stays on your computer. RossoCortex does not send it to Rossoctl or to any other service.
+
 This procedure needs approximately 5 minutes.
 
 ## Before you start
@@ -51,8 +53,17 @@ claude
 Use Claude Code in the normal way. There is no environment variable to set. The calls of the agent
 appear in `abctl`.
 
+In `abctl observe`, press `Enter` on a session to see its events. Press `Enter` on an event to see
+its full content. Press `/` to filter the events by a substring match on the method. Press `q` to
+quit.
+
 RossoCortex reads this traffic. It does not change the traffic until you enable a plugin that changes
 it.
+
+## Step 3: read the numbers
+
+Each session shows a token count and a cost. To learn what each number means, and how to act on it,
+read [Read the numbers](reading-the-numbers.md).
 
 ## Manage the service
 
@@ -61,6 +72,14 @@ abctl service status
 abctl service stop
 abctl service start
 ```
+
+## Stop and remove
+
+To stop the traffic for one session, quit `abctl observe` with `q` and stop your agent. RossoCortex
+continues to run as a background service.
+
+To stop the service, and to remove it, read [Manage the service](#manage-the-service). The service
+holds no traffic after a stop. It reads traffic again after you start it.
 
 ## Other agents
 
@@ -82,9 +101,17 @@ See [Install the cluster CLI](cli.md).
 
 ## Next
 
+- To understand the numbers that `abctl observe` shows, read [Read the numbers](reading-the-numbers.md).
 - To reduce the token cost of your agent, read
   [Cost control](../concepts/experiments/cost-control.md).
 - To make large tool output smaller, read
   [Context compaction](../concepts/experiments/context-compaction.md).
 - To understand the program that you installed, read [RossoCortex](../concepts/core/cortex.md).
 - To get deployment, discovery and the web console, read [Quickstart on Kubernetes](kubernetes.md).
+
+## Give feedback
+
+Cortex on a laptop is new. If something did not work, or the install was not clear, tell us. Open the
+**Laptop feedback** form on
+[rossoctl/cortex](https://github.com/rossoctl/cortex/issues/new/choose), or write a message in
+[Slack](https://ibm.biz/rossoctl-slack).

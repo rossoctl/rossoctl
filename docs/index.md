@@ -18,6 +18,7 @@ code, if the agent uses the [A2A protocol](https://a2a-protocol.org/latest/).
 | Your goal | Start here | Time |
 | --- | --- | --- |
 | See the model calls and tool calls that your agent makes | [Quickstart on a laptop](get-started/laptop.md) | 5 minutes |
+| Understand the token counts and the cost of a session | [Read the numbers](get-started/reading-the-numbers.md) | — |
 | Run the platform and deploy an agent | [Quickstart on Kubernetes](get-started/kubernetes.md) | 20 minutes |
 | Put your own agent on the platform | [Bring your own agent](workloads/bring-your-own-agent.md) | — |
 | Review the security model | [Security](security/index.md) | — |
