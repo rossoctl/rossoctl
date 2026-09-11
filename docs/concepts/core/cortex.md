@@ -99,6 +99,9 @@ when the decision layer changes.
 
 ## Related pages
 
+- [Quickstart on a laptop](../../get-started/laptop.md) runs RossoCortex as one program on your computer.
+- [Read the numbers](../../get-started/reading-the-numbers.md) explains the token counts, the cost and
+  the latency that RossoCortex captures.
 - [Identity and trust](identity.md) explains where the identities come from.
 - [AuthBridge](../../security/authbridge.md) describes the two default plugins.
 - [Authentication flows](../../security/flows.md) contains the diagrams.

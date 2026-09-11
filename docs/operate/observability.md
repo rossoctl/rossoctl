@@ -100,8 +100,9 @@ that no person expected.
 The `--with-kiali` option installs Prometheus, which collects the standard metrics of each workload.
 
 For the token cost, RossoCortex is the source, because each model call passes through it. On your
-computer, `abctl observe` shows the cost as it happens. In a cluster, the budget plugins record and limit the
-cost. See [Cost control](../concepts/experiments/cost-control.md).
+computer, `abctl observe` shows the cost as it happens; to read those numbers, see
+[Read the numbers](../get-started/reading-the-numbers.md). In a cluster, the budget plugins record and
+limit the cost. See [Cost control](../concepts/experiments/cost-control.md).
 
 ## Confirm that the traces operate
 

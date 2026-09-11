@@ -1,7 +1,7 @@
 ---
 title: Deploy your first agent
 description: Deploy the sample weather agent and send a message to it.
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 This procedure deploys an agent from a container image, and then sends a message to the agent. Complete

@@ -2,7 +2,7 @@
 title: Quickstart on Kubernetes
 sidebar_label: Quickstart — Kubernetes
 description: Install Rossoctl on a local Kind cluster and open the console.
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 This procedure installs Rossoctl on a local [Kind](https://kind.sigs.k8s.io) cluster. The installation

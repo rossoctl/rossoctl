@@ -2,7 +2,7 @@
 title: Install the cluster CLI
 sidebar_label: Install the cluster CLI
 description: Install rossoctl, the CLI for a cluster, and run the first commands.
-sidebar_position: 7
+sidebar_position: 8
 ---
 
 The `rossoctl` command does the tasks that the console does, for a cluster. It also runs a local

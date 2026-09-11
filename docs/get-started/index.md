@@ -17,7 +17,8 @@ The program shows the model calls, the tool calls and the agent messages that yo
 Choose this path if you want to see how Rossoctl works before you install the full platform. Choose
 it also if you want to reduce the token cost of an agent.
 
-Go to [Quickstart on a laptop](laptop.md).
+Go to [Quickstart on a laptop](laptop.md). Then read [Read the numbers](reading-the-numbers.md) to
+learn what the program shows you.
 
 ## Quickstart on Kubernetes
 

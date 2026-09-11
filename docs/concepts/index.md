@@ -34,6 +34,7 @@ repository as core or experimental.
 | Agent deployment and discovery | Ready | [Control plane](core/control-plane.md) |
 | The data plane proxy | Ready | [RossoCortex](core/cortex.md) |
 | Traces and network data | Ready | [Observability](../operate/observability.md) |
+| Token counts, cost and latency on a laptop | Ready | [Read the numbers](../get-started/reading-the-numbers.md) |
 
 ## Experimental features
 

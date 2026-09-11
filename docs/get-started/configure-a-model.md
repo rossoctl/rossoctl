@@ -1,7 +1,7 @@
 ---
 title: Configure a model
 description: Give an agent a local model or a model from a cloud provider.
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 A Rossoctl agent operates with any model endpoint that is compatible with the OpenAI interface. You do

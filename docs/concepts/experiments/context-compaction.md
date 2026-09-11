@@ -90,6 +90,13 @@ rossoctl authbridge exec \
 
 See [Quickstart on a laptop](../../get-started/laptop.md).
 
+## What you see for it
+
+The observe mode records the reduction that the plugin can make, so you can measure the benefit
+before you accept the risk. On a laptop, `abctl observe` shows the tokens and the cost that the
+plugin removed for each session. See
+[Read the pruning savings](../../get-started/reading-the-numbers.md#read-the-pruning-savings).
+
 ## Try it
 
 The [context compaction demonstration](https://github.com/rossoctl/cortex/tree/main/authbridge/demos/context-guru)
@@ -97,5 +104,6 @@ contains the finance example from the table above.
 
 ## Related pages
 
+- [Read the numbers](../../get-started/reading-the-numbers.md) shows the saving that the plugin made.
 - [Cost control](cost-control.md) gives a smaller reduction with less risk.
 - [context-guru](https://github.com/rossoctl/context-guru) is the engine.
