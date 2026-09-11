@@ -119,7 +119,9 @@ issue, include:
 - The name of your agent, and the model.
 - The last part of the service log, with any secret removed.
 
-Open the issue on [rossoctl/cortex](https://github.com/rossoctl/cortex/issues).
+Open the issue with the **Laptop feedback** form on
+[rossoctl/cortex](https://github.com/rossoctl/cortex/issues/new/choose). The form asks for each item
+in the list above.
 
 ## On Kubernetes
 

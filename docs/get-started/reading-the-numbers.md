@@ -199,6 +199,13 @@ One session is useful. A week of sessions is more useful. The value is in the ch
 You see these only if Cortex runs while you work. It runs as a background service and adds no step to
 your day. See [Manage the service](laptop.md#manage-the-service).
 
+## Give feedback
+
+Did the numbers tell you what you needed, or not? Was a figure confusing? Tell us. Open the **Laptop
+feedback** form on [rossoctl/cortex](https://github.com/rossoctl/cortex/issues/new/choose), or write a
+message in [Slack](https://ibm.biz/rossoctl-slack). Feedback on the local tool is what makes the next
+release clearer.
+
 ## Related pages
 
 - [Quickstart on a laptop](laptop.md) installs Cortex and starts `abctl observe`.

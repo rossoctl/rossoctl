@@ -108,3 +108,10 @@ See [Install the cluster CLI](cli.md).
   [Context compaction](../concepts/experiments/context-compaction.md).
 - To understand the program that you installed, read [RossoCortex](../concepts/core/cortex.md).
 - To get deployment, discovery and the web console, read [Quickstart on Kubernetes](kubernetes.md).
+
+## Give feedback
+
+Cortex on a laptop is new. If something did not work, or the install was not clear, tell us. Open the
+**Laptop feedback** form on
+[rossoctl/cortex](https://github.com/rossoctl/cortex/issues/new/choose), or write a message in
+[Slack](https://ibm.biz/rossoctl-slack).
