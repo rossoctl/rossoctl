@@ -11,6 +11,7 @@ on:
       - "**.md"
       - "docs/**"
       - ".github/workflows/docs-ci.yaml"
+      - ".github/scripts/docs/**"
       - ".markdownlint-cli2.yaml"
       - ".lychee.toml"
 
@@ -84,3 +85,33 @@ jobs:
             --config .lychee.toml
             "**/*.md"
           fail: false
+
+  ollama-model-drift:
+    name: Ollama Model Drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      # Guards the demo docs against drifting out of sync with the Ollama model
+      # name that is the source of truth in rossoctl/examples. Currently scoped
+      # to the weather demo only — it is the sole agent that publishes an
+      # `.env.ollama` in the examples repo. The other demos reference an
+      # `.env.ollama` that does not yet exist there (rossoctl/rossoctl#2527);
+      # extend the CHECKS array in the script once those files are published.
+      #
+      # Real drift (script exit 1) fails the job. A source-fetch failure
+      # (exit 2, e.g. network flake reaching raw.githubusercontent.com) is
+      # treated as advisory: it warns but does not fail, keeping this repo's CI
+      # from going red on another repo's/CDN's transient unavailability.
+      - name: Check Ollama model references
+        run: |
+          set +e
+          bash .github/scripts/docs/check-ollama-model-drift.sh
+          rc=$?
+          set -e
+          if [ "$rc" -eq 2 ]; then
+            echo "::warning::could not fetch source .env.ollama (network flake?); skipping drift gate"
+            exit 0
+          fi
+          exit "$rc"
