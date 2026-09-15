@@ -2,11 +2,11 @@ apiVersion: v2
 name: rossoctl
 description: A Helm chart for deploying the rossoctl platform
 type: application
-version: 0.8.0-alpha.2
-appVersion: "0.8.0-alpha.2"
+version: 0.8.0-rc.1
+appVersion: "0.8.0-rc.1"
 
 dependencies:
 - name: operator-chart
-  version: 0.4.0-alpha.1
+  version: 0.4.0-rc.1
   repository: oci://ghcr.io/rossoctl/operator
   condition: components.agentOperator.enabled

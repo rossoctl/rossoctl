@@ -118,7 +118,7 @@ spiffeIdp:
   # - Standalone Helm users must create job manually (see docs)
   image:
     repository: ghcr.io/rossoctl/rossoctl/spiffe-idp-setup
-    tag: v0.8.0-alpha.2
+    tag: v0.8.0-rc.1
     pullPolicy: IfNotPresent
 
 
