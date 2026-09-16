@@ -16,9 +16,10 @@ flowchart TD
 # Documentation Review
 
 AI-assisted review of documentation changes in Rossoctl PRs. Checks structure,
-accuracy, links, conciseness, and consistency against the `meta:write-docs` (planned)
-standards. Use alongside the automated `Docs CI` workflow (markdownlint, lychee)
-for comprehensive coverage.
+accuracy, links, conciseness, and consistency against
+[docs/_internal/docs-contributor-guide.md](../../../docs/_internal/docs-contributor-guide.md), the
+authoritative standard, and the `meta:write-docs` skill that applies it. Use alongside the automated
+`Docs CI` workflow (markdownlint, lychee) for comprehensive coverage.
 
 ## Table of Contents
 
@@ -58,11 +59,20 @@ categories. Use subagents for large PRs (>5 files changed).
 
 ### 2.1 Structure
 
-- [ ] Single `#` title at the top of the file
-- [ ] One-paragraph overview immediately after the title
-- [ ] Table of Contents with working anchor links (required if >50 lines)
-- [ ] `---` horizontal rules between major sections
+For a product page under `docs/<section>/`:
+
+- [ ] Frontmatter has `title`, `description` and `sidebar_position`
+- [ ] No `#` heading in the body (the frontmatter `title` provides it)
+- [ ] No manual Table of Contents and no `---` rules between sections (Docusaurus builds the TOC)
+- [ ] One-paragraph overview at the top, and it states what the reader gets
+- [ ] The page is in the section that matches its reader
 - [ ] Heading hierarchy is correct (no skipped levels like `##` to `####`)
+
+For an internal document under `docs/_internal/`:
+
+- [ ] Frontmatter has `draft: true`
+- [ ] Single `#` title at the top, then a one-paragraph overview
+- [ ] Table of Contents with working anchor links (required if >50 lines)
 
 ### 2.2 Accuracy
 
@@ -72,6 +82,10 @@ categories. Use subagents for large PRs (>5 files changed).
 - [ ] File paths referenced actually exist in the repo (`ls` or `find` to verify)
 - [ ] Environment variables and config keys match actual code
 - [ ] Kubernetes resource names, namespaces, and labels are consistent with the codebase
+- [ ] **Each claim agrees with the page it links to** — open the cited page and compare the wording
+- [ ] No behavior from an unmerged issue is documented as released (or it carries a `VERIFY` comment)
+- [ ] A Beta or Alpha feature carries a `:::warning` callout, and the default is stated
+- [ ] Token counts and costs are scoped to a model call, and the cost is described as an estimate
 
 ### 2.3 Links
 
@@ -93,8 +107,10 @@ categories. Use subagents for large PRs (>5 files changed).
 - [ ] Terminology is consistent (e.g., "GA release" not mixed with "stable release" without definition)
 - [ ] Component names match official naming (e.g., "AuthBridge" not "auth bridge" or "Auth-Bridge")
 - [ ] Code block language tags are present and correct (`bash`, `yaml`, `text`)
-- [ ] Callout style matches project convention (`> **Note:**`, `> **Warning:**`, `> **Tip:**`)
-- [ ] Formatting conventions from `meta:write-docs` (planned) are followed
+- [ ] Callout style matches project convention: `:::note`, `:::warning`, `:::info`, `:::tip`
+      (a blockquote is not a callout)
+- [ ] ASD-STE100 prose: present tense, active voice, "you" not "we", no contraction, no "simply"
+- [ ] No serial comma — the pages write "A, B and C"
 
 ## Phase 3: Report Findings
 
@@ -118,7 +134,7 @@ Produce a structured summary grouped by severity:
 - **docs/getting-started/install.md:130** — Consider adding `git checkout` step to the OpenShift clone block
 
 #### Looks good
-- Structure follows `meta:write-docs` (planned) template
+- Structure follows the `meta:write-docs` template
 - All shell commands are syntactically valid
 - Version numbers match current releases
 ```
@@ -157,10 +173,10 @@ Quick reference for the complete review criteria:
 - [ ] No bare URLs
 - [ ] Concise — no walls of text
 - [ ] Consistent terminology
-- [ ] Follows `meta:write-docs` (planned) conventions
+- [ ] Follows the contributor guide and `meta:write-docs` conventions
 
 ## Related Skills
 
-- `meta:write-docs` (planned) — Documentation writing standards and templates
+- `meta:write-docs` — Documentation writing standards and templates
 - `github-pr-review` — General PR review workflow (code + docs). Not bundled in this repo; import via `/plugin install github-pr-review@rossoctl-agent-skills`.
 - `repo:pr` — PR creation conventions

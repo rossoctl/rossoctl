@@ -70,6 +70,20 @@ tags, pre-releases, and stable (GA) releases across the Rossoctl organization.
 
 Documentation improvements are always welcome! When contributing documentation, please follow these guidelines:
 
+Read the [Documentation Contributor Guide](./docs/_internal/docs-contributor-guide.md) first. It is the
+authoritative standard and it covers:
+
+- **Where content lives** — one reader per section, and which section your page belongs in.
+- **What to do if a page or a section is missing** — when to add a page, and when to open an issue instead.
+- **How to write a page** — the frontmatter contract, the ASD-STE100 writing rules, and a template for
+  each page type.
+- **Accuracy rules** — a claim must agree with the page it links to, and unreleased behavior is not documented.
+- **What to check** — the `markdownlint-cli2` and `lychee` commands that [Docs CI](./.github/workflows/docs-ci.yaml) runs.
+
+A documentation-only change is Tier 0 in the [Feature Acceptance Standard](./FEATURE_ACCEPTANCE.md).
+
+If you use a coding agent, invoke the `meta:write-docs` skill. It applies the same guide.
+
 ### Diagrams
 
 When adding diagrams to the documentation, please place them in the appropriate location:

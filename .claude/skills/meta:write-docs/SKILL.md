@@ -1,323 +1,164 @@
 ---
 name: meta:write-docs
-description: Guidelines and patterns for writing Rossoctl documentation
+description: Write or change Rossoctl documentation — where a page belongs, the STE100 writing rules, page templates, and the checks that Docs CI runs
 ---
 
-# Write Documentation
+```mermaid
+flowchart TD
+    START([meta:write-docs]) --> SET{"Which set?"}
+    SET -->|"docs/&lt;section&gt;/"| PUB["Product page:<br/>frontmatter + STE100"]
+    SET -->|"docs/_internal/"| INT["Internal doc:<br/>draft: true + # title"]
+    PUB --> READ["Phase 2: read the target<br/>and each page you cite"]
+    INT --> READ
+    READ --> WRITE["Phase 3: write from a template"]
+    WRITE --> CHECK["Phase 4: lint and link check"]
+    CHECK --> PR["Phase 5: open the PR — Tier 0"]
+```
+
+> Follow this diagram as the workflow.
+
+# Write documentation
+
+The authoritative rules are in
+[docs/_internal/docs-contributor-guide.md](../../../docs/_internal/docs-contributor-guide.md). Read
+that file first. This skill gives the workflow, and it does not repeat the rules.
 
 ## Table of Contents
 
 - [When to Use](#when-to-use)
-- [Document Structure](#document-structure)
-- [Formatting Rules](#formatting-rules)
-- [Diagrams](#diagrams)
-- [Tables](#tables)
-- [Code Blocks](#code-blocks)
-- [Cross-References](#cross-references)
-- [Checklist](#checklist)
-- [Template](#template)
+- [Phase 1: Identify the set](#phase-1-identify-the-set)
+- [Phase 2: Read before you write](#phase-2-read-before-you-write)
+- [Phase 3: Write the page](#phase-3-write-the-page)
+- [Phase 4: Check the page](#phase-4-check-the-page)
+- [Phase 5: Open the pull request](#phase-5-open-the-pull-request)
+- [Errors to Avoid](#errors-to-avoid)
+- [Internal Design Documents](#internal-design-documents)
+- [Related Skills](#related-skills)
 
 ## When to Use
 
-- Creating new documentation under `docs/`
-- Writing design documents, guides, or reference material
-- Updating existing docs with new sections
+- A code change needs a documentation change (Pillar 2 of `FEATURE_ACCEPTANCE.md`).
+- A new page is needed under `docs/`.
+- A reader reported that a page is wrong, or that a page is missing.
 
-## Document Structure
+## Phase 1: Identify the set
 
-Every document follows this skeleton:
+The two sets have different rules. Read the target path.
 
-```markdown
-# Title
+| Path | Set | Frontmatter | Body |
+| --- | --- | --- | --- |
+| `docs/<section>/*.md` | Product, published to rossoctl.dev | `title`, `description`, `sidebar_position` | No `#` heading. The title comes from the frontmatter. |
+| `docs/_internal/*.md` | Internal, not published | `draft: true` | Start with a `#` title. |
 
-Brief one-paragraph description of what this document covers and who it is for.
+For a product page, select the section by the reader. The table in the
+[contributor guide](../../../docs/_internal/docs-contributor-guide.md#where-content-lives) gives one
+reader for each section.
 
-## Table of Contents
+If no section fits the change, stop. Report this to the user, and propose an issue. Do not add a
+section.
 
-- [Section One](#section-one)
-- [Section Two](#section-two)
-  - [Subsection](#subsection)
+## Phase 2: Read before you write
 
----
+Read these files, and do not write from memory:
 
-## Section One
+1. The target page, complete.
+2. **Each page that you will link to.** Your claim must agree with that page, and must use its words.
+3. `docs/concepts/index.md`, for the maturity of each feature (Ready, Beta or Alpha).
+4. `docs/reference/glossary.md`, for the term to use.
+5. The code, the command output, or the pull request that gives the behaviour.
 
-Content here.
-
----
-
-## Section Two
-
-### Subsection
-
-Content here.
-```
-
-**Rules:**
-
-1. Single `#` title at the top
-2. One-paragraph overview immediately after the title
-3. TOC with anchor links for documents over 50 lines
-4. `---` horizontal rules between major sections
-5. Keep explanations concise - prefer bullets and tables over prose
-6. Use `###` subsections to break up long sections
-
-## Formatting Rules
-
-### Text
-
-- **Bold** for key terms, component names, and emphasis
-- `inline code` for commands, file paths, variable names, API endpoints
-- *Italic* for introducing new terminology (first use only)
-- Blockquotes for callouts:
-
-```markdown
-> **Note:** Additional context that supplements the main text.
-
-> **Warning:** Something that can cause problems if ignored.
-
-> **Prerequisite:** Something required before proceeding.
-```
-
-### Lists
-
-- Bullet lists (`-`) for unordered items
-- Numbered lists (`1.`) for sequential steps or ranked items
-- Keep list items concise (1-2 lines)
-- Nest at most 2 levels deep
-
-### Expandable Sections
-
-Use `<details>` for optional or advanced content:
-
-```markdown
-<details>
-<summary>Advanced: Custom collector configuration</summary>
-
-Content that most readers can skip.
-
-</details>
-```
-
-## Diagrams
-
-### Mermaid (for flows and relationships)
-
-Use Mermaid for process flows, state machines, and component relationships.
-Wrap in ` ```mermaid ` code fences:
-
-```markdown
-` ` `mermaid
-flowchart LR
-    A[Source] --> B[Processor]
-    B --> C[Exporter]
-` ` `
-```
-
-**Mermaid patterns:**
-
-| Type | Use Case | Directive |
-|------|----------|-----------|
-| `flowchart LR` | Left-to-right process flows | Data pipelines, request flows |
-| `flowchart TB` | Top-to-bottom hierarchies | Component trees, deployment order |
-| `sequenceDiagram` | Request/response interactions | API calls, auth flows |
-| `stateDiagram-v2` | Lifecycle states | Pod states, build stages |
-| `graph TB` with `subgraph` | Grouped components | Architecture with namespaces |
-
-**Style tips:**
-
-- Use `subgraph` to group related components (e.g., by namespace or cluster)
-- Add labels on edges: `A -->|"OTLP gRPC"| B`
-- Keep node labels short (3-4 words max)
-- Use `:::className` for visual distinction when needed
-
-### ASCII Art (for architecture layouts)
-
-Use ASCII art for spatial layouts showing where components live physically
-(clusters, namespaces, nodes). Wrap in ` ```text ` or ` ```shell `:
-
-```text
-+----------------------------+
-|    Management Cluster      |
-|  +--------+  +---------+  |
-|  | Prom   |  | Alerts  |  |
-|  +---^----+  +----^----+  |
-+------|-----------|---------+
-       |           |
-+------|-----------|---------+
-|    Hosted Cluster          |
-|  +--------+  +---------+  |
-|  | OTEL   |  | Agents  |  |
-|  +--------+  +---------+  |
-+----------------------------+
-```
-
-**ASCII art rules:**
-
-- Use `+`, `-`, `|` for borders (not Unicode box-drawing characters in code blocks)
-- Use `^`, `v`, `<`, `>` for directional arrows
-- Align columns for readability
-- Label every box
-- Keep width under 80 characters
-
-### When to use which
-
-| Scenario | Use |
-|----------|-----|
-| Data flows, pipelines | Mermaid `flowchart` |
-| API interactions | Mermaid `sequenceDiagram` |
-| Cluster/namespace layouts | ASCII art |
-| Component lifecycle | Mermaid `stateDiagram` |
-| Decision trees | Mermaid `flowchart` with conditions |
-
-## Tables
-
-Use tables for structured reference data. Keep column count to 3-5:
-
-```markdown
-| Component | Purpose | Namespace |
-|-----------|---------|-----------|
-| OTEL Collector | Telemetry pipeline | `rossoctl-system` |
-| TempoStack | Trace storage | `tempo-system` |
-```
-
-**Table rules:**
-
-- Header row always present
-- Left-align text, right-align numbers
-- Use `inline code` for technical values
-- Keep cell content to 1 line when possible
-
-## Code Blocks
-
-### Commands
-
-Always specify language. Use `bash` for shell commands:
-
-````markdown
 ```bash
-kubectl get pods -n rossoctl-system
-```
-````
+# The maturity and the default of each feature
+sed -n '20,60p' docs/concepts/index.md
 
-### YAML/JSON manifests
-
-Include just the relevant fields, not entire manifests. Add a comment
-at the top identifying the resource:
-
-````markdown
-```yaml
-# charts/rossoctl/templates/observability/collector.yaml
-apiVersion: opentelemetry.io/v1beta1
-kind: OpenTelemetryCollector
-metadata:
-  name: rossoctl-collector
-spec:
-  mode: daemonset
-```
-````
-
-### Expected output
-
-Show expected output after commands when it aids understanding:
-
-````markdown
-```bash
-kubectl get tempostacks -n tempo-system
+# Every page that links to the page you change (a change here can break their claims)
+grep -rn "$(basename <target>.md)" --include="*.md" docs
 ```
 
-```text
-NAME            AGE   STATUS
-rossoctl-tempo   5m    Ready
-```
-````
-
-## Cross-References
-
-- Link to other docs with relative paths: `[Components](../components.md)`
-- Link to source files: `[check-capacity.sh](../../.github/scripts/hypershift/ci/slots/check-capacity.sh)`
-- Link to external references at the bottom in a `## References` section
-- Use descriptive link text, not "click here"
-
-## Checklist
-
-Before committing documentation:
-
-- [ ] Title and one-paragraph overview present
-- [ ] TOC with working anchor links (if >50 lines)
-- [ ] Sections separated by `---`
-- [ ] Code blocks have language tags
-- [ ] Diagrams render correctly (Mermaid syntax valid, ASCII aligned)
-- [ ] Tables have header rows
-- [ ] Cross-references use relative paths
-- [ ] No broken links
-- [ ] Concise - no unnecessary prose
-
-## Template
+If the behaviour is not released, do not document it as current. Add a comment instead:
 
 ```markdown
-# Document Title
-
-Brief description of what this document covers and its audience.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
-- [References](#references)
-
----
-
-## Overview
-
-Context and goals in 2-3 sentences.
-
----
-
-## Architecture
-
-` ` `mermaid
-flowchart LR
-    A[Component A] -->|protocol| B[Component B]
-` ` `
-
----
-
-## Configuration
-
-### Component Name
-
-` ` `yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: example
-` ` `
-
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `key` | `value` | What it does |
-
----
-
-## Troubleshooting
-
-### Problem: Description
-
-**Symptom**: What you observe
-**Cause**: Why it happens
-**Fix**: How to resolve
-
----
-
-## References
-
-- [External Doc](https://example.com)
-- [Related Internal Doc](../related.md)
+<!-- VERIFY v0.9.0: confirm this claim once #901 lands. -->
 ```
+
+## Phase 3: Write the page
+
+Copy the template for the page type from the
+[contributor guide](../../../docs/_internal/docs-contributor-guide.md#page-templates): a task page, a
+concept page, an experiment page, or a reference page.
+
+Write in ASD-STE100. The six rules that matter most:
+
+1. One instruction in one sentence. Approximately 20 words.
+2. Present tense, and active voice.
+3. Address the reader as "you". Do not write "we".
+4. No contraction, no "please", no "simply", no "easily", no "just".
+5. One word for one meaning, from the glossary.
+6. Give the maturity and the default of a feature: "experimental", "off by default".
+
+A concept page leads with the value, then the installation, then the architecture. A task page gives
+numbered steps, and each step gives one command.
+
+## Phase 4: Check the page
+
+Run the two tools that Docs CI runs. Fix each issue before you report the work as complete.
+
+```bash
+# 1. Markdown lint (the repository configuration is .markdownlint-cli2.yaml)
+npx markdownlint-cli2 "docs/**/*.md"
+
+# 2. Relative links in the changed files (the gating pass in Docs CI).
+#    lychee is a separate binary: brew install lychee, or cargo install lychee.
+lychee --offline --config .lychee.toml \
+  $(git diff --name-only --diff-filter=d main...HEAD -- '*.md')
+```
+
+Then verify by hand:
+
+- Each anchor that you link to is a heading in the target file. `.lychee.toml` excludes
+  `docs/_internal/` and `.claude/`, so a link in one of those files needs a manual check.
+- Each command in the page runs, and the output in the page is the output that you saw.
+- Each claim agrees with the page that you cite. Open the page and compare the words.
+
+## Phase 5: Open the pull request
+
+- A documentation-only change is **Tier 0**. State the tier in the pull request.
+- Sign off each commit: `git commit -s`.
+- In the body, give the reader, the change, and the reason. Name each page that you moved or renamed.
+- If you removed a claim, say which page contradicted it.
+
+## Errors to Avoid
+
+Each error below is from a real review.
+
+| Error | Correction |
+| --- | --- |
+| A claim contradicts the page that it links to. | Read the target page, and copy its words. See [#2564](https://github.com/rossoctl/rossoctl/pull/2564). |
+| An Alpha feature is given as current behaviour. | Add `:::warning Alpha`, and write "off by default". |
+| Behaviour from an open issue is documented as released. | Remove the claim, or add a `VERIFY` comment. |
+| A token count or a cost is given for each call. | Only a model call has a token count and a cost. |
+| A `#` title is in the body of a product page. | Delete it. The frontmatter `title` gives the heading. |
+| A blockquote is used for a callout. | Use `:::note` or `:::warning`. |
+| A manual table of contents is in a product page. | Delete it. Docusaurus builds the table of contents. |
+| A serial comma is used. | The pages write "A, B and C". |
+
+## Internal Design Documents
+
+A file under `docs/_internal/` is a contributor document. The rules above for frontmatter and for
+`#` titles do not apply. Use this structure:
+
+- `draft: true` in the frontmatter, with the comment `# excluded from https://www.rossoctl.dev/`.
+- A `#` title, then one paragraph that gives the subject and the reader.
+- A table of contents for a file of more than 50 lines.
+- Mermaid for a flow, a sequence or a state machine. ASCII art for a cluster layout or a namespace
+  layout.
+- A language tag on each code block, and only the relevant fields of a manifest.
+
+A design document or a specification goes in `docs/_internal/design-proposals/` or
+`docs/_internal/superpowers/specs/`. Tier 2 needs one. See `FEATURE_ACCEPTANCE.md`.
 
 ## Related Skills
 
-- `skills:write` - Template for creating skills (different from docs)
+- `docs:review` — review a documentation pull request against these rules.
+- `skills:write` — write a skill. A skill is not documentation.
+- `git:commit` — commit with a DCO sign-off.
