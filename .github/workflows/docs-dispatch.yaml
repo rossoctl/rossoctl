@@ -1,0 +1,101 @@
+# Docs dispatch — tell the website to rebuild when the docs change here.
+#
+# This repository is the source of truth for the documentation. The website in
+# rossoctl/.github does not commit docs/: its build runs scripts/sync-docs.sh,
+# which mirrors this repository's docs/ into /docs/dev/* and regenerates the
+# Contributing page from CONTRIBUTING.md.
+#
+# Without this workflow the site only picks up a docs merge on its daily 06:17
+# UTC fallback, so a merged change can wait up to 24 hours to appear. This
+# workflow sends the repository_dispatch event that rossoctl/.github's
+# "Deploy site to Pages" workflow already listens for (type: docs-updated), so
+# the site rebuilds within a few minutes of the merge.
+#
+# ONE-TIME SETUP — the secret SITE_DISPATCH_TOKEN:
+#   GITHUB_TOKEN is scoped to this repository, so it cannot dispatch to another
+#   one. Create a fine-grained personal access token, or a GitHub App token,
+#   with "Contents: read and write" on rossoctl/.github ONLY, and store it here
+#   as the repository secret SITE_DISPATCH_TOKEN:
+#
+#     gh secret set SITE_DISPATCH_TOKEN --repo rossoctl/rossoctl
+#
+#   Until that secret exists this workflow reports a warning and exits 0. It
+#   does not fail a docs merge, and the site's daily fallback still resyncs.
+name: Docs dispatch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # Both paths that scripts/sync-docs.sh reads from this repository.
+      - "docs/**"
+      - "CONTRIBUTING.md"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+# One dispatch at a time. A burst of merges then produces one rebuild of the
+# site rather than one for each commit.
+concurrency:
+  group: docs-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    name: Ask rossoctl/.github to rebuild
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Send repository_dispatch to rossoctl/.github
+        id: dispatch
+        env:
+          GH_TOKEN: ${{ secrets.SITE_DISPATCH_TOKEN }}
+          SHA: ${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "notified=false" >> "$GITHUB_OUTPUT"
+            msg="The website was not notified. It resyncs on its daily 06:17 UTC"
+            msg="${msg} schedule. See the setup note in this workflow file."
+            echo "::warning title=SITE_DISPATCH_TOKEN is not set::${msg}"
+            exit 0
+          fi
+
+          echo "Dispatching docs-updated for ${SHA} to rossoctl/.github"
+
+          # The receiver is the "Deploy site to Pages" workflow in
+          # rossoctl/.github (on: repository_dispatch, types: [docs-updated]).
+          # client_payload is informational: it records which commit in this
+          # repository caused the rebuild.
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/rossoctl/.github/dispatches \
+            -f event_type=docs-updated \
+            -f "client_payload[source_repo]=${GITHUB_REPOSITORY}" \
+            -f "client_payload[sha]=${SHA}" \
+            -f "client_payload[actor]=${ACTOR}" \
+            -f "client_payload[run_url]=${RUN_URL}"
+
+          echo "notified=true" >> "$GITHUB_OUTPUT"
+          echo "Dispatched. The site build runs at:"
+          echo "https://github.com/rossoctl/.github/actions/workflows/deploy.yaml"
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Docs dispatch"
+            echo ""
+            if [ "${{ steps.dispatch.outputs.notified }}" = "true" ]; then
+              echo "Sent \`docs-updated\` to rossoctl/.github. The site rebuilds"
+              echo "\`/docs/dev/*\` from this commit."
+            else
+              echo "\`SITE_DISPATCH_TOKEN\` is not set, so the site was not notified."
+              echo "It resyncs on its daily 06:17 UTC schedule."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
