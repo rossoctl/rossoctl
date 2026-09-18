@@ -312,19 +312,21 @@ async def send_message(
                     agent_ctx = result_data.get("contextId") or result_data.get("sessionId")
                     if agent_ctx:
                         session_id = agent_ctx
-                # Handle Task response
-                if "status" in result_data and "message" in result_data.get("status", {}):
-                    parts = result_data["status"]["message"].get("parts", [])
-                    for part in parts:
-                        if isinstance(part, dict) and "text" in part:
-                            content += part["text"]
-                        elif hasattr(part, "text"):
-                            content += part.text
+                # Handle Task response. A completed Task carries its output in
+                # result.artifacts[].parts[] and commonly leaves status.message
+                # unset, so read artifacts first and fall back to the status
+                # message for agents that answer in-status.
+                artifacts = result_data.get("artifacts") or []
+                status_message = (result_data.get("status") or {}).get("message") or {}
+                if artifacts:
+                    for artifact in artifacts:
+                        if isinstance(artifact, dict):
+                            content += _extract_text_from_parts(artifact.get("parts", []))
+                elif status_message:
+                    content += _extract_text_from_parts(status_message.get("parts", []))
                 # Handle direct message response
                 elif "parts" in result_data:
-                    for part in result_data["parts"]:
-                        if isinstance(part, dict) and "text" in part:
-                            content += part["text"]
+                    content += _extract_text_from_parts(result_data["parts"])
 
             if "error" in result:
                 error = result["error"]
