@@ -184,7 +184,7 @@ ui:
   frontend:
     enabled: true
     image: ghcr.io/rossoctl/rossoctl/ui-v2
-    tag: v0.8.0-rc.1
+    tag: v0.8.0-rc.2
     resources:
       limits:
         cpu: 100m
@@ -201,7 +201,7 @@ ui:
   # Backend configuration
   backend:
     image: ghcr.io/rossoctl/rossoctl/backend
-    tag: v0.8.0-rc.1
+    tag: v0.8.0-rc.2
     # Optional Context Service API URL. Empty disables context resource APIs and
     # agent context attachments. Example:
     # http://context-service.serverless-harness.svc.cluster.local:8080
@@ -231,7 +231,7 @@ ui:
 # ------------------------------------------------------------------
 uiOAuthSecret:
   image: ghcr.io/rossoctl/rossoctl/ui-oauth-secret
-  tag: v0.8.0-rc.1
+  tag: v0.8.0-rc.2
   # When true, mount the in-cluster serviceaccount CA
   # into the ui-oauth-secret job via the SSL_CERT_FILE environment variable.
   # When false, the serviceaccount CA is only for the API server
@@ -243,7 +243,7 @@ uiOAuthSecret:
 # ------------------------------------------------------------------
 agentOAuthSecret:
   image: ghcr.io/rossoctl/rossoctl/agent-oauth-secret
-  tag: v0.8.0-rc.1
+  tag: v0.8.0-rc.2
   # When true, mount the in-cluster serviceaccount CA
   # into the agent-oauth-secret job via the SSL_CERT_FILE environment variable.
   # When false, the serviceaccount CA is only for the API server
@@ -261,7 +261,7 @@ agentOAuthSecret:
 apiOAuthSecret:
   enabled: false
   image: ghcr.io/rossoctl/rossoctl/api-oauth-secret
-  tag: v0.8.0-rc.1
+  tag: v0.8.0-rc.2
   # Client ID for the API service account
   clientId: rossoctl-api
   # Name of the K8s secret to store credentials
@@ -279,7 +279,7 @@ apiOAuthSecret:
 # ------------------------------------------------------------------
 operatorSpiffeBootstrap:
   image: ghcr.io/rossoctl/rossoctl/operator-spiffe-bootstrap
-  tag: v0.8.0-rc.1
+  tag: v0.8.0-rc.2
 
 # ------------------------------------------------------------------
 #  Keycloak Configuration
@@ -358,7 +358,7 @@ authBridge:
 spiffeIdp:
   image:
     repository: ghcr.io/rossoctl/rossoctl/spiffe-idp-setup
-    tag: v0.8.0-rc.1
+    tag: v0.8.0-rc.2
     pullPolicy: IfNotPresent
 
 # ------------------------------------------------------------------
@@ -369,7 +369,7 @@ operator-chart:
     container:
       cmd: /manager
       image:
-        tag: 0.4.0-rc.1
+        tag: 0.4.0-rc.2
       args:
       - "--leader-elect"
       - "--metrics-bind-address=:8443"
@@ -456,7 +456,7 @@ mlflow:
 # ------------------------------------------------------------------
 mlflowOAuthSecret:
   image: ghcr.io/rossoctl/rossoctl/mlflow-oauth-secret
-  tag: v0.8.0-rc.1
+  tag: v0.8.0-rc.2
   # Keycloak client ID for MLflow
   clientId: mlflow
   # Kubernetes secret name to store OAuth credentials
