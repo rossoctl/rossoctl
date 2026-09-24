@@ -15,11 +15,11 @@ flowchart TD
 
 # Documentation Review
 
-AI-assisted review of documentation changes in Rossoctl PRs. Checks structure,
-accuracy, links, conciseness, and consistency against
-the "Contributing Documentation" section of
-[CONTRIBUTING.md](../../../CONTRIBUTING.md#contributing-documentation), the authoritative standard, and the `meta:write-docs` skill that applies it. Use alongside the automated
-`Docs CI` workflow (markdownlint, lychee) for comprehensive coverage.
+AI-assisted review of documentation changes in Rossoctl PRs. Checks structure, accuracy, links,
+conciseness, and consistency against the "Contributing Documentation" section of
+[CONTRIBUTING.md](../../../CONTRIBUTING.md#contributing-documentation), the authoritative standard,
+and the `meta:write-docs` skill that applies it. Use alongside the automated `Docs CI` workflow
+(markdownlint, lychee) for comprehensive coverage.
 
 ## Table of Contents
 
