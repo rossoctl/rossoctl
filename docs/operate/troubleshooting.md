@@ -36,10 +36,16 @@ openssl x509 -in ~/.cortex/ca/ca.crt -noout -subject -dates
 
 If the file is absent, the install did not complete. Run the install again.
 
+If the file is present and your agent still rejects it, check whether a *second* Cortex install is
+answering on the port. Every install generates a CA with the same subject, so the certificate you
+read here can look correct while your agent is being served by a different one. See
+[Two installs on one machine fight over the ports](#two-installs-on-one-machine-fight-over-the-ports).
+
 ### The port 47600 is already in use
 
-The install or the service reports that the port is in use. RossoCortex listens on three loopback
-ports: 47600 for the proxy, 47601 for the session interface and 47602 for the statistics.
+The install or the service reports that the port is in use. RossoCortex binds five loopback ports,
+all on `127.0.0.1`: 47600 for the proxy, 47601 for the session interface, 47602 for the statistics,
+47603 for the transparent listener and 47604 for the health endpoint.
 
 Find the program that holds the port:
 
@@ -49,6 +55,98 @@ lsof -nP -iTCP@127.0.0.1:47600 -sTCP:LISTEN
 
 If the program is a previous Cortex service, stop it with `abctl service stop`. If it is another
 program, stop that program, or change the ports of Cortex.
+
+If the program is *another Cortex install*, read the next section instead: the port is the symptom,
+and stopping the wrong one of the two costs you the rest of the day.
+
+### Two installs on one machine fight over the ports
+
+<!-- VERIFY v0.9.0: the port set comes from the --local preset in
+     authbridge/cmd/authbridge-proxy/local.go, and the 30-second restart ceiling from
+     superviseMaxDelay in supervise.go. Confirm both against a release binary. -->
+
+**The ports are fixed, so two installs cannot coexist.** The `--local` preset pins every listener to
+a literal port, not to a free one, so the second install to start never binds. This is the condition
+to suspect whenever a *certificate* error and a *restart loop* appear together.
+
+You have two installs if you have ever run the install script with a different `$HOME` — a sandbox, a
+second checkout, a container that mounts your home directory — as well as the ordinary one.
+
+**How it reads.** Two symptoms that look unrelated, from one cause:
+
+- The service log repeats a bind failure and a restart, every 30 seconds, forever:
+
+  ```
+  level=ERROR msg="forward-proxy listen: listen tcp 127.0.0.1:47600: bind: address already in use"
+  WARN supervisor: proxy exited; restarting ran=37ms err="exit status 1" restart_in=30s
+  ```
+
+  `restart_in` stays at `30s` rather than growing, because that is the backoff ceiling. The
+  supervisor does not give up and does not say why it cannot win the port, so the loop looks like a
+  crash rather than a conflict.
+
+- Your agent reports a self-signed certificate, naming a corporate proxy or a private CA:
+
+  ```
+  API Error: Unable to connect to API: Self-signed certificate detected (SELF_SIGNED_CERT_IN_CHAIN).
+  ```
+
+  This one is the misleading half. The request reached the install that *won* the port, and that
+  install signs with its own CA. Your agent was told to trust the *other* install's CA. Both
+  certificates carry the same subject, `CN=authbridge-tls-bridge-ca`, so nothing in the error, and
+  nothing in `openssl x509 -subject`, tells the two apart. Nothing is wrong with either certificate.
+
+**Confirm it.** List every proxy process:
+
+```bash
+ps auxww | grep authbridge-proxy | grep -v grep
+```
+
+Read the `--config` path, or the binary path, on each line: those are your installs. One supervisor
+plus one child on the same path is healthy. A supervisor whose child keeps changing PID is the
+starved one.
+
+:::caution[Do not read the PIDs as a timeline]
+macOS recycles process IDs, so a five-digit PID is often *older* than a four-digit one. A supervisor
+that has been looping since login shows a high PID, and the healthy install that started after a
+reboot shows a low one. Use the `ps` start time, not the number.
+:::
+
+Then compare the certificate authorities by fingerprint. The subject is identical on both, so it
+cannot tell them apart; the fingerprint is unambiguous:
+
+```bash
+openssl x509 -noout -fingerprint -sha256 -in ~/.cortex/ca/ca.crt
+openssl x509 -noout -fingerprint -sha256 -in ~/sandbox/<name>/.cortex/ca/ca.crt
+```
+
+The CA your agent trusts must be the one belonging to the install that holds port 47600.
+
+**Fix it by choosing one install.** Keep the one that is already serving, and point your agent at
+its CA:
+
+```bash
+HTTPS_PROXY=http://localhost:47600 \
+  NODE_EXTRA_CA_CERTS=$HOME/.cortex/ca/ca.crt claude -p "say hi"
+```
+
+Or keep the other one. Stop the service that holds the port, stop every stray supervisor by PID, and
+start the install you want:
+
+```bash
+abctl service stop          # from the install that currently holds the port
+kill <pid> <pid>            # each stray supervisor from the ps output above
+abctl service install       # from the install you are keeping
+```
+
+Re-run the two `openssl` commands afterwards: one install, one CA, one fingerprint your agent
+trusts.
+
+:::note[`SSL_CERT_FILE` does nothing on macOS]
+Go reads the system keychain on macOS and ignores `SSL_CERT_FILE`, so setting it changes nothing for
+a Go program there. It is correct on Linux and in CI. On macOS, use `NODE_EXTRA_CA_CERTS` for Node
+programs such as Claude Code, and add the CA to the keychain for anything else.
+:::
 
 ### The service does not start, or starts and stops
 
