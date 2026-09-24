@@ -19,9 +19,9 @@ flowchart TD
 
 # Write documentation
 
-The authoritative rules are in
-[docs/_internal/docs-contributor-guide.md](../../../docs/_internal/docs-contributor-guide.md). Read
-that file first. This skill gives the workflow, and it does not repeat the rules.
+The authoritative rules are in the "Contributing Documentation" section of
+[CONTRIBUTING.md](../../../CONTRIBUTING.md#contributing-documentation). Read that section first. This
+skill gives the workflow, and it does not repeat the rules.
 
 ## Table of Contents
 
@@ -51,7 +51,7 @@ The two sets have different rules. Read the target path.
 | `docs/_internal/*.md` | Internal, not published | `draft: true` | Start with a `#` title. |
 
 For a product page, select the section by the reader. The table in the
-[contributor guide](../../../docs/_internal/docs-contributor-guide.md#where-content-lives) gives one
+[contributor guide](../../../CONTRIBUTING.md#where-content-lives) gives one
 reader for each section.
 
 If no section fits the change, stop. Report this to the user, and propose an issue. Do not add a
@@ -84,7 +84,7 @@ If the behaviour is not released, do not document it as current. Add a comment i
 ## Phase 3: Write the page
 
 Copy the template for the page type from the
-[contributor guide](../../../docs/_internal/docs-contributor-guide.md#page-templates): a task page, a
+[contributor guide](../../../CONTRIBUTING.md#page-templates): a task page, a
 concept page, an experiment page, or a reference page.
 
 Write in ASD-STE100. The six rules that matter most:
