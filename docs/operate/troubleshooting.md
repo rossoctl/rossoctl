@@ -134,9 +134,9 @@ Or keep the other one. Stop the service that holds the port, stop every stray su
 start the install you want:
 
 ```bash
-abctl service stop          # from the install that currently holds the port
+agentop service stop        # from the install that currently holds the port
 kill <pid> <pid>            # each stray supervisor from the ps output above
-abctl service install       # from the install you are keeping
+agentop service install     # from the install you are keeping
 ```
 
 Re-run the two `openssl` commands afterwards: one install, one CA, one fingerprint your agent
