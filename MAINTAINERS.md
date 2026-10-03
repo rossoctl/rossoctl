@@ -23,7 +23,7 @@ following, listed in alphabetical order by name:
 | [Abigail Goldsteen](https://github.com/abigailgold) | Data Security & Privacy; risk assessment & policy engine; JSON→Rego compiler; Data Governance Risk UI |
 | [Alan Cha](https://github.com/Alan-Cha) | Keycloak; SPIFFE auth; Workload Identity & Security; mission-based eventing; sandbox experiments; coding-agent integrations (Codex, OpenCode) |
 | [Aleksander Slominski](https://github.com/aslom) | Eventing / event-driven agents; mission-based eventing; BYO Cortex skill; AI agent teleportation |
-| [Ed Snible](https://github.com/esnible) | Cortex / abctl CLI & TUI (owner); rossoctl-cli; usability & documentation; Praxis proxy; coding-agent integrations |
+| [Ed Snible](https://github.com/esnible) | Cortex / agentop CLI & TUI (owner); rossoctl-cli; usability & documentation; Praxis proxy; coding-agent integrations |
 | [Ella Rabinovich](https://github.com/ellarabi) | Guardrails; Evaluation & Benchmarking |
 | [Evaline Ju](https://github.com/evaline-ju) | Guardrails; Cortex session-budget plugin + HITL; Observability & token cost; MCP Gateway; conversation-snapshot / tau-bench analysis |
 | [Gloire Rubambiza](https://github.com/rubambiza) | Automation; RepoMan automation platform; Agent Skills marketplace; clawgenti bot operator; org-wide CI & repo governance |
