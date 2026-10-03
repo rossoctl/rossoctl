@@ -34,7 +34,14 @@ To confirm the certificate, read it:
 openssl x509 -in ~/.cortex/ca/ca.crt -noout -subject -dates
 ```
 
-If the file is absent, the install did not complete. Run the install again.
+If the file is absent, the install did not complete. Repair it:
+
+```bash
+agentop setup
+```
+
+With no `--from`, `setup` repairs what is already installed. It plans every change first and changes
+nothing until you agree, and a failure or a `Ctrl-C` undoes what it did.
 
 If the file is present and your agent still rejects it, check whether a *second* Cortex install is
 answering on the port. Every install generates a CA with the same subject, so the certificate you
@@ -61,9 +68,10 @@ and stopping the wrong one of the two costs you the rest of the day.
 
 ### Two installs on one machine fight over the ports
 
-<!-- VERIFY v0.9.0: the port set comes from the --local preset in
-     authbridge/cmd/authbridge-proxy/local.go, and the 30-second restart ceiling from
-     superviseMaxDelay in supervise.go. Confirm both against a release binary. -->
+<!-- VERIFY: verified against main — all five ports come from the --local preset in
+     cmd/cortex/local.go (47600 forward proxy, 47601 session API, 47602 statistics, 47603
+     transparent listener, 47604 health) and the 30-second restart ceiling from superviseMaxDelay
+     in cmd/cortex/supervise.go. Both paths moved in the authbridge-proxy → cortex rename. -->
 
 **The ports are fixed, so two installs cannot coexist.** The `--local` preset pins every listener to
 a literal port, not to a free one, so the second install to start never binds. This is the condition
@@ -99,8 +107,11 @@ second checkout, a container that mounts your home directory — as well as the 
 **Confirm it.** List every proxy process:
 
 ```bash
-ps auxww | grep authbridge-proxy | grep -v grep
+ps auxww | grep -E 'cortex|authbridge-proxy' | grep -v grep
 ```
+
+The proxy binary is `cortex`. An install from v0.7.0 or earlier is named `authbridge-proxy`, and a
+machine with both generations on it is exactly the case this section is about, so match either name.
 
 Read the `--config` path, or the binary path, on each line: those are your installs. One supervisor
 plus one child on the same path is healthy. A supervisor whose child keeps changing PID is the
@@ -134,9 +145,9 @@ Or keep the other one. Stop the service that holds the port, stop every stray su
 start the install you want:
 
 ```bash
-abctl service stop          # from the install that currently holds the port
+agentop service stop        # from the install that currently holds the port
 kill <pid> <pid>            # each stray supervisor from the ps output above
-abctl service install       # from the install you are keeping
+agentop service install     # from the install you are keeping
 ```
 
 Re-run the two `openssl` commands afterwards: one install, one CA, one fingerprint your agent
