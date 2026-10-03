@@ -19,9 +19,9 @@
     "@patternfly/react-icons": "^5.4.0",
     "@patternfly/react-styles": "^5.4.0",
     "@patternfly/react-table": "^5.4.0",
-    "@tanstack/react-query": "^5.102.8",
+    "@tanstack/react-query": "^5.104.0",
     "@types/dagre": "^0.7.54",
-    "@xyflow/react": "^12.11.6",
+    "@xyflow/react": "^12.12.0",
     "dagre": "^0.8.5",
     "js-yaml": "^4.2.0",
     "keycloak-js": "~25.0.6",
@@ -29,7 +29,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^7.18.3",
+    "react-router-dom": "^7.18.4",
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
@@ -46,7 +46,7 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
     "typescript": "^6.0.3",
-    "vite": "^8.3.0",
+    "vite": "^8.3.1",
     "vitest": "^4.1.11"
   },
   "overrides": {
