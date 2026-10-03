@@ -217,7 +217,7 @@ def test_health_port_not_gated(transparent_agent):
 
 
 def test_session_api_not_gated(transparent_agent):
-    """abctl consumes :9094; gating it would break session observability."""
+    """agentop consumes :9094; gating it would break session observability."""
     pod = agent_pod(**transparent_agent)
     status = curl_from_probe(
         transparent_agent["namespace"], f"http://{pod['status']['podIP']}:9094/sessions"
