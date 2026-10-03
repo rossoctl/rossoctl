@@ -93,13 +93,34 @@ holds no traffic after a stop. It reads traffic again after you start it.
 
 ## Other agents
 
-Any agent operates with RossoCortex. Configure the agent with two values:
+Any agent operates with RossoCortex. For the agents below, `agentop configure` does the work for you
+— it reads the proxy address from your own config, so the value always matches the service that is
+running:
+
+| Agent | Command | What it changes |
+| --- | --- | --- |
+| Claude Code | `agentop configure claude-code enable` | The proxy and CA variables in `~/.claude/settings.json`. |
+| IBM Bob | `agentop configure bob enable` | The `http.proxy` key in Bob's `settings.json`, for the editor. |
+| `bob` shell | `agentop configure bobshell enable` | A `bob` shell function in your rc file. Independent of the row above. |
+| OpenCode | `agentop configure opencode enable` | The proxy and CA variables for OpenCode's background service, which carries all of its traffic. |
+| Codex | `agentop exec -- codex` | Nothing persistent yet — run it through `agentop exec`. |
+
+Each one takes `disable` to undo it and `status` to report what is set. Run
+`agentop configure <agent> --help` for the detail.
+
+For an agent that is not listed, configure it with two values:
 
 - The proxy address: `localhost:47600`
 - The certificate authority file: `~/.cortex/ca/ca.crt`
 
 Most programs read the `HTTP_PROXY` and `HTTPS_PROXY` variables. For the certificate, a program reads
 `NODE_EXTRA_CA_CERTS`, `REQUESTS_CA_BUNDLE` or `SSL_CERT_FILE`.
+
+:::note[`SSL_CERT_FILE` does nothing on macOS]
+Go reads the system keychain on macOS and ignores `SSL_CERT_FILE`. Use `NODE_EXTRA_CA_CERTS` for Node
+programs, and add the CA to the keychain for anything else. See
+[Troubleshooting](../operate/troubleshooting.md#on-a-laptop).
+:::
 
 The Rossoctl CLI can set these variables for you, and remove them when the command ends:
 

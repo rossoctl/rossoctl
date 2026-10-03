@@ -26,8 +26,12 @@ When you stop the service, the data goes with it. See [Manage the service](lapto
 
 
 <!-- VERIFY: the token, cost and pruning figures below are verified against v0.8.1 (#950, #952).
-     The latency section still describes time-to-first-token and percentiles, which v0.8.1 does
-     not implement — it reports a mean per bucket. That part is pending #951; see cortex#963. -->
+     The latency section describes what main implements: mean ± 1σ caps from LatMeanMs /
+     LatStdDevMs (cmd/agentop/tui/usage_whiskers.go). Time-to-first-token and p95/p99 are #951;
+     the missing maximum is #1026. Both are flagged in the section. -->
+<!-- VERIFY: column headings match main as of 2026-10-02 — the context column is CTX(1M), shortened
+     from CONTEXT(1M) in cortex#1246. -->
+
 
 ## What the numbers tell you
 
@@ -154,7 +158,7 @@ agentop · http://localhost:9094
 LAST 1H    TODAY   7 DAYS    MONTH
   $4.04   $18.80  $216.44  $703.18
 ────────────────────────────────────────────────────────────────────────────────────
- SESSION       TITLE        UPDATED     EVENTS   TOKENS     COST    SAVED~  CONTEXT(1M)
+ SESSION       TITLE        UPDATED     EVENTS   TOKENS     COST    SAVED~  CTX(1M)
  ctx-abc-123…  …pend-spans  3s ago          42    48.2k    $0.12     $0.01  ▕███████▎ ▏
  ctx-def-567…  weather-ag…  18m ago         15     1.2k   <$0.01         —  ▕▏        ▏
  ctx-ghi-901…               42m ago          7     2.9k        —         —  ▕███▊     ▏
@@ -172,7 +176,7 @@ Read the columns as follows.
 | `TOKENS` | The token total for the session. |
 | `COST` | The cost of the session. |
 | `SAVED~` | The cost that a reduction plugin avoided. |
-| `CONTEXT(1M)` | How full the context of the conversation was on its last turn. |
+| `CTX(1M)` | How full the context of the conversation was on its last turn. |
 
 An em dash (`—`) means that Cortex has no figure. It does not mean zero. A session with tokens and no
 cost holds a model that the rate table does not name.
@@ -182,7 +186,7 @@ both columns. It does not show a rounded figure in their place.
 
 ### Read the context gauge
 
-`CONTEXT(1M)` is a gauge, not a figure. It shows how full the context of your conversation was on its
+`CTX(1M)` is a gauge, not a figure. It shows how full the context of your conversation was on its
 last turn, against a window of one million tokens. The brackets are the scale, and Cortex draws them
 on each row. An almost empty session therefore reads as empty, and not as a blank cell.
 
@@ -308,15 +312,24 @@ events table to that file.
 Cortex records the response time of each model call: the time from the request to the last part of
 the reply. It depends on the length of the reply, so a long answer is a slow one.
 
-The usage charts group these calls into buckets over the window you choose, and report the **mean**
-response time for each bucket, with whiskers for the fastest and the slowest call in it. Read the
-mean for the typical call and the upper whisker for the worst one. A window with no measured call
-shows no value rather than a zero.
+The usage charts group these calls into buckets over the window you choose. For each bucket the
+chart draws the **mean** as a crossbar (`┼`), with caps (`┬` and `┴`) at one standard deviation
+either side of it. A window with no measured call shows no value rather than a zero.
+
+Read the mean for the typical call, and the spread between the caps for how consistent the calls
+were: tight caps mean every call behaved alike, wide caps mean the window mixed fast and slow ones.
+
+:::caution The upper cap is not the slowest call
+The caps are mean ± 1σ, which is a measure of spread — not the fastest and slowest call. Cortex
+records no maximum, so **the slowest call in a window can sit above the top of the chart with
+nothing on screen saying so.** Do not read the upper cap as a worst case. Tracked in
+[cortex#1026](https://github.com/rossoctl/cortex/issues/1026).
+:::
 
 :::note Planned
-Time to first token — the time until the first word of the reply appears — and percentiles (p50,
-p95, p99) are not in this release. Response time and its whiskers are what Cortex reports today.
-Tracked in [cortex#951](https://github.com/rossoctl/cortex/issues/951).
+Time to first token — the time until the first word of the reply appears — is not in this release,
+nor are p95 and p99. Mean response time with its ±1σ caps is what Cortex reports today. Tracked in
+[cortex#951](https://github.com/rossoctl/cortex/issues/951).
 :::
 
 ## Read the pruning savings
@@ -356,7 +369,7 @@ One session of a coding agent, with tool pruning enabled:
 | Reasoning tokens | 3,100 |
 | Cost | 2.14 USD |
 | Mean response time | 11 s |
-| Slowest call | 24 s |
+| Response time spread (±1σ) | 6 s – 16 s |
 | Tokens pruned | 41,000 |
 | Cost saved by pruning | 0.12 USD |
 
@@ -367,8 +380,10 @@ How to read it:
   Without the cache, the input cost is many times higher.
 - **The cache-write count is a one-time cost.** The 61,200 cache-write tokens are the first turn that
   stored the context. Later turns read it, and do not write it again.
-- **The slow tail is visible.** The typical call answers in 11 s, but the slowest takes 24 s. If the
-  agent felt slow, that upper whisker is the reason, not the mean.
+- **The calls vary.** The typical call answers in 11 s, and the ±1σ spread of 6–16 s says the window
+  held both fast and slow ones. Note the slowest call is not on this chart: if the agent felt slower
+  than 16 s, the call responsible is above the frame and Cortex does not record it yet
+  ([cortex#1026](https://github.com/rossoctl/cortex/issues/1026)).
 - **Pruning earns a small amount here.** It saved 0.12 USD, because it removed 41,000 tokens of unused
   tool definitions across the session. On an agent with many tools, this figure is larger.
 
