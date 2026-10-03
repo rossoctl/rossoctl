@@ -88,6 +88,9 @@ You must know the limits of the model.
 - **The MCP Gateway is not an access control boundary.** Most authentication in the gateway is not
   implemented. Keep the enforcement in each sidecar active. See
   [MCP Gateway](../concepts/experiments/mcp-gateway.md).
+- **The eventing path.** Neither its events nor EventBridge's own HTTP API passes through the
+  sidecar. It has its own identity checks, which are alpha and off by default. See
+  [Identity in the event path](../eventing/identity.md).
 
 ## Configure the model
 

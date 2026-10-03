@@ -134,3 +134,5 @@ the credentials, run `./.github/scripts/local-setup/show-services.sh`.
 - [Authentication modes](authentication-modes.md)
 - [Authentication flows](flows.md)
 - [Plugin catalogue](https://github.com/rossoctl/cortex/blob/main/authbridge/docs/plugin-catalog.md)
+- [Identity in the event path](../eventing/identity.md) covers the eventing path. Neither its events
+  nor EventBridge's own HTTP API passes through AuthBridge.
