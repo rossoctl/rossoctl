@@ -34,14 +34,21 @@ To confirm the certificate, read it:
 openssl x509 -in ~/.cortex/ca/ca.crt -noout -subject -dates
 ```
 
-If the file is absent, the install did not complete. Repair it:
+If the file is absent, the proxy has not started since the CA files were removed. The proxy writes
+the CA when it starts:
 
 ```bash
-agentop setup
+agentop service restart
 ```
 
-With no `--from`, `setup` repairs what is already installed. It plans every change first and changes
-nothing until you agree, and a failure or a `Ctrl-C` undoes what it did.
+<!-- VERIFY: verified against v0.8.1 and main — the proxy calls tlsbridge.EnsureFileSource on boot
+     (cmd/cortex/main.go), which mints a new CA if any of tls.crt, tls.key or ca.crt is missing
+     (core/tlsbridge/ca.go:221-231). No setup or install step reads or writes the CA. -->
+<!-- VERIFY v0.9.0: agentop setup (cortex#1245) is not in v0.8.1; it does not touch the CA either,
+     so a restart remains what regenerates it. -->
+
+This makes a new CA, so restart your agent afterwards. If `agentop service status` reports no
+service, run `agentop service install`.
 
 If the file is present and your agent still rejects it, check whether a *second* Cortex install is
 answering on the port. Every install generates a CA with the same subject, so the certificate you
@@ -93,14 +100,16 @@ the service, read
 
 ### Two installs on one machine fight over the ports
 
-<!-- VERIFY: verified against main — all five ports come from the --local preset in
+<!-- VERIFY: verified against v0.8.1 and main. All five ports come from the --local preset in
      cmd/cortex/local.go (47600 forward proxy, 47601 session API, 47602 statistics, 47603
-     transparent listener, 47604 health) and the 30-second restart ceiling from superviseMaxDelay
-     in cmd/cortex/supervise.go. Both paths moved in the authbridge-proxy → cortex rename.
-     Confirmed against v0.8.1: a second install repeated the bind failure with restart_in growing
-     2s, 4s, 8s, 16s and then holding at 30s. `cortex --local` binds four of the five ports and
-     skips the transparent listener; `cortex --config <file>`, which is how the service runs, binds
-     all five and logs "transparent proxy listening addr=127.0.0.1:47603". -->
+     transparent listener, 47604 health); both that path and superviseMaxDelay moved in the
+     authbridge-proxy → cortex rename. Confirmed against v0.8.1: a second install repeated the
+     bind failure with restart_in growing 2s, 4s, 8s, 16s and then holding at 30s. `cortex
+     --local` binds four of the five ports and skips the transparent listener; `cortex --config
+     <file>`, which is how the service runs, binds all five and logs "transparent proxy listening
+     addr=127.0.0.1:47603". The 30-second ceiling is the macOS supervisor's (superviseMaxDelay in
+     cmd/cortex/supervise.go); the systemd unit runs without --supervise and instead retries every
+     10s, giving up after 5 starts in 300s (cmd_service_platform.go:92-93,142-149). -->
 
 **The ports are fixed, so two installs cannot coexist.** The `--local` preset pins every listener to
 a literal port, not to a free one, so the second install to start never binds. This is the condition
@@ -111,7 +120,8 @@ second checkout, a container that mounts your home directory — as well as the 
 
 **How it reads.** Two symptoms that look unrelated, from one cause:
 
-- The service log repeats a bind failure and a restart, every 30 seconds, forever:
+- The service log repeats a bind failure and a restart. On macOS this repeats every 30 seconds and
+  does not stop:
 
   ```
   level=ERROR msg="forward-proxy listen: listen tcp 127.0.0.1:47600: bind: address already in use"
@@ -120,7 +130,9 @@ second checkout, a container that mounts your home directory — as well as the 
 
   `restart_in` stays at `30s` rather than growing, because that is the backoff ceiling. The
   supervisor does not give up and does not say why it cannot win the port, so the loop looks like a
-  crash rather than a conflict.
+  crash rather than a conflict. On Linux the systemd unit runs without the supervisor: it retries
+  every 10 seconds and gives up after 5 starts in 300 seconds, so the loop stops and the unit
+  enters a failed state.
 
 - Your agent reports a self-signed certificate, naming a corporate proxy or a private CA:
 
@@ -182,10 +194,17 @@ agentop service install     # from the install you are keeping
 Re-run the two `openssl` commands afterwards: one install, one CA, one fingerprint your agent
 trusts.
 
-:::note[`SSL_CERT_FILE` does nothing on macOS]
-Go reads the system keychain on macOS and ignores `SSL_CERT_FILE`, so setting it changes nothing for
-a Go program there. It is correct on Linux and in CI. On macOS, use `NODE_EXTRA_CA_CERTS` for Node
-programs such as Claude Code, and add the CA to the keychain for anything else.
+:::note[Go programs on macOS ignore `SSL_CERT_FILE`]
+On macOS, a Go program such as `gh` or `go` reads only the keychain, so setting `SSL_CERT_FILE`
+changes nothing for it. The variable is correct on Linux and in CI. Usually you do not need to do
+anything: Cortex does not decrypt GitHub, the Go module proxy or the package registries. If a Go
+program reports `x509: certificate signed by unknown authority`, trust the CA in your login keychain:
+
+```bash
+security add-trusted-cert -k ~/Library/Keychains/login.keychain-db -p ssl ~/.cortex/ca/ca.crt
+```
+
+git, curl and Python read their bundles through OpenSSL, which honours these variables on macOS too.
 :::
 
 ### You must stop the service to run Cortex yourself
