@@ -81,15 +81,27 @@ read [Read the numbers](reading-the-numbers.md).
 agentop service status
 agentop service stop
 agentop service start
+agentop service restart
+agentop service uninstall
 ```
+
+`agentop service` controls the supervisor of your operating system, which is `launchd` on macOS and
+`systemd` on Linux. A stop persists across a login, and a start undoes it. An uninstall removes the
+service and keeps your data: your configuration and your certificate authority stay in `~/.cortex`.
+To set the service up again after an uninstall, run `agentop service install`.
+
+To read what each command does to the supervisor, and to stop the service so that you can run your
+own Cortex process, read
+[You must stop the service to run Cortex yourself](../operate/troubleshooting.md#you-must-stop-the-service-to-run-cortex-yourself).
 
 ## Stop and remove
 
 To stop the traffic for one session, quit `agentop observe` with `q` and stop your agent. RossoCortex
 continues to run as a background service.
 
-To stop the service, and to remove it, read [Manage the service](#manage-the-service). The service
-holds no traffic after a stop. It reads traffic again after you start it.
+To stop the service, run `agentop service stop`. To remove it, run `agentop service uninstall`. Both
+are in [Manage the service](#manage-the-service). The service holds no traffic after a stop. It
+reads traffic again after you start it.
 
 ## Other agents
 
