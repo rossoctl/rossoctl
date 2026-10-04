@@ -105,42 +105,51 @@ reads traffic again after you start it.
 
 ## Other agents
 
-Any agent operates with RossoCortex. For the agents below, `agentop configure` does the work for you
-— it reads the proxy address from your own config, so the value always matches the service that is
-running:
+Any agent operates with RossoCortex. For the agents below, `agentop configure` sets the values for
+you. It reads them from `~/.cortex/config.yaml`.
+
+<!-- VERIFY v0.9.0: switch the OpenCode row to `agentop configure opencode enable` once the release
+     carrying cortex#1243 is out, and say that enable/disable restart OpenCode's service, which
+     interrupts its open sessions (it asks first, cmd_opencode.go:101-108). -->
 
 | Agent | Command | What it changes |
 | --- | --- | --- |
 | Claude Code | `agentop configure claude-code enable` | The proxy and CA variables in `~/.claude/settings.json`. |
-| IBM Bob | `agentop configure bob enable` | The `http.proxy` key in Bob's `settings.json`, for the editor. |
+| IBM Bob | `agentop configure bob enable` | The `http.proxy` key in Bob's `settings.json` (macOS). It prints the keychain command that trusts the CA, which you run yourself. |
 | `bob` shell | `agentop configure bobshell enable` | A `bob` shell function in your rc file. Independent of the row above. |
-| OpenCode | `agentop configure opencode enable` | The proxy and CA variables for OpenCode's background service, which carries all of its traffic. |
-| Codex | `agentop exec -- codex` | Nothing persistent yet — run it through `agentop exec`. |
 
-Each one takes `disable` to undo it and `status` to report what is set. Run
+Each one takes `disable` to undo the change and `status` to report what is set. Run
 `agentop configure <agent> --help` for the detail.
 
-For an agent that is not listed, configure it with two values:
+Codex and OpenCode read only their environment. Run them with `agentop exec -- codex` or
+`agentop exec -- opencode`. Nothing persists after the command ends.
 
-- The proxy address: `localhost:47600`
-- The certificate authority file: `~/.cortex/ca/ca.crt`
+For an agent that is not listed, run it with `agentop exec -- <agent>`. That sets the proxy and the
+CA variables, each with the right file. To set them yourself:
 
-Most programs read the `HTTP_PROXY` and `HTTPS_PROXY` variables. For the certificate, a program reads
-`NODE_EXTRA_CA_CERTS`, `REQUESTS_CA_BUNDLE` or `SSL_CERT_FILE`.
+- `HTTPS_PROXY=http://localhost:47600`
+- `NODE_EXTRA_CA_CERTS=~/.cortex/ca/ca.crt`
+- `SSL_CERT_FILE`, `REQUESTS_CA_BUNDLE`, `CURL_CA_BUNDLE` and `GIT_SSL_CAINFO` set to
+  `~/.cortex/ca/bundle.crt`
 
-:::note[`SSL_CERT_FILE` does nothing on macOS]
-Go reads the system keychain on macOS and ignores `SSL_CERT_FILE`. Use `NODE_EXTRA_CA_CERTS` for Node
-programs, and add the CA to the keychain for anything else. See
-[Troubleshooting](../operate/troubleshooting.md#on-a-laptop).
-:::
+The last four **replace** the trust store rather than adding to it, so they need the bundle — the
+bridge CA together with the platform roots. Pointed at `ca.crt`, a program trusts only the Cortex CA,
+and every host that Cortex does not bridge fails to verify.
 
-The Rossoctl CLI can set these variables for you, and remove them when the command ends:
+:::note[Go programs on macOS ignore `SSL_CERT_FILE`]
+On macOS, a Go program such as `gh` or `go` reads only the keychain. Usually you do not need to do
+anything: Cortex does not decrypt GitHub, the Go module proxy or the package registries. If a Go
+program reports `x509: certificate signed by unknown authority`, trust the CA in your login keychain:
 
 ```bash
-rossoctl authbridge exec --config ./authbridge.yaml -- claude "explain this repo"
+security add-trusted-cert -k ~/Library/Keychains/login.keychain-db -p ssl ~/.cortex/ca/ca.crt
 ```
 
-See [Install the cluster CLI](cli.md).
+git, curl and Python read their variables on macOS too.
+:::
+
+To run agents against a cluster rather than this laptop, read
+[Install the cluster CLI](cli.md).
 
 ## Next
 
