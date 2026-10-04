@@ -63,15 +63,44 @@ lsof -nP -iTCP@127.0.0.1:47600 -sTCP:LISTEN
 If the program is a previous Cortex service, stop it with `agentop service stop`. If it is another
 program, stop that program, or change the ports of Cortex.
 
-If the program is *another Cortex install*, read the next section instead: the port is the symptom,
-and stopping the wrong one of the two costs you the rest of the day.
+If the program is *another Cortex install*, read
+[Two installs on one machine fight over the ports](#two-installs-on-one-machine-fight-over-the-ports)
+instead: the port is the symptom, and stopping the wrong one of the two costs you the rest of the
+day.
+
+The installer reports another program even when the program is the Cortex service:
+
+```text
+error: port 47600 is already in use by something else. Free it, or change the ports in /Users/you/.cortex/config.yaml, then re-run.
+```
+
+The installer reports this message only when it finds no file at `~/.cortex/config.yaml`. With
+that file present, the installer continues past the port check. The installer reads that path from
+the `HOME` variable of your shell, so a shell with a different `HOME` reads a different directory.
+The installer then does not recognize its own service.
+
+An install that you re-run from its own `HOME` adopts the Cortex that holds the ports. It reads the
+process identifier from `~/.cortex/proxy.pid`, stops that process, and starts it again under the
+supervisor. An install under a different `HOME` reads a different `proxy.pid`, so it adopts
+nothing. It installs, and then it repeats a bind failure and a restart. Read
+[Two installs on one machine fight over the ports](#two-installs-on-one-machine-fight-over-the-ports).
+
+Run `agentop service status` from the shell that installed the service to confirm that the service
+is installed. That command reads `$HOME` too, so another shell reports `not installed`. It does not
+tell you which install holds the port, because it asks the port rather than the supervisor. To stop
+the service, read
+[You must stop the service to run Cortex yourself](#you-must-stop-the-service-to-run-cortex-yourself).
 
 ### Two installs on one machine fight over the ports
 
 <!-- VERIFY: verified against main — all five ports come from the --local preset in
      cmd/cortex/local.go (47600 forward proxy, 47601 session API, 47602 statistics, 47603
      transparent listener, 47604 health) and the 30-second restart ceiling from superviseMaxDelay
-     in cmd/cortex/supervise.go. Both paths moved in the authbridge-proxy → cortex rename. -->
+     in cmd/cortex/supervise.go. Both paths moved in the authbridge-proxy → cortex rename.
+     Confirmed against v0.8.1: a second install repeated the bind failure with restart_in growing
+     2s, 4s, 8s, 16s and then holding at 30s. `cortex --local` binds four of the five ports and
+     skips the transparent listener; `cortex --config <file>`, which is how the service runs, binds
+     all five and logs "transparent proxy listening addr=127.0.0.1:47603". -->
 
 **The ports are fixed, so two installs cannot coexist.** The `--local` preset pins every listener to
 a literal port, not to a free one, so the second install to start never binds. This is the condition
@@ -159,6 +188,113 @@ a Go program there. It is correct on Linux and in CI. On macOS, use `NODE_EXTRA_
 programs such as Claude Code, and add the CA to the keychain for anything else.
 :::
 
+### You must stop the service to run Cortex yourself
+
+<!-- VERIFY: confirmed against a v0.8.1 install on macOS, with the output copied from a
+     terminal. The stop output; the plist path; the print-disabled format below; that a stop
+     disables the label and boots it out of the domain; that an uninstall removes the plist and
+     LEAVES that disable in place; that a later install clears it (the label read "disabled"
+     before an install and "enabled" after it); the port message from the preflight loop in
+     scripts/install.sh, and that it depends on $HOME/.cortex/config.yaml; and that a second
+     install under a different HOME adopts nothing and repeats a bind failure instead. The
+     tables also agree with controlService, loadService and unloadService in
+     cmd/agentop/cmd_service_platform.go. -->
+<!-- VERIFY v0.9.0: one claim is still unconfirmed by observation — that a stop survives a
+     LOGIN. Testing it needs a logout. It is read from the launchctl disable that `stop` writes,
+     which persists in the per-user disabled database. -->
+
+`agentop service` controls the supervisor of your operating system. On macOS it controls
+`launchd`. On Linux it controls `systemd`. To run your own Cortex process, stop the service first.
+The service holds port 47600, and two programs cannot hold one port.
+
+```bash
+agentop service stop
+```
+
+The command states the result, and the command that undoes it:
+
+```text
+Stopped, and it will stay stopped across logins.
+  agentop service start
+```
+
+A stop persists. Cortex does not run again at your next login, and it does not run again after you
+restart the computer.
+
+If you installed with `--claude-code`, Claude Code fails while the proxy is not running. That
+install fixes the proxy address in the environment of Claude Code, and Claude Code cannot use a
+direct connection instead. To remove that dependency, run `agentop configure claude-code disable`.
+An install without `--claude-code` configures no agent, so a stop affects only the agents that you
+pointed at the proxy yourself.
+
+#### What each command does to the supervisor
+
+On macOS, the service is the `launchd` label `io.rossoctl.cortex`, in the `gui/<uid>` domain.
+
+| Command | What it does on macOS |
+| --- | --- |
+| `agentop service stop` | Runs `launchctl bootout`, and then `launchctl disable`. |
+| `agentop service start` | Runs `launchctl enable`, which clears the disable, and then loads the label and starts it. |
+| `agentop service restart` | Boots out the label, and then loads it and starts it again. This also runs `launchctl enable`, so it clears the disable. |
+| `agentop service uninstall` | Runs `launchctl bootout`, and removes the `plist` file from `~/Library/LaunchAgents`. |
+
+A stop needs both steps. `launchctl bootout` removes the job from the running domain, and the `plist`
+file stays in `~/Library/LaunchAgents`. Launchd reads that file again at your next login, and Cortex
+starts again. `launchctl disable` writes to the disabled database of your user account, and that
+database persists.
+
+`agentop service install` also runs `launchctl enable`. A disable from an earlier stop therefore
+blocks no later install, and no later start.
+
+On Linux, the service is the `systemd` user unit `cortex.service`.
+
+| Command | What it does on Linux |
+| --- | --- |
+| `agentop service stop` | Runs `systemctl --user disable --now cortex.service`. |
+| `agentop service start` | Runs `systemctl --user enable --now cortex.service`. |
+| `agentop service uninstall` | Disables the unit, removes the unit file, and undoes the lingering that `agentop` enabled. |
+
+Both platforms give one meaning to a stop: the service stays stopped until you start it.
+
+#### Confirm that the service is stopped
+
+Ask the supervisor, and not the port. On macOS, read the disabled database:
+
+```bash
+launchctl print-disabled gui/$(id -u) | grep io.rossoctl.cortex
+```
+
+A service that you stopped reports the disable:
+
+```text
+"io.rossoctl.cortex" => disabled
+```
+
+The command prints nothing when the label has no entry in that database, which means that you did
+not stop the service.
+
+On Linux, ask `systemd`. A service that you stopped reports `disabled`:
+
+```bash
+systemctl --user is-enabled cortex.service
+```
+
+:::caution[`agentop service status` can report `healthy` after a stop]
+The `healthy` line of that command is a request to the health port. It is not a question to the
+supervisor, so any program that holds the port answers it. With a second Cortex install on the
+machine, the command reports `healthy` immediately after you stop your service, because the other
+install replies. Read
+[Two installs on one machine fight over the ports](#two-installs-on-one-machine-fight-over-the-ports).
+
+The rest of that output stays reliable. `agentop service status` reads the unit file, so the
+`installed` line and the `not installed` line both state the truth.
+:::
+
+:::note
+`agentop service uninstall` removes the service, and it keeps your data. Your configuration and your
+certificate authority stay in `~/.cortex`.
+:::
+
 ### The service does not start, or starts and stops
 
 Read the status first:
@@ -201,11 +337,16 @@ cortex#946 and cortex#947.
 
 The agent runs, but `agentop observe` shows no events. Check each cause in order:
 
-1. **The service does not run.** Run `agentop service status`.
+1. **The service does not run.** Run `agentop service status`. Read the caution in
+   [Confirm that the service is stopped](#confirm-that-the-service-is-stopped) first: the `healthy`
+   line probes the port, so another install answers it.
 2. **The agent does not use the proxy.** For an agent that is not Claude Code, confirm that you set
    the proxy variable and the certificate variable. See
    [Other agents](../get-started/laptop.md#other-agents).
-3. **The agent sends no traffic yet.** Send a message to the agent, and watch for the events.
+3. **A second install holds the ports.** Your agent then reaches the install that won the port,
+   while you watch the other one. Read
+   [Two installs on one machine fight over the ports](#two-installs-on-one-machine-fight-over-the-ports).
+4. **The agent sends no traffic yet.** Send a message to the agent, and watch for the events.
 
 ### The numbers are wrong or absent
 
