@@ -30,4 +30,4 @@ Implement robust Data Barriers designed to enforce strict, policy-driven dataflo
 
 ## Installing and running
 
-See: https://github.com/rossoctl/lab-data-governance/tree/v0.8
+See: https://github.com/rossoctl/lab-data-governance/tree/v0.8.1
