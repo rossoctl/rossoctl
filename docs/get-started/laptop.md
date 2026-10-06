@@ -106,31 +106,37 @@ reads traffic again after you start it.
 ## Other agents
 
 Any agent operates with RossoCortex. For the agents below, `agentop configure` sets the values for
-you. It reads them from `~/.cortex/config.yaml`.
+you. `claude-code` and `bob` read them from `~/.cortex/config.yaml`.
 
-<!-- VERIFY v0.9.0: switch the OpenCode row to `agentop configure opencode enable` once the release
-     carrying cortex#1243 is out, and say that enable/disable restart OpenCode's service, which
-     interrupts its open sessions (it asks first, cmd_opencode.go:101-108). -->
+<!-- VERIFY v0.9.0: once the release carrying cortex#1243 is out, switch the OpenCode paragraph
+     below to `agentop configure opencode enable`, and say that enable/disable restart OpenCode's
+     service, which interrupts its open sessions (it asks first, cmd_opencode.go:101-108). -->
 
 | Agent | Command | What it changes |
 | --- | --- | --- |
-| Claude Code | `agentop configure claude-code enable` | The proxy and CA variables in `~/.claude/settings.json`. |
-| IBM Bob | `agentop configure bob enable` | The `http.proxy` key in Bob's `settings.json` (macOS). It prints the keychain command that trusts the CA, which you run yourself. |
-| `bob` shell | `agentop configure bobshell enable` | A `bob` shell function in your rc file. Independent of the row above. |
+| Claude Code | `agentop configure claude-code enable` | The proxy and CA variables, and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`, in the `env` block of `~/.claude/settings.json`. |
+| IBM Bob | `agentop configure bob enable` | The `http.proxy` key in Bob's `settings.json` (macOS). It prints a `sudo` command that trusts the CA in the System keychain, which you run yourself. Restart Bob afterwards. |
+| Bob Shell | `agentop configure bobshell enable` | A `bob` function in `~/.zshrc` or `~/.bashrc` that runs Bob through `agentop exec`. This is separate from the IBM Bob row. |
 
 Each one takes `disable` to undo the change and `status` to report what is set. Run
 `agentop configure <agent> --help` for the detail.
 
-Codex and OpenCode read only their environment. Run them with `agentop exec -- codex` or
-`agentop exec -- opencode`. Nothing persists after the command ends.
+Codex reads only its environment. Run it with `agentop exec -- codex`. Nothing persists after the
+command ends.
+
+OpenCode sends its traffic from one background service. The first `opencode` starts that service,
+and later ones reuse it. It keeps the environment that it started with. So
+`agentop exec -- opencode` routes OpenCode only if no OpenCode service runs yet. `opencode service
+status` tells you. The service then stays on Cortex after the command ends, until it restarts.
 
 For an agent that is not listed, run it with `agentop exec -- <agent>`. That sets the proxy and the
-CA variables, each with the right file. To set them yourself:
+CA variables, each with the right file. To see them, run `agentop exec --print`. To set them
+yourself:
 
-- `HTTPS_PROXY=http://localhost:47600`
-- `NODE_EXTRA_CA_CERTS=~/.cortex/ca/ca.crt`
+- `HTTP_PROXY`, `HTTPS_PROXY`, `http_proxy` and `https_proxy` set to `http://localhost:47600`
+- `NODE_EXTRA_CA_CERTS` set to `$HOME/.cortex/ca/ca.crt`
 - `SSL_CERT_FILE`, `REQUESTS_CA_BUNDLE`, `CURL_CA_BUNDLE` and `GIT_SSL_CAINFO` set to
-  `~/.cortex/ca/bundle.crt`
+  `$HOME/.cortex/ca/bundle.crt`
 
 The last four **replace** the trust store rather than adding to it, so they need the bundle — the
 bridge CA together with the platform roots. Pointed at `ca.crt`, a program trusts only the Cortex CA,
