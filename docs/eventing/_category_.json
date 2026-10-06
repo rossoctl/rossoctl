@@ -1,0 +1,5 @@
+{
+  "label": "Eventing",
+  "position": 8,
+  "link": { "type": "doc", "id": "eventing/index" }
+}
