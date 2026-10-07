@@ -116,7 +116,7 @@ you. `claude-code` and `bob` read them from `~/.cortex/config.yaml`.
 | --- | --- | --- |
 | Claude Code | `agentop configure claude-code enable` | The proxy and CA variables, and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`, in the `env` block of `~/.claude/settings.json`. |
 | IBM Bob | `agentop configure bob enable` | The `http.proxy` key in Bob's `settings.json` (macOS). It prints a `sudo` command that trusts the CA in the System keychain, which you run yourself. Restart Bob afterwards. |
-| Bob Shell | `agentop configure bobshell enable` | A `bob` function in `~/.zshrc` or `~/.bashrc` that runs Bob through `agentop exec`. This is separate from the IBM Bob row. |
+| Bob Shell | `agentop configure bobshell enable` | A `bob` function in `~/.zshrc` or `~/.bashrc` that runs Bob Shell through `agentop exec`. This is separate from the IBM Bob row. |
 
 Each one takes `disable` to undo the change and `status` to report what is set. Run
 `agentop configure <agent> --help` for the detail.
