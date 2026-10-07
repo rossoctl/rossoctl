@@ -327,9 +327,9 @@ no measured call says `no latency samples in this window`.
 
 Read the mean for the average call, and the spread between the caps for how consistent the calls
 were: wide caps mean the bucket mixed fast and slow calls. A crossbar with no caps is one call, or
-calls too alike to separate at the chart's scale. A lower cap on the bottom row is clamped at zero,
-because a response time cannot be negative. It means the mean minus one standard deviation is near
-zero, not that a call answered instantly.
+calls too alike to separate at the chart's scale. The lower cap stops at zero, because a response
+time cannot be negative. A lower cap on the bottom row means that the mean minus one standard
+deviation falls in the bottom tenth of the chart. It does not mean that a call answered instantly.
 
 :::warning The upper cap is not the slowest call
 The caps are mean ± 1σ, a measure of spread, and not the fastest and the slowest call. The usage

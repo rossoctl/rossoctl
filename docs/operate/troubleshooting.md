@@ -25,8 +25,10 @@ Your agent reports a TLS error, or a certificate error, when it calls the model.
 the agent does not trust the certificate of RossoCortex.
 
 Cortex writes its certificate authority to `~/.cortex/ca/ca.crt`. The `--claude-code` install
-configures Claude Code for you. For another agent, `agentop configure` or `agentop exec` sets the
-certificate variable. See [Other agents](../get-started/laptop.md#other-agents).
+configures Claude Code for you. For another agent, `agentop exec` sets the certificate variables.
+IBM Bob is different: it trusts the CA through the System keychain, and `agentop configure bob
+enable` prints the `sudo` command that adds it, which you run yourself. See
+[Other agents](../get-started/laptop.md#other-agents).
 
 To confirm the certificate, read it:
 
@@ -185,12 +187,12 @@ HTTPS_PROXY=http://localhost:47600 \
   NODE_EXTRA_CA_CERTS=$HOME/.cortex/ca/ca.crt claude -p "say hi"
 ```
 
-Or keep the other one. Stop the service, stop every stray supervisor by PID, and start the install
-you want:
+Or keep the other one. Stop the service, stop any stray proxy by PID, and start the install you
+want:
 
 ```bash
 agentop service stop        # HOME set to the install that holds the port; abctl service stop on v0.7.0
-kill <pid> <pid>            # each stray supervisor from the ps output above
+kill <pid> <pid>            # each stray proxy from the ps output; on macOS, its supervisor
 agentop service install     # from the install you are keeping
 ```
 
@@ -343,12 +345,11 @@ or a certificate that it cannot write. The log gives the cause.
 
 ### Another program stopped working
 
-If `git`, `gh`, `ssh` or `curl` stops working after you install Cortex, the cause is a proxy or a
-certificate variable in your environment that sends other programs through Cortex. The most likely
-cause is a variable that **replaces** a trust store — `SSL_CERT_FILE` or `REQUESTS_CA_BUNDLE` —
-pointed at `~/.cortex/ca/ca.crt`. That file holds only the Cortex CA, so every other host fails to
-verify. Those variables need `~/.cortex/ca/bundle.crt`, which holds the Cortex CA and the platform
-roots.
+If `git`, `gh` or `curl` stops working after you install Cortex, the cause is a proxy or a
+certificate variable in your environment. The most likely one **replaces** a trust store —
+`SSL_CERT_FILE`, `REQUESTS_CA_BUNDLE`, `CURL_CA_BUNDLE` or `GIT_SSL_CAINFO` — and points at
+`~/.cortex/ca/ca.crt`. That file holds only the Cortex CA, so every other host fails to verify.
+Those variables need `~/.cortex/ca/bundle.crt`, which holds the Cortex CA and the platform roots.
 
 Cortex configures only your agent. It does not set a global proxy. Examine your shell profile and
 your environment for a proxy or certificate variable that you did not intend:
@@ -368,9 +369,9 @@ The agent runs, but `agentop observe` shows no events. Check each cause in order
    [Confirm that the service is stopped](#confirm-that-the-service-is-stopped) first: the `healthy`
    line probes the port, so another install answers it.
 2. **The agent does not use the proxy.** For an agent that is not Claude Code, confirm that you set
-   the proxy variable and the certificate variables. `agentop exec` sets both, and
-   `agentop configure` sets them for the agents it covers. See
-   [Other agents](../get-started/laptop.md#other-agents).
+   the proxy variable and the certificate variables. `agentop exec` sets both. For IBM Bob,
+   `agentop configure bob enable` sets the proxy, and the CA needs the `sudo` command that it
+   prints. See [Other agents](../get-started/laptop.md#other-agents).
 3. **A second install holds the ports.** Your agent then reaches the install that won the port,
    while you watch the other one. Read
    [Two installs on one machine fight over the ports](#two-installs-on-one-machine-fight-over-the-ports).
