@@ -9,95 +9,26 @@
 [![License](https://img.shields.io/github/license/rossoctl/rossoctl)](LICENSE)
 [![Slack](https://img.shields.io/badge/Slack-Join%20us-4A154B?logo=slack&logoColor=white)](https://ibm.biz/rossoctl-slack)
 
-## Platform primitives for trustworthy AI agents
+## The Rossoctl umbrella
 
-Rossoctl is a set of platform primitives for agent security, resilience, reliability, and efficiency. It has three parts: **RossoCortex**, a data plane; a set of callable **services**; and **tooling** for observability, security, governance, and administration.
+Rossoctl is the umbrella project for open-source infrastructure to run, connect, and benchmark AI coding agents — built in the open at [rossoctl.dev](https://rossoctl.dev/).
 
-It is open source, framework-neutral, and built on open standards, supporting [A2A](https://a2a-protocol.org/latest/) and [MCP](https://modelcontextprotocol.io).
+### Core projects
 
-> **Get started** → [Quickstart](./docs/get-started/kubernetes.md) · Learn more at [rossoctl.dev](https://rossoctl.dev/)
+- **[moca](https://github.com/rossoctl/moca)** - Dense, warm process-manager runtime for stateful AI coding agents — sessions resume exactly where they left off (Go)
+- **[cortex](https://github.com/rossoctl/cortex)** - The proxy layer between coding agents and everything they touch — see what your agent sends and pay less for it (Go) — [install stats](https://rossoctl.github.io/cortex/install-stats/) (estimated from GitHub download counts, not from user machines)
+- **[eventing-lab](https://github.com/rossoctl/eventing-lab)** - Signed-event agent wake path: a Kafka message wakes a coding agent and every step streams back as CloudEvents (Python)
+- **[autobench](https://github.com/rossoctl/autobench)** - Automated benchmarking of agentic AI workloads — deploys the workload, collects per-task telemetry, publishes durable artifacts (Python)
+- **[state-lab](https://github.com/rossoctl/state-lab)** - Demo flows exploring state requirements for distributed agents, from durability to passability
 
-## The problem
+For context & governance, automation, and the other repositories under the umbrella, see the [Rossoctl organization](https://github.com/rossoctl) on GitHub.
 
-AI agents are not traditional cloud applications. They choose their tools at runtime, blur the line between data and instructions, drift from their original goals, and cannot reliably report what they actually did.
+### This repository
 
-Kubernetes decoupled application logic from the guarantees production demands around admission, isolation, and failure recovery. An agent platform has to do the same for agents: decouple agent logic from the guarantees around admission, isolation, and failure recovery, so those guarantees hold no matter which framework built the agent.
+This repository is the **agentic platform installer for Kubernetes**: the installer, the web console, and the documentation for the Rossoctl platform.
 
-## RossoCortex, the data plane
-
-RossoCortex is an intercept. It sits transparently between an agent and everything external it touches: models, tools, users, and other agents. From that single vantage point it enforces guarantees an agent cannot provide on its own.
-
-It is flexible by design: it works with different agent types, including black-box harnesses, integrates with different sandboxes, and works across container network choices.
-
-| Capability | Status |
-|------------|--------|
-| Agent identity — every agent carries a verifiable identity, so the platform knows who is acting before it decides what they may do | Ready |
-| Authorization and access | Ready |
-| Intent-based access | beta in 0.7 |
-| Tool semantic validation | beta in 0.7 |
-| Context compaction | alpha in 0.7 |
-| Data-flow analysis | alpha in 0.7 |
-| Failure recovery | beta in 0.7 |
-| User interaction | beta in 0.7 |
-
-Agents integrate with RossoCortex through multiple paths — an **SDK**, agent **hooks**, a **gateway**, or an **orchestration** layer — behind a common intercept abstraction that spans MCP tools, API/CLI tools, and agents.
-
-## Rossoctl services
-
-Beyond the data plane, Rossoctl provides the building blocks agents need to do real work — lowering the risk of agentic workloads while using resources more efficiently:
-
-- **Skills** — reusable, governed capabilities an agent can draw on, versioned and controlled rather than pasted in
-- **Tools**
-- **Memory**
-- **Knowledge base**
-- **Sandboxes**
-
-## Quick Start
-
-### Prerequisites
-
-- Python ≥3.9 with [uv](https://docs.astral.sh/uv/getting-started/installation) installed
-- Docker Desktop, Rancher Desktop, or Podman (16GB RAM, 4 cores recommended)
-- [Kind](https://kind.sigs.k8s.io), [kubectl](https://kubernetes.io/docs/tasks/tools/), [Helm](https://helm.sh/docs/intro/install/)
-- [Ollama](https://ollama.com/download) for local LLM inference
-
-### Install
-
-```bash
-# Clone the repository
-git clone https://github.com/rossoctl/rossoctl.git
-cd rossoctl
-
-# Check out the latest release
-git checkout v0.7.0
-
-# Copy and configure secrets (optional)
-cp charts/rossoctl/.secrets_template.yaml charts/rossoctl/.secrets.yaml
-# Edit charts/rossoctl/.secrets.yaml with your values
-
-# Deploy to Kind cluster
-scripts/kind/setup-rossoctl.sh --with-ui --with-spire --with-agent-sandbox --with-builds
-```
-
-Use `scripts/kind/setup-rossoctl.sh --help` for all available options. For detailed instructions including OpenShift, refer to the [Installation Guide](./docs/operate/install-kubernetes.md).
-
-### Access the UI
-
-```bash
-# Show service URLs and credentials
-.github/scripts/local-setup/show-services.sh
-
-open http://rossoctl-ui.localtest.me:8080
-# Login with credentials from show-services.sh output
-```
-
-From the UI you can:
-- Import and deploy A2A agents from any framework
-- Deploy MCP tools directly from source
-- Test agents interactively
-- Monitor traces and network traffic
-
-To learn how to deploy agents and MCP tools, follow the **[Weather Agent Demo](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/weather-agent/demo-ui.md)** — the recommended getting-started tutorial that walks you through deploying an agent and tool via the UI and chatting with it end-to-end. For more demos, see the [full demo list](./docs/resources.md).
+- What the platform provides and how to install it → **[The Rossoctl platform installer](./INSTALLER.md)**
+- Straight to the commands → [Quickstart on Kubernetes](./docs/get-started/kubernetes.md)
 
 ## Documentation
 
@@ -118,11 +49,6 @@ Full documentation is at [rossoctl.dev/docs](https://rossoctl.dev/docs/).
 | **Demos and examples** | [Resources](./docs/resources.md) |
 | **Troubleshooting** | [Troubleshooting](./docs/operate/troubleshooting.md) |
 | **Developer guide** | [Developer's Guide](./docs/_internal/dev-guide.md) |
-
-## Supported Protocols
-
-- **[A2A (Agent-to-Agent)](https://a2a-protocol.org/latest/)** — Standard protocol for agent communication
-- **[MCP (Model Context Protocol)](https://modelcontextprotocol.io)** — Protocol for tool/server integration
 
 ## Contributing
 
