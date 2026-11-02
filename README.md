@@ -15,7 +15,7 @@ Rossoctl is the umbrella project for open-source infrastructure to run, connect,
 
 ### Core projects
 
-- **[moca](https://github.com/rossoctl/moca)** - Dense, warm process-manager runtime for stateful AI coding agents — sessions resume exactly where they left off (Go)
+- **[moca](https://github.com/rossoctl/moca)** - Dense, warm process-manager runtime for stateful AI coding agents — sessions resume exactly where they left off (TypeScript)
 - **[cortex](https://github.com/rossoctl/cortex)** - The proxy layer between coding agents and everything they touch — see what your agent sends and pay less for it (Go) — [install stats](https://rossoctl.github.io/cortex/install-stats/) (estimated from GitHub download counts, not from user machines)
 - **[eventing-lab](https://github.com/rossoctl/eventing-lab)** - Signed-event agent wake path: a Kafka message wakes a coding agent and every step streams back as CloudEvents (Python)
 - **[autobench](https://github.com/rossoctl/autobench)** - Automated benchmarking of agentic AI workloads — deploys the workload, collects per-task telemetry, publishes durable artifacts (Python)

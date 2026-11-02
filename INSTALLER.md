@@ -1,6 +1,8 @@
 # The Rossoctl platform installer
 
-This repository contains the **agentic platform installer for Kubernetes**: the installer, the web console, and the documentation for the Rossoctl platform. The platform is a set of platform primitives for agent security, resilience, reliability, and efficiency. It has three parts: **RossoCortex**, a data plane; a set of callable **services**; and **tooling** for observability, security, governance, and administration.
+This repository contains the **agentic platform installer for Kubernetes**: the installer, the web console, and the documentation for the Rossoctl platform.
+
+The platform is a set of platform primitives for agent security, resilience, reliability, and efficiency. It has three parts: **RossoCortex** (a data plane); a set of callable **services**; and **tooling** for observability, security, governance, and administration.
 
 It is open source, framework-neutral, and built on open standards, supporting [A2A](https://a2a-protocol.org/latest/) and [MCP](https://modelcontextprotocol.io).
 
