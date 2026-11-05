@@ -1,7 +1,7 @@
 # This file has been modified with the assistance of Bob
 
 # Use minimal Python base image
-FROM python:3.14-slim@sha256:cad9a2c871761c413caa6fdd6441c783451e740a48aaeba60ae62a8b53525ef6
+FROM python:3.15-slim@sha256:94d3426f1def7db4a106a232ac121bfd975393e5dfd40a619b955fae45fe7913
 
 # Set work directory
 WORKDIR /app
