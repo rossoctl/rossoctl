@@ -13,10 +13,14 @@ to be running when the request arrives, if a runner picks it up within `ER_MAX_R
 
 :::warning Alpha
 
-This section covers the event path in
-[`examples/eventing`](https://github.com/rossoctl/examples/tree/main/eventing), which exists to
-pin down the wire contract for event-driven agents. These pages describe `eventing/` at
+This section covers the event path, which exists to
+pin down the wire contract for event-driven agents. The code lives in
+[eventing-lab](https://github.com/rossoctl/eventing-lab); before its extraction, it was
+[`examples/eventing`](https://github.com/rossoctl/examples/tree/main/eventing), and these pages
+describe it there at
 [`d9677ddd`](https://github.com/rossoctl/examples/tree/d9677ddd1611afd05fe51fcdc0dee0cd27809e62/eventing).
+The examples repository is archived and read-only; the pinned-revision links remain as the
+historical record.
 
 **Every identity control described here is off by default.** As the shipped manifests start,
 requests are accepted anonymously, nothing is signed, and nothing is verified. See

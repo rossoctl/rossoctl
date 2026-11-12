@@ -17,7 +17,8 @@ A tool is a container that uses the [MCP protocol](https://modelcontextprotocol.
 | `/mcp` | `POST` | Receives MCP messages |
 
 The default service port is `9090`. For examples in several languages, see
-[examples/mcp](https://github.com/rossoctl/examples/tree/main/mcp).
+[examples/mcp](https://github.com/rossoctl/examples/tree/main/mcp). The examples repository is
+archived: the examples remain available, but receive no updates.
 
 ## Deploy from a container image
 
@@ -95,7 +96,8 @@ kubectl set env deployment/weather-service -n team1 \
 
 The example agents in [rossoctl/examples](https://github.com/rossoctl/examples) have an `.env.openai`
 file and an `.env.ollama` file. The default values in those files assume that the tool is in the same
-namespace as the agent.
+namespace as the agent. The repository is archived: the examples remain available, but receive no
+updates.
 
 ## Examine a tool
 

@@ -123,10 +123,10 @@ broadly scoped token just as readily.
 ## Sign in
 
 There is no installed `login` command. The CLI imports `eventbridge.ghauth` from the checkout, so
-run it from your clone of [`rossoctl/examples`](https://github.com/rossoctl/examples). The package
-declares `requires-python = ">=3.14"`, so use a Python at that version or later; macOS's stock
-`/usr/bin/python3` is older. The `login` path itself needs no virtual environment, because `ghauth`
-imports only the standard library.
+run it from your clone of [`rossoctl/eventing-lab`](https://github.com/rossoctl/eventing-lab). The
+package declares `requires-python = ">=3.14"`, so use a Python at that version or later; macOS's
+stock `/usr/bin/python3` is older. The `login` path itself needs no virtual environment, because
+`ghauth` imports only the standard library.
 
 ```bash
 cd eventing && python3 skills/eventbridge/eventbridge-cli.py login --client-id Ov23li...

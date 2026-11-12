@@ -8,7 +8,9 @@ Both resources use the API group `agent.rossoctl.dev` and the version `v1alpha1`
 resource, see [Control plane](../concepts/core/control-plane.md).
 
 The [operator API reference](https://github.com/rossoctl/operator/blob/main/operator/docs/api-reference.md)
-is the source of this page. The project generates that document from the resource definitions.
+is the source of this page. The project generates that document from the resource definitions. The
+operator repository is archived: the reference remains readable and remains the source of record
+for these resources, but receives no updates.
 
 ## AgentRuntime
 

@@ -24,7 +24,7 @@ streaming, declare it in the card.
 Most frameworks have an A2A server component. The
 [A2A specification](https://a2a-protocol.org/latest/) gives the message format if you write your own.
 [rossoctl/examples](https://github.com/rossoctl/examples) contains an example for each of several
-frameworks.
+frameworks. The repository is archived: the examples remain available, but receive no updates.
 
 ## The agent card
 

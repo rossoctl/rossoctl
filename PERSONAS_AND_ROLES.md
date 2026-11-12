@@ -16,7 +16,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Description**: Developers who create AI agents using various frameworks.
 
-**Primary Repository**: [agent-examples](https://github.com/rossoctl/examples)
+**Primary Repository**: [agent-examples](https://github.com/rossoctl/examples) (archived)
 
 **Frameworks Supported**:
 
@@ -48,7 +48,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Description**: Developers who create Model Context Protocol (MCP) tools that agents can interact with.
 
-**Primary Repository**: [agent-examples](https://github.com/rossoctl/examples)
+**Primary Repository**: [agent-examples](https://github.com/rossoctl/examples) (archived)
 
 **Tool Categories**:
 
@@ -111,7 +111,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Description**: Go developers who build and maintain Kubernetes operators for the Rossoctl ecosystem.
 
-**Primary Repository**: [rossoctl-operator](https://github.com/rossoctl/operator)
+**Primary Repository**: [rossoctl-operator](https://github.com/rossoctl/operator) (archived)
 
 **Key Responsibilities**:
 
@@ -386,12 +386,12 @@ Review Identity Patterns in [identity documentation](docs/security/authbridge.md
 | Repository | Primary Personas |
 |------------|------------------|
 | **[rossoctl](https://github.com/rossoctl/rossoctl)** | Platform Operator, UI Developer, End User |
-| **[agent-examples](https://github.com/rossoctl/examples)** | Agent Developer, Tool Developer |
+| **[agent-examples](https://github.com/rossoctl/examples)** (archived) | Agent Developer, Tool Developer |
 | **[mcp-gateway](https://github.com/Kuadrant/mcp-gateway)** | MCP Gateway Developer, MCP Gateway Operator |
-| **[rossoctl-operator](https://github.com/rossoctl/operator)** | Operator Developer, Platform Operator |
+| **[rossoctl-operator](https://github.com/rossoctl/operator)** (archived) | Operator Developer, Platform Operator |
 | **[cortex](https://github.com/rossoctl/cortex)** | Extensions Developer |
-| **[agentic-control-plane](https://github.com/rossoctl/agentic-control-plane)** | Extensions Developer, Agent Developer |
-| **[plugins-adapter](https://github.com/rossoctl/plugins-adapter)** | Extensions Developer, Security Specialist |
+| **[agentic-control-plane](https://github.com/rossoctl/agentic-control-plane)** (archived) | Extensions Developer, Agent Developer |
+| **[plugins-adapter](https://github.com/rossoctl/plugins-adapter)** (archived) | Extensions Developer, Security Specialist |
 | **[.github](https://github.com/rossoctl/.github)** | UI Developer |
 
 ---
