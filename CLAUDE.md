@@ -278,6 +278,6 @@ The work is the developer's; Claude Code assists. This applies to:
 - [Components](docs/concepts/core/architecture.md)
 - [AI Ops / Claude Code](docs/_internal/developer/README.md)
 - [Demos](docs/resources.md)
-- [AuthBridge Demos](https://github.com/rossoctl/cortex/blob/main/authbridge/demos/README.md) — Zero-trust agent demos (weather agent, github issue, webhook, multi-target) in cortex
+- [AuthBridge Demos](https://github.com/rossoctl/cortex-demos/blob/main/README.md) — Zero-trust agent demos (weather agent, github issue, webhook, multi-target) in cortex-demos
 - [Skills and Patterns](docs/concepts/experiments/skills.md)
 - [SVG Diagram Style Guide](docs/_internal/svg-diagram-style-guide.md) — palette and structure conventions for the hand-authored diagrams in `docs/images/`; read before creating or editing one
