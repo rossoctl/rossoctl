@@ -425,7 +425,7 @@ For each selected fix, cherry-pick into the appropriate release branch.
 - Always use `git cherry-pick -x` — the `-x` flag is **mandatory** for traceability
 - Follow dependency order: cortex → rossoctl (operator and agent-examples are archived and cannot be tagged or cherry-picked into; see [#2735](https://github.com/rossoctl/rossoctl/issues/2735))
 
-#### If fixes touch dependency repos (extensions or operator)
+#### If fixes touch dependency repos (cortex)
 
 **ASK:** "PR #89 is in cortex. Does that repo have a release-X.Y
 branch yet?"
