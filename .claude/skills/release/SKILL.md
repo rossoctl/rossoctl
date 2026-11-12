@@ -147,10 +147,16 @@ Image tag issues:
 
 All repos must be tagged in this order. Wait for CI to complete between each:
 
+> **Archived repos**: `rossoctl/operator` and `rossoctl/examples` are archived and can no longer
+> be tagged. Skip their steps; the operator chart dependency still resolves from published OCI
+> artifacts, and its succession is tracked in
+> [#2735](https://github.com/rossoctl/rossoctl/issues/2735). Re-check this order before each
+> release.
+
 ```
-1. rossoctl/operator     →  first
+1. rossoctl/operator     →  first (ARCHIVED — cannot be tagged; see note above)
 2. rossoctl/cortex   →  second
-3. rossoctl/examples       →  third (if applicable)
+3. rossoctl/examples       →  third (ARCHIVED — cannot be tagged; see note above)
 4. rossoctl/rossoctl              →  last (update Chart.yaml + values.yaml, then tag)
 ```
 

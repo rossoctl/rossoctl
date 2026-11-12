@@ -181,8 +181,13 @@ The `-x` flag is mandatory — it creates traceability between main and the back
 
 Rossoctl spans multiple repositories. Tags must be created in dependency order:
 
+> **Note**: `rossoctl/operator` is archived and can no longer be tagged. The operator chart
+> dependency still resolves from published OCI artifacts; its succession is tracked in
+> [#2735](https://github.com/rossoctl/rossoctl/issues/2735). Re-check this order before each
+> release.
+
 ```
-1. rossoctl/operator      →  tag, wait for CI
+1. rossoctl/operator      →  tag, wait for CI (ARCHIVED — cannot be tagged; see note above)
 2. rossoctl/cortex    →  tag, wait for CI
 3. rossoctl/rossoctl               →  update Chart.yaml + values.yaml, tag
 ```
