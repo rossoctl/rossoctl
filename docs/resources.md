@@ -22,7 +22,7 @@ The weather agent demonstration needs a Kubernetes cluster. See
 
 [rossoctl/examples](https://github.com/rossoctl/examples) contains agents for several frameworks. The
 MCP tools are in [examples/mcp](https://github.com/rossoctl/examples/tree/main/mcp). The repository
-is archived and read-only: the examples remain available and buildable, but receive no updates.
+is archived and read-only: the examples remain available, but receive no updates.
 The eventing examples moved to
 [eventing-lab](https://github.com/rossoctl/eventing-lab), which is maintained.
 
@@ -39,10 +39,10 @@ to confirm what the security model prevents.
 | Repository | Contents |
 | --- | --- |
 | [rossoctl](https://github.com/rossoctl/rossoctl) | Installer, web console, backend and these documents |
-| [operator](https://github.com/rossoctl/operator) | The Kubernetes operator and the custom resources. Archived. |
+| [operator](https://github.com/rossoctl/operator) (archived) | The Kubernetes operator and the custom resources |
 | [cortex](https://github.com/rossoctl/cortex) | The data plane, its plugins and its demonstrations |
 | [rossoctl-cli](https://github.com/rossoctl/rossoctl-cli) | The command-line interface |
-| [examples](https://github.com/rossoctl/examples) | Example agents and tools. Archived. |
+| [examples](https://github.com/rossoctl/examples) (archived) | Example agents and tools |
 
 The [organization profile](https://github.com/rossoctl) lists every repository, and marks each one as
 core or experimental.

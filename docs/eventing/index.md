@@ -20,7 +20,8 @@ pin down the wire contract for event-driven agents. The code lives in
 describe it there at
 [`d9677ddd`](https://github.com/rossoctl/examples/tree/d9677ddd1611afd05fe51fcdc0dee0cd27809e62/eventing).
 The examples repository is archived and read-only; the pinned-revision links remain as the
-historical record.
+historical record. eventing-lab `main` already includes fixes for several limits described in
+[Identity](identity.md); until these pages are re-verified, they describe the pinned revision.
 
 **Every identity control described here is off by default.** As the shipped manifests start,
 requests are accepted anonymously, nothing is signed, and nothing is verified. See

@@ -17,12 +17,12 @@ The Rossoctl organization consists of the following repositories:
 | Repository | Language | Description |
 |------------|----------|-------------|
 | **[rossoctl](https://github.com/rossoctl/rossoctl)** | Python | UI dashboard and documentation |
-| **[rossoctl-operator](https://github.com/rossoctl/operator)** | Go | Kubernetes operator for agent/tool lifecycle management (archived) |
+| **[rossoctl-operator](https://github.com/rossoctl/operator)** (archived) | Go | Kubernetes operator for agent/tool lifecycle management |
 | **[mcp-gateway](https://github.com/Kuadrant/mcp-gateway)** | Go | Envoy-based MCP Gateway for tool federation |
-| **[agent-examples](https://github.com/rossoctl/examples)** | Python | Sample agents and tools for the platform (archived) |
+| **[agent-examples](https://github.com/rossoctl/examples)** (archived) | Python | Sample agents and tools for the platform |
 | **[cortex](https://github.com/rossoctl/cortex)** | Go | Extensions and plugins |
-| **[agentic-control-plane](https://github.com/rossoctl/agentic-control-plane)** | Python | Control plane of specialized A2A agents (archived) |
-| **[plugins-adapter](https://github.com/rossoctl/plugins-adapter)** | Python | Guardrails configuration for MCP Gateway (archived) |
+| **[agentic-control-plane](https://github.com/rossoctl/agentic-control-plane)** (archived) | Python | Control plane of specialized A2A agents |
+| **[plugins-adapter](https://github.com/rossoctl/plugins-adapter)** (archived) | Python | Guardrails configuration for MCP Gateway |
 | **[.github](https://github.com/rossoctl/.github)** | HTML | Project website (Hugo-based) |
 
 ---

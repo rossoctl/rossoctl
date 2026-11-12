@@ -69,14 +69,19 @@ artifacts when a tag is pushed:
 |------------|----------------------|----------------|
 | [rossoctl/rossoctl](https://github.com/rossoctl/rossoctl) | Container images (ui-v2, backend, oauth-secrets), Helm charts (rossoctl, rossoctl-deps) | `build.yaml` |
 | [rossoctl/cortex](https://github.com/rossoctl/cortex) | Container images (envoy-with-processor, proxy-init, client-registration), webhook binary + ko image, Helm chart (cortex-webhook-chart) | `build.yaml`, `goreleaser.yml` |
-| [rossoctl/operator](https://github.com/rossoctl/operator) | Operator image, Helm chart (operator-chart) | repo-specific |
-| [rossoctl/examples](https://github.com/rossoctl/examples) | Sample agent/tool images | repo-specific |
+| [rossoctl/operator](https://github.com/rossoctl/operator) (archived) | Operator image, Helm chart (operator-chart) | repo-specific |
+| [rossoctl/examples](https://github.com/rossoctl/examples) (archived) | Sample agent/tool images | repo-specific |
 
 ## Release Order
 
 The `rossoctl/rossoctl` Helm chart depends on sub-charts from other repos
 (defined in `charts/rossoctl/Chart.yaml`). Dependency repos must be tagged
 **before** the main repo:
+
+> **Note**: `rossoctl/operator` and `rossoctl/examples` are archived and can no longer be tagged.
+> The operator chart dependency still resolves from published OCI artifacts; its succession is
+> tracked in [#2735](https://github.com/rossoctl/rossoctl/issues/2735). Re-check this order before
+> the next release.
 
 ```
 1. rossoctl/operator     →  tag & wait for CI
