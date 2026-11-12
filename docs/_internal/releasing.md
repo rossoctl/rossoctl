@@ -84,9 +84,9 @@ The `rossoctl/rossoctl` Helm chart depends on sub-charts from other repos
 > the next release.
 
 ```
-1. rossoctl/operator     →  tag & wait for CI
+1. rossoctl/operator     →  tag & wait for CI (ARCHIVED — cannot be tagged; see note above)
 2. rossoctl/cortex   →  tag & wait for CI
-3. rossoctl/examples       →  tag (if applicable)
+3. rossoctl/examples       →  tag (if applicable) (ARCHIVED — cannot be tagged; see note above)
 4. rossoctl/rossoctl              →  update Chart.yaml, tag
 ```
 
@@ -520,9 +520,9 @@ vX.Y.0-alpha.N   →   vX.Y.0-rc.1   →   rc.2 → ... → rc.N   →   vX.Y.0 
 Tag repos in this order. Wait for CI between each:
 
 ```
-1. rossoctl/operator     →  tag, wait for CI + images
+1. rossoctl/operator     →  tag, wait for CI + images (ARCHIVED — cannot be tagged; see the note under Release Order)
 2. rossoctl/cortex   →  tag, wait for CI + images
-3. rossoctl/examples       →  tag (if applicable)
+3. rossoctl/examples       →  tag (if applicable) (ARCHIVED — cannot be tagged; see the note under Release Order)
 4. rossoctl/rossoctl              →  update Chart.yaml + values.yaml, tag
 ```
 

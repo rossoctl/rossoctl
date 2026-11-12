@@ -161,9 +161,10 @@ absent.
      closed as completed — but with enforcement off, which is the default, the headline at
      "Anything that can write to the responses topic" stays true. Audit mode: #886, closed as
      completed. The open PUT /transcript and the listable ids: #887, transferred to
-     rossoctl/eventing-lab#1 and still open. Refusal with no keyset refusing nothing, and the
-     missing EB_SIGNING_KID-in-keyset check, both under "Turning the controls on": #888, closed as
-     completed. Re-verify all of these against eventing-lab, where the code now lives. -->
+     rossoctl/eventing-lab#1 and still open. Refusal with no keyset refusing nothing, under
+     "Turning the controls on": #888, closed as completed; the EB_SIGNING_KID-in-keyset check is
+     still missing on eventing-lab main. Re-verify all of these against eventing-lab, where the
+     code now lives. -->
 
 
 - **Only starting work is authenticated.** `POST /v0/agents` and `POST /v0/groups` check sign-in.
@@ -264,9 +265,9 @@ Two cases are easy to miss once refusal is on and a keyset is loaded:
   event. The rewrite replaces the event's data, so the completion notification loses the real
   counts and reports the batch as `0 finished`, `ended by: no ce_signature attribute`. Nothing at
   startup checks that `EB_SIGNING_KID` is in the keyset.
-  <!-- VERIFY v0.9.0: drop the startup-check sentence — rossoctl/examples#888, which adds that
-       check, is closed as completed: the fix landed before that repository was archived, and the
-       code now lives in eventing-lab. -->
+  <!-- VERIFY v0.9.0: still true on eventing-lab main — startup checks EB_SIGNING_KID is set
+       (eventbridge/__main__.py:82), not that it is in the keyset. #888 closed without this
+       check. -->
 
 On the response side, an unsigned streamed frame still passes. Enforcement rewrites a terminal or
 group event that does not verify, and any frame whose signature does not verify; a verified event is
