@@ -98,10 +98,11 @@ responses   EventRunner signs  ─▶  EventBridge verifies terminal events befo
 That file **is** the approved-agent list. With enforcement on, an event signed under a kid that
 is not in the file is refused, and so is a terminal event with no signature.
 
-<!-- VERIFY v0.9.0: drop "the flag does not stop it" once rossoctl/examples#885 lands — it proposes
-     that a rejected event no longer reach on_group_event, on_member_event or insert_response as if
-     it were genuine. Recheck "stored as phase=error, shown as a failure in the transcript" below at
-     the same time. -->
+<!-- VERIFY v0.9.0: drop "the flag does not stop it" — rossoctl/examples#885 proposed that a
+     rejected event no longer reach on_group_event, on_member_event or insert_response as if it
+     were genuine, and is closed as completed: the fix landed before that repository was archived,
+     and the code now lives in eventing-lab. Recheck "stored as phase=error, shown as a failure in
+     the transcript" below at the same time. -->
 
 Group events are signed by EventBridge, under `EB_SIGNING_KID`, so a group event under any other
 kid is flagged with enforcement on. **At this revision the flag does not stop it**, and a refused
@@ -129,7 +130,9 @@ Two refusals are worth seeing. Both need their control turned on first:
   does not count the member as failed. Verification without the refusal flag is audit
   mode: the event is stored unchanged. **At this revision nothing records the failure**, so there is
   no reject rate to watch before you enforce.
-  <!-- VERIFY v0.9.0: drop "nothing records the failure" once rossoctl/examples#886 lands. -->
+  <!-- VERIFY v0.9.0: drop "nothing records the failure" — rossoctl/examples#886 is closed as
+       completed: the fix landed before that repository was archived, and the code now lives in
+       eventing-lab. -->
 
 EventRunner does not run a refused request, but the transcript can still show it: EventBridge's
 requests mirror does not verify signatures, so a forged prompt can still be back-filled into the
@@ -153,12 +156,14 @@ fragment — and it is the limit behind the next section.
 Be precise about the claims, because a control that is oversold is worse than one that is
 absent.
 
-<!-- VERIFY v0.9.0: several limits below are open bugs in the examples repo. Group completion with
-     enforcement on, and the overwrite: rossoctl/examples#885 — but with enforcement off, which is
-     the default, the headline at "Anything that can write to the responses topic" stays true after
-     it lands. Audit mode: #886. The open PUT /transcript and the listable ids: #887. Refusal with
-     no keyset refusing nothing, and the missing EB_SIGNING_KID-in-keyset check, both under
-     "Turning the controls on": #888. -->
+<!-- VERIFY v0.9.0: several limits below were open bugs in the examples repo, which is now
+     archived. Group completion with enforcement on, and the overwrite: rossoctl/examples#885,
+     closed as completed — but with enforcement off, which is the default, the headline at
+     "Anything that can write to the responses topic" stays true. Audit mode: #886, closed as
+     completed. The open PUT /transcript and the listable ids: #887, transferred to
+     rossoctl/eventing-lab#1 and still open. Refusal with no keyset refusing nothing, and the
+     missing EB_SIGNING_KID-in-keyset check, both under "Turning the controls on": #888, closed as
+     completed. Re-verify all of these against eventing-lab, where the code now lives. -->
 
 
 - **Only starting work is authenticated.** `POST /v0/agents` and `POST /v0/groups` check sign-in.
@@ -236,7 +241,9 @@ one, with `client_id = ""` and `allowed_users = []`, and sign-in is off. A non-e
 is what turns sign-in on.
 
 <!-- VERIFY v0.9.0: the table's "records nothing" on the Response refusal row depends on
-     rossoctl/examples#886, and "without EB_VERIFY_KEYSET_PATH it has no effect" on #888. -->
+     rossoctl/examples#886, and "without EB_VERIFY_KEYSET_PATH it has no effect" on #888. Both
+     issues are closed as completed; re-verify the table against eventing-lab, where the code now
+     lives. -->
 
 **The controls depend on each other, and the two sides fail in opposite directions. On each side,
 turn signing on before refusal.** On the request side, refusal before the matching signer, key and
@@ -257,15 +264,18 @@ Two cases are easy to miss once refusal is on and a keyset is loaded:
   event. The rewrite replaces the event's data, so the completion notification loses the real
   counts and reports the batch as `0 finished`, `ended by: no ce_signature attribute`. Nothing at
   startup checks that `EB_SIGNING_KID` is in the keyset.
-  <!-- VERIFY v0.9.0: drop the startup-check sentence once rossoctl/examples#888 adds that check. -->
+  <!-- VERIFY v0.9.0: drop the startup-check sentence — rossoctl/examples#888, which adds that
+       check, is closed as completed: the fix landed before that repository was archived, and the
+       code now lives in eventing-lab. -->
 
 On the response side, an unsigned streamed frame still passes. Enforcement rewrites a terminal or
 group event that does not verify, and any frame whose signature does not verify; a verified event is
 stored unchanged. At this revision a rewritten event can still take effect: a rewritten group event
 is applied, and a rewritten member answer counts that member as failed.
 
-<!-- VERIFY v0.9.0: drop "a rewritten event can still take effect" once rossoctl/examples#885
-     lands. -->
+<!-- VERIFY v0.9.0: drop "a rewritten event can still take effect" — rossoctl/examples#885 is
+     closed as completed: the fix landed before that repository was archived, and the code now
+     lives in eventing-lab. -->
 
 One case to know on the sign-in side: a client id with no approved-user list refuses every GitHub
 sign-in with `403`, while a request with no credential still gets `401` and a static-token holder
