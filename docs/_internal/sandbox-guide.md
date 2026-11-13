@@ -5,9 +5,9 @@ draft: true       # excluded from https://www.rossoctl.dev/
 # Rossoctl Sandbox Guide (OpenShell)
 
 This guide covers installing and using the Rossoctl sandboxing feature powered by
-[OpenShell](https://github.com/NVIDIA/OpenShell). Rossoctl maintains a
+[OpenShell](https://github.com/NVIDIA/OpenShell). Rossoctl maintained a
 [distribution fork](https://github.com/rossoctl/OpenShell) (`mvp-v2` branch) with
-Rossoctl-specific multitenancy patches. The upstream CLI works as-is — no
+Rossoctl-specific multitenancy patches; the fork is archived. The upstream CLI works as-is — no
 fork-specific build is needed. Sandboxes provide kernel-level isolation for
 autonomous AI agents with credential protection and network policy enforcement.
 

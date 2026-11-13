@@ -147,10 +147,16 @@ Image tag issues:
 
 All repos must be tagged in this order. Wait for CI to complete between each:
 
+> **Archived repos**: `rossoctl/operator` and `rossoctl/examples` are archived and can no longer
+> be tagged. Skip their steps; the operator chart dependency still resolves from published OCI
+> artifacts, and its succession is tracked in
+> [#2735](https://github.com/rossoctl/rossoctl/issues/2735). Re-check this order before each
+> release.
+
 ```
-1. rossoctl/operator     →  first
+1. rossoctl/operator     →  first (ARCHIVED — cannot be tagged; see note above)
 2. rossoctl/cortex   →  second
-3. rossoctl/examples       →  third (if applicable)
+3. rossoctl/examples       →  third (ARCHIVED — cannot be tagged; see note above)
 4. rossoctl/rossoctl              →  last (update Chart.yaml + values.yaml, then tag)
 ```
 
@@ -168,7 +174,7 @@ bash scripts/pin-release-tags.sh <version>
 bash scripts/check-release-pins.sh
 ```
 
-- [ ] Tag dependency repos first (operator → extensions → agent-examples)
+- [ ] Tag dependency repos first (operator and agent-examples are ARCHIVED — cannot be tagged; skip them, see [#2735](https://github.com/rossoctl/rossoctl/issues/2735))
 - [ ] Update `charts/rossoctl/Chart.yaml` with new sub-chart versions
 - [ ] Run `helm dependency update charts/rossoctl/`
 - [ ] Commit, merge to main, then tag `rossoctl/rossoctl`
@@ -417,9 +423,9 @@ For each selected fix, cherry-pick into the appropriate release branch.
 **Important rules (from SOP):**
 - All fixes MUST land on `main` first — never commit directly to a release branch
 - Always use `git cherry-pick -x` — the `-x` flag is **mandatory** for traceability
-- Follow dependency order: operator → extensions → rossoctl
+- Follow dependency order: cortex → rossoctl (operator and agent-examples are archived and cannot be tagged or cherry-picked into; see [#2735](https://github.com/rossoctl/rossoctl/issues/2735))
 
-#### If fixes touch dependency repos (extensions or operator)
+#### If fixes touch dependency repos (cortex)
 
 **ASK:** "PR #89 is in cortex. Does that repo have a release-X.Y
 branch yet?"
@@ -667,8 +673,8 @@ Full release notes with component compatibility table:
 |-----------|---------|
 | rossoctl (platform) | vX.Y.0 |
 | cortex (webhook) | vA.B.0 |
-| rossoctl-operator | vC.D.0 |
-| agent-examples | vE.F.0 |
+| rossoctl-operator | ARCHIVED — no new versions; last published chart still resolves (see [#2735](https://github.com/rossoctl/rossoctl/issues/2735)) |
+| agent-examples | ARCHIVED — no new versions |
 
 ## Upgrade Notes
 - (special steps from previous GA)
@@ -770,7 +776,7 @@ gh pr create --base release-X.Y --repo rossoctl/rossoctl \
 When fixes span multiple repos, cherry-pick and tag in dependency order:
 
 ```
-1. rossoctl-operator (if affected)     → cherry-pick, tag RC
+1. rossoctl-operator     → ARCHIVED — cannot be cherry-picked into or tagged; skip
 2. cortex (if affected)   → cherry-pick, tag RC
 3. rossoctl/rossoctl                    → update Chart.yaml deps, cherry-pick fixes, tag RC
 ```

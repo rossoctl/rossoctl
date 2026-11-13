@@ -356,8 +356,11 @@ Import environment variables directly from agent example repositories:
 
 ```
 https://raw.githubusercontent.com/rossoctl/examples/main/a2a/git_issue_agent/.env.openai
-https://raw.githubusercontent.com/rossoctl/examples/main/a2a/weather_service/.env
+https://raw.githubusercontent.com/rossoctl/examples/main/a2a/weather_service/.env.openai
 ```
+
+The examples repository is archived: these URLs keep resolving, but the templates are frozen at
+the final revision.
 
 ### Additional Resources
 

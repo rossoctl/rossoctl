@@ -113,9 +113,9 @@ Cluster
 
 | Upstream | Fork | Changes |
 |---|---|---|
-| [NVIDIA/OpenShell](https://github.com/NVIDIA/OpenShell) | [rossoctl/openshell](https://github.com/rossoctl/openshell) | `--compute-driver-socket` + `--credentials-driver-socket` flags, OIDC (PR #935) |
-| [openshell-driver-openshift](https://github.com/zanetworker/openshell-driver-openshift) | [rossoctl/openshell-driver-openshift](https://github.com/rossoctl/openshell-driver-openshift) | Namespace flag, tenant labels, scoped RBAC, dtach |
-| New | [rossoctl/openshell-credentials-keycloak](https://github.com/rossoctl/openshell-credentials-keycloak) | OAuth2 client_credentials via Keycloak (~500 lines Go) |
+| [NVIDIA/OpenShell](https://github.com/NVIDIA/OpenShell) | [rossoctl/openshell](https://github.com/rossoctl/openshell) (archived) | `--compute-driver-socket` + `--credentials-driver-socket` flags, OIDC (PR #935) |
+| [openshell-driver-openshift](https://github.com/zanetworker/openshell-driver-openshift) | [rossoctl/openshell-driver-openshift](https://github.com/rossoctl/openshell-driver-openshift) (archived) | Namespace flag, tenant labels, scoped RBAC, dtach |
+| New | [rossoctl/openshell-credentials-keycloak](https://github.com/rossoctl/openshell-credentials-keycloak) (archived) | OAuth2 client_credentials via Keycloak (~500 lines Go) |
 
 ## 3. Agent Deployment Tiers
 

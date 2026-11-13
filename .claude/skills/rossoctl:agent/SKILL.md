@@ -29,7 +29,8 @@ description: Create, build, and deploy A2A agents on Rossoctl Kind clusters usin
 ## Reference Agent
 
 The recipe_agent is a complete working example of a simple conversational agent:
-- Source: `~/git/rossoctl/examples/a2a/recipe_agent/`
+- Source: `~/git/rossoctl/examples/a2a/recipe_agent/` (the examples repository is archived and
+  read-only — the reference is frozen; see the note in Step 1)
 - Deployment: `rossoctl/examples/agents/recipe_service_deployment.yaml`
 - Service: `rossoctl/examples/agents/recipe_service_service.yaml`
 
@@ -77,6 +78,13 @@ flowchart TD
 > Follow this diagram as the workflow.
 
 ## Step 1: Scaffold Agent Source
+
+> **Note**: `~/git/rossoctl/examples` is a clone of the archived examples repository. It works as
+> scratch space for building images, but nothing created there can be pushed upstream — the
+> repository is read-only. For an agent that outlives local experimentation, keep the source in
+> your own repository (the sample-agent succession is tracked in
+> [#2735](https://github.com/rossoctl/rossoctl/issues/2735)). Deployment manifests still go in
+> this repo, under `rossoctl/examples/agents/`.
 
 Create files under `~/git/rossoctl/examples/a2a/<AGENT_NAME>/`:
 

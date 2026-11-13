@@ -69,8 +69,8 @@ artifacts when a tag is pushed:
 |------------|----------------------|----------------|
 | [rossoctl/rossoctl](https://github.com/rossoctl/rossoctl) | Container images (ui-v2, backend, oauth-secrets), Helm charts (rossoctl, rossoctl-deps) | `build.yaml` |
 | [rossoctl/cortex](https://github.com/rossoctl/cortex) | Container images (envoy-with-processor, proxy-init, client-registration), webhook binary + ko image, Helm chart (cortex-webhook-chart) | `build.yaml`, `goreleaser.yml` |
-| [rossoctl/operator](https://github.com/rossoctl/operator) | Operator image, Helm chart (operator-chart) | repo-specific |
-| [rossoctl/examples](https://github.com/rossoctl/examples) | Sample agent/tool images | repo-specific |
+| [rossoctl/operator](https://github.com/rossoctl/operator) (archived) | Operator image, Helm chart (operator-chart) | repo-specific |
+| [rossoctl/examples](https://github.com/rossoctl/examples) (archived) | Sample agent/tool images | repo-specific |
 
 ## Release Order
 
@@ -78,10 +78,15 @@ The `rossoctl/rossoctl` Helm chart depends on sub-charts from other repos
 (defined in `charts/rossoctl/Chart.yaml`). Dependency repos must be tagged
 **before** the main repo:
 
+> **Note**: `rossoctl/operator` and `rossoctl/examples` are archived and can no longer be tagged.
+> The operator chart dependency still resolves from published OCI artifacts; its succession is
+> tracked in [#2735](https://github.com/rossoctl/rossoctl/issues/2735). Re-check this order before
+> the next release.
+
 ```
-1. rossoctl/operator     →  tag & wait for CI
+1. rossoctl/operator     →  tag & wait for CI (ARCHIVED — cannot be tagged; see note above)
 2. rossoctl/cortex   →  tag & wait for CI
-3. rossoctl/examples       →  tag (if applicable)
+3. rossoctl/examples       →  tag (if applicable) (ARCHIVED — cannot be tagged; see note above)
 4. rossoctl/rossoctl              →  update Chart.yaml, tag
 ```
 
@@ -515,9 +520,9 @@ vX.Y.0-alpha.N   →   vX.Y.0-rc.1   →   rc.2 → ... → rc.N   →   vX.Y.0 
 Tag repos in this order. Wait for CI between each:
 
 ```
-1. rossoctl/operator     →  tag, wait for CI + images
+1. rossoctl/operator     →  tag, wait for CI + images (ARCHIVED — cannot be tagged; see the note under Release Order)
 2. rossoctl/cortex   →  tag, wait for CI + images
-3. rossoctl/examples       →  tag (if applicable)
+3. rossoctl/examples       →  tag (if applicable) (ARCHIVED — cannot be tagged; see the note under Release Order)
 4. rossoctl/rossoctl              →  update Chart.yaml + values.yaml, tag
 ```
 

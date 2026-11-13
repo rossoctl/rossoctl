@@ -24,9 +24,9 @@ The organization also has related experiments that are not part of an installati
 
 | Repository | Purpose |
 | --- | --- |
-| [OpenShell](https://github.com/rossoctl/OpenShell) | A private runtime for an autonomous agent. This repository is a fork. |
-| [openshell-driver-openshift](https://github.com/rossoctl/openshell-driver-openshift) | An OpenShell driver that creates sandboxes on OpenShift. |
-| [serverless-harness](https://github.com/rossoctl/serverless-harness) | Runs an agent with no compute cost between turns, and resumes it later. |
+| [OpenShell](https://github.com/rossoctl/OpenShell) (archived) | A private runtime for an autonomous agent. This repository is a fork. |
+| [openshell-driver-openshift](https://github.com/rossoctl/openshell-driver-openshift) (archived) | An OpenShell driver that creates sandboxes on OpenShift. |
+| [moca](https://github.com/rossoctl/moca) | Runs an agent with no compute cost between turns, and resumes it later. Formerly `serverless-harness`. |
 
 ## Deploy an agent in a sandbox
 

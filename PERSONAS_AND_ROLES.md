@@ -16,7 +16,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Description**: Developers who create AI agents using various frameworks.
 
-**Primary Repository**: [agent-examples](https://github.com/rossoctl/examples)
+**Primary Repository**: [agent-examples](https://github.com/rossoctl/examples) (archived)
 
 **Frameworks Supported**:
 
@@ -36,7 +36,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 **Getting Started**:
 
 1. Review instructions in [new-agent](docs/workloads/deploy-an-agent.md) documentation
-2. Clone [agent-examples](https://github.com/rossoctl/examples) repository
+2. Clone [agent-examples](https://github.com/rossoctl/examples) repository (archived, read-only)
 3. Explore framework-specific examples (`a2a/slack_researcher`, `a2a/weather_service`)
 4. Use sample Dockerfiles and configurations as templates
 5. Access Rossoctl UI and navigate to "Import New Agent"
@@ -48,7 +48,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Description**: Developers who create Model Context Protocol (MCP) tools that agents can interact with.
 
-**Primary Repository**: [agent-examples](https://github.com/rossoctl/examples)
+**Primary Repository**: [agent-examples](https://github.com/rossoctl/examples) (archived)
 
 **Tool Categories**:
 
@@ -66,7 +66,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Getting Started**:
 
-1. Study MCP tool examples in [agent-examples](https://github.com/rossoctl/examples) (`mcp/slack_tool`, `mcp/weather_tool`)
+1. Study MCP tool examples in [agent-examples](https://github.com/rossoctl/examples) (`mcp/slack_tool`, `mcp/weather_tool`) (archived, read-only)
 2. Implement your tool following MCP protocol standards
 3. Create appropriate Dockerfile and configuration files
 4. Access "Import New Tool" in Rossoctl UI
@@ -111,7 +111,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Description**: Go developers who build and maintain Kubernetes operators for the Rossoctl ecosystem.
 
-**Primary Repository**: [rossoctl-operator](https://github.com/rossoctl/operator)
+**Primary Repository**: [rossoctl-operator](https://github.com/rossoctl/operator) (archived)
 
 **Key Responsibilities**:
 
@@ -136,7 +136,7 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Getting Started**:
 
-1. Clone [rossoctl-operator](https://github.com/rossoctl/operator) repository
+1. Clone [rossoctl-operator](https://github.com/rossoctl/operator) repository (archived, read-only; the succession is tracked in [#2735](https://github.com/rossoctl/rossoctl/issues/2735))
 2. Set up Go development environment
 3. Study existing CRDs and controller implementations
 4. Develop custom operators using controller-runtime
@@ -150,9 +150,9 @@ Rossoctl is a cloud-native middleware platform that provides framework-neutral, 
 
 **Primary Repositories**:
 
-- [cortex](https://github.com/rossoctl/cortex) - Core extensions (Go)
-- [plugins-adapter](https://github.com/rossoctl/plugins-adapter) - Guardrails and policy plugins (Python)
-- [agentic-control-plane](https://github.com/rossoctl/agentic-control-plane) - A2A control plane agents (Python)
+- [cortex](https://github.com/rossoctl/cortex) - Core extensions (Go). The only maintained one.
+- [plugins-adapter](https://github.com/rossoctl/plugins-adapter) - Guardrails and policy plugins (Python) (archived)
+- [agentic-control-plane](https://github.com/rossoctl/agentic-control-plane) - A2A control plane agents (Python) (archived)
 
 **Extension Types**:
 
@@ -386,12 +386,12 @@ Review Identity Patterns in [identity documentation](docs/security/authbridge.md
 | Repository | Primary Personas |
 |------------|------------------|
 | **[rossoctl](https://github.com/rossoctl/rossoctl)** | Platform Operator, UI Developer, End User |
-| **[agent-examples](https://github.com/rossoctl/examples)** | Agent Developer, Tool Developer |
+| **[agent-examples](https://github.com/rossoctl/examples)** (archived) | Agent Developer, Tool Developer |
 | **[mcp-gateway](https://github.com/Kuadrant/mcp-gateway)** | MCP Gateway Developer, MCP Gateway Operator |
-| **[rossoctl-operator](https://github.com/rossoctl/operator)** | Operator Developer, Platform Operator |
+| **[rossoctl-operator](https://github.com/rossoctl/operator)** (archived) | Operator Developer, Platform Operator |
 | **[cortex](https://github.com/rossoctl/cortex)** | Extensions Developer |
-| **[agentic-control-plane](https://github.com/rossoctl/agentic-control-plane)** | Extensions Developer, Agent Developer |
-| **[plugins-adapter](https://github.com/rossoctl/plugins-adapter)** | Extensions Developer, Security Specialist |
+| **[agentic-control-plane](https://github.com/rossoctl/agentic-control-plane)** (archived) | Extensions Developer, Agent Developer |
+| **[plugins-adapter](https://github.com/rossoctl/plugins-adapter)** (archived) | Extensions Developer, Security Specialist |
 | **[.github](https://github.com/rossoctl/.github)** | UI Developer |
 
 ---

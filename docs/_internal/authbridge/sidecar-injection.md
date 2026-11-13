@@ -131,6 +131,7 @@ operator's namespace and take effect immediately (no restart needed).
 | `perWorkloadConfigResolution` | `false` | When `true`, webhook reads namespace ConfigMaps at admission time and injects literal env var values instead of `valueFrom` references |
 
 Source of truth: [`internal/webhook/config/feature_gates.go`](https://github.com/rossoctl/operator/blob/main/operator/internal/webhook/config/feature_gates.go)
+(the operator repository is archived — this is the frozen final revision)
 
 ## Full injection decision flow
 

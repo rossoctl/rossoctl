@@ -44,8 +44,9 @@ do not generate one.
    Tick **Enable Device Flow** on this same form. Without it, GitHub refuses the first step with
    `device_flow_disabled`. At the revision [the overview](index.md) names, the CLI does not show
    that reason: it stops with a Python traceback ending in `HTTP Error 400: Bad Request`.
-   <!-- VERIFY v0.9.0: drop the traceback sentence once rossoctl/examples#887 lands and _post_form
-        reads the error body. -->
+   <!-- VERIFY v0.9.0: drop the traceback sentence once rossoctl/eventing-lab#1 lands and
+        _post_form reads the error body. (Transferred from rossoctl/examples#887 when that
+        repository was archived; still open.) -->
 
 
    Untick **Expire user access tokens**, which GitHub ticks by default. With it ticked, access
@@ -123,13 +124,13 @@ broadly scoped token just as readily.
 ## Sign in
 
 There is no installed `login` command. The CLI imports `eventbridge.ghauth` from the checkout, so
-run it from your clone of [`rossoctl/examples`](https://github.com/rossoctl/examples). The package
-declares `requires-python = ">=3.14"`, so use a Python at that version or later; macOS's stock
-`/usr/bin/python3` is older. The `login` path itself needs no virtual environment, because `ghauth`
-imports only the standard library.
+run it from your clone of [`rossoctl/eventing-lab`](https://github.com/rossoctl/eventing-lab). The
+package declares `requires-python = ">=3.14"`, so use a Python at that version or later; macOS's
+stock `/usr/bin/python3` is older. The `login` path itself needs no virtual environment, because
+`ghauth` imports only the standard library.
 
 ```bash
-cd eventing && python3 skills/eventbridge/eventbridge-cli.py login --client-id Ov23li...
+python3 skills/eventbridge/eventbridge-cli.py login --client-id Ov23li...
 ```
 
 ```text

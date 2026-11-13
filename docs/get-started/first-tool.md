@@ -25,7 +25,8 @@ Rossoctl creates a Deployment and a Service, and adds the workload to the platfo
 it adds an agent.
 
 For more tools, see
-[examples/mcp](https://github.com/rossoctl/examples/tree/main/mcp).
+[examples/mcp](https://github.com/rossoctl/examples/tree/main/mcp). The repository is archived and
+read-only: the examples remain available, but receive no updates.
 
 ## Step 2: give the address to an agent
 
