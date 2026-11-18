@@ -233,7 +233,8 @@ kubectl exec deploy/weather-service -n team1 -c envoy-proxy -- \
    kubectl exec deploy/weather-service -n team1 -c weather-service -- env | grep -i proxy
    ```
 2. Check that the destination host is in the routes configuration
-3. If using NetworkPolicy, verify the proxy sidecar is allowed egress
+3. A pod-level egress NetworkPolicy applies to the sidecar too: allow the sidecar's real destinations, or the captured traffic fails.
+4. Check `kubectl logs <pod> -c proxy-init` for `enforce-redirect: fail-closed egress capture active`.
 
 ### Proxy Not Injected
 

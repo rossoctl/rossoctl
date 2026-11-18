@@ -31,9 +31,15 @@ Make proxy-sidecar the default deployment mode:
 ### Enforceable Proxy Routing ([#1429](https://github.com/rossoctl/rossoctl/issues/1429))
 
 Close the HTTP_PROXY bypass gap:
-- NetworkPolicy prevents agent containers from making direct egress
-- Only the proxy sidecar is allowed outbound connections
-- Webhook auto-generates NetworkPolicy when injecting the sidecar
+- Done: `proxy-init` `egressEnforcement: enforce-redirect` (the default)
+  redirects all TCP egress of the pod to the sidecar
+  (kagenti-operator#407, kagenti-extensions#485)
+- NetworkPolicy is not used: it selects pods, not containers, so it cannot
+  allow egress from the sidecar and deny it from the agent container
+- Remaining gap: `egressEnforcement: none` has no egress enforcement
+- Not met: the #1940 acceptance criterion "no iptables". The capture uses
+  iptables, installed by the `proxy-init` init container (NET_ADMIN). The agent
+  container stays unprivileged.
 
 ### Eliminate Keycloak Admin Credentials ([#1426](https://github.com/rossoctl/rossoctl/issues/1426))
 

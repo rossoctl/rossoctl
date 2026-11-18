@@ -59,8 +59,8 @@ End User ──trust──► Rossoctl Platform ──trust──► Keycloak (I
 | Outbound tool access (host allowlist) | Enforced | Proxy blocks disallowed destinations |
 | Inbound JWT validation | Enforced | Requests without valid JWT are rejected (401) |
 | Token exchange (credential injection) | Enforced | Proxy adds auth headers; agent cannot skip |
-| NetworkPolicy (proxy bypass prevention) | Enforced | K8s network rules block direct egress |
-| HTTP_PROXY routing | Advisory | Agent *could* ignore env vars without NetworkPolicy |
+| Egress capture (proxy-init enforce-redirect) | Enforced | iptables in the pod network namespace redirect all TCP egress to the sidecar; non-TCP except DNS is dropped |
+| HTTP_PROXY routing | Advisory | Agent *could* ignore env vars; enforce-redirect captures that traffic |
 
 ## How AuthBridge Protects End Users
 
@@ -155,13 +155,36 @@ traffic:
 | Layer | What it enforces | Bypass resistant? |
 |---|---|---|
 | HTTP_PROXY routing | All outbound traffic goes through proxy | No (agent can ignore env vars) |
-| NetworkPolicy | Agent containers cannot make direct egress | Yes (kernel-enforced) |
+| Egress capture (proxy-init enforce-redirect) | iptables in the pod network namespace redirect all TCP egress to the sidecar; non-TCP except DNS is dropped | Yes, if the agent has no NET_ADMIN and does not run as UID 1337 |
 | Token exchange | Only proxy can obtain tool tokens | Yes (requires workload identity) |
 | Inbound JWT validation | Only authenticated callers reach the agent | Yes (proxy rejects) |
 
-The combination of NetworkPolicy + token exchange means even if an agent process
-ignores HTTP_PROXY, it cannot reach external services (NetworkPolicy blocks) and
-cannot forge credentials (only the proxy has the workload identity to exchange tokens).
+The combination of enforce-redirect + token exchange means that if an agent process
+ignores HTTP_PROXY, its direct connections still go through the sidecar (the
+`proxy-init` iptables rules redirect them to the sidecar transparent listener),
+and it cannot forge credentials (only the proxy has the workload identity to
+exchange tokens).
+
+`egressEnforcement: enforce-redirect` is the default. The resolution order is:
+the AgentRuntime CR, then the `egressEnforcement` key in the namespace ConfigMap
+`authbridge-runtime-config`, then `enforce-redirect`. The operator Helm value
+`allowedEgressEnforcement` limits the values that workloads can select. Only the
+`proxy-init` init container has NET_ADMIN. The agent container needs no
+privilege.
+
+#### Why not NetworkPolicy
+
+A Kubernetes NetworkPolicy selects pods, not containers. All containers in a pod
+share one network namespace. Thus a NetworkPolicy cannot allow egress from the
+`authbridge-proxy` sidecar and deny egress from the agent container. A policy
+that denies external egress for the pod also blocks the sidecar.
+
+#### `egressEnforcement: none`
+
+Under `none`, the operator does not inject `proxy-init`, and there is no egress
+enforcement. HTTP_PROXY routing is cooperative only: an agent that ignores the
+env vars bypasses the proxy. This mode is for platforms without iptables (for
+example ROSA HCP).
 
 ## Threat Model
 
@@ -174,7 +197,7 @@ cannot forge credentials (only the proxy has the workload identity to exchange t
 | **Prompt injection → unauthorized access** | Even if the agent is tricked, the proxy enforces access policy |
 | **Lateral movement** | Per-agent identity + per-service tokens limit blast radius |
 | **Token replay** | Short TTL + audience binding make stolen tokens useless quickly |
-| **Proxy bypass** | NetworkPolicy blocks direct egress from agent containers |
+| **Proxy bypass** | `proxy-init` enforce-redirect captures direct egress from the agent container and sends it through the sidecar |
 | **Impersonation** | SPIFFE workload attestation ensures only the real agent gets its identity |
 | **Admin credential compromise** | [Epic #1426] moving toward zero admin creds in agent namespaces |
 

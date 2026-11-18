@@ -22,6 +22,9 @@ be retired with it.
 | `test_transparent_inbound.py` | The bypass property, injected shape, multi-port capture, sidecar ports, egress |
 | `test_transparent_inbound_mtls.py` | Inbound mTLS through the transparent listener (rossoctl/cortex#780) |
 | `test_transparent_inbound_ambient.py` | The same bypass property on the Istio ambient / HBONE path (rossoctl/cortex#780) |
+| `test_egress_bypass.py` | Egress bypass is captured, proxy path, DNS, K8s API, unprivileged agent (#1940) |
+
+`test_egress_bypass.py` dials `TI_EGRESS_TARGET` (default `http://rossoctl-ui.rossoctl-system.svc.cluster.local:8080/`) for its reach tests.
 
 The mTLS module closes a gap the first one could not see. The transparent
 listener reuses the reverse proxy's mTLS posture via `WrapListener`, and the
