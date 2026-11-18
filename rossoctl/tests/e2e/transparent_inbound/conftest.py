@@ -37,6 +37,10 @@ AGENT_PORT = int(os.environ.get("TI_AGENT_PORT", "8000"))
 READY_TIMEOUT = int(os.environ.get("TI_READY_TIMEOUT", "180"))
 # Secret holding a staged SVID for the mTLS module's probe pod.
 SVID_SECRET_NAME = "ti-e2e-mtls-svid"
+# In-cluster HTTP target for the egress reach tests; always deployed on Kind.
+EGRESS_TARGET = os.environ.get(
+    "TI_EGRESS_TARGET", "http://rossoctl-ui.rossoctl-system.svc.cluster.local:8080/"
+)
 
 
 def kubectl_run(*args, stdin=None):
@@ -613,6 +617,23 @@ def curl_from_probe(namespace: str, url: str) -> int:
         f"wget -q -S -T 15 -O /dev/null '{url}' 2>&1 | head -1",
         check=False,
     )
+    return http_status(out, url)
+
+
+def exec_in(
+    namespace: str, pod: str, container_name: str, script: str
+) -> subprocess.CompletedProcess:
+    """Run a shell script in one container of a pod."""
+    return kubectl_run(
+        "exec", pod, "-n", namespace, "-c", container_name, "--", "sh", "-c", script
+    )
+
+
+def http_status(out: str, url: str) -> int:
+    """Parse the HTTP status from busybox `wget -S` output.
+
+    Parsed from the output, not the exit code: busybox wget exits non-zero on 4xx/5xx.
+    """
     for token in out.split():
         if token.isdigit() and len(token) == 3 and token[0] in "12345":
             return int(token)
